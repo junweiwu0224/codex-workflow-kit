@@ -1,0 +1,4 @@
+interface:
+  display_name: "Spec Kit XL"
+  short_description: "为大型任务沉淀规格、验收和风险边界"
+  default_prompt: "Use $spec-kit-xl to draft a durable spec for this large feature before planning implementation."
