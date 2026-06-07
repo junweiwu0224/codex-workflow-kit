@@ -49,6 +49,16 @@
 - 涉及公共 API、数据结构、权限、安全、构建配置、迁移、跨模块行为时，先明确影响范围和验证方式。
 - 如果发现明显应该沉淀的项目知识，更新本文件或 `docs/` 中合适的位置。
 
+## Subagents
+
+完整边界见 `docs/subagents.md`。
+
+- 全局/仓库 subagent 协议就是长期授权；不要因为当前对话没有再次说“使用子代理/并行”就跳过 subagent suitability check 或 dispatch。
+- L/XL、已有实施计划、跨模块、多个独立失败源、多文件审查或预计可并行的调查，先做 subagent suitability check。
+- 存在 2 个以上互不重叠、可独立推进、不会共享写入状态的子任务时，主动使用 subagents；不使用时说明原因。
+- 主 agent 保留需求澄清、架构判断、共享文件、最终集成、diff review 和验证。
+- 长期 L/XL 产品落地如果采用垂直切片集中写入，每 2-3 个切片后优先派只读 explorer 审查方案覆盖率、风险和验收缺口。
+
 ## Codex 使用效果
 
 - 效果评估文档：`docs/codex-usage.md`

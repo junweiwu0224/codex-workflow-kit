@@ -106,6 +106,8 @@ REQUIRED_QUICKSTART_TERMS = (
 )
 REQUIRED_PROACTIVE_SUBAGENT_TERMS = (
     "subagent suitability check",
+    "长期授权",
+    "没有再次说",
     "L/XL",
     "已有实施计划",
     "跨模块",
@@ -116,6 +118,8 @@ REQUIRED_PROACTIVE_SUBAGENT_TERMS = (
     "主 agent",
     "最终集成",
     "diff review",
+    "每 2-3 个切片",
+    "只读 explorer",
 )
 REQUIRED_SUBAGENT_PROMPT_CARDS = (
     "read-only code mapper",

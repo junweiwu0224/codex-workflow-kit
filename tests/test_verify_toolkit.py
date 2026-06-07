@@ -225,8 +225,12 @@ def test_check_toolkit_requires_subagent_prompt_cards(tmp_path):
 def test_check_toolkit_requires_proactive_subagent_guidance(tmp_path):
     cases = (
         ("subagent suitability check", "parallel suitability check"),
+        ("长期授权", "临时授权"),
+        ("没有再次说", "没有说"),
         ("2 个以上", "多个"),
         ("不使用时", "跳过时"),
+        ("每 2-3 个切片", "阶段性"),
+        ("只读 explorer", "reviewer"),
     )
     targets = ("global/AGENTS.md", "repo-template/AGENTS.md", "repo-template/docs/subagents.md")
     for index, (relative, (old, new)) in enumerate((relative, case) for relative in targets for case in cases):
