@@ -1,6 +1,15 @@
 ---
 name: dependency-upgrade-review
 description: Use when adding, removing, updating, pinning, auditing, or reviewing dependencies, lockfiles, package managers, Docker base images, GitHub Actions, vendored code, CVEs, advisories, licenses, or supply-chain risk.
+risk: medium
+source_repo: personal-workflow-kit
+source_type: curated-local
+date_added: 2026-06-07
+setup: none
+write_surface: task-dependent
+auth: task-dependent
+network: task-dependent
+status: active
 ---
 
 # dependency-upgrade-review
@@ -31,6 +40,8 @@ Do not use for source-only edits that merely import an existing dependency.
 2. Inspect local evidence.
    - Review manifest and lockfile diffs.
    - Look for unexpected package additions, version jumps, engine/peer changes, postinstall scripts, binary downloads, license changes, source URLs, and maintainer/provenance signals.
+   - Check lockfile reachability: why each meaningful new transitive dependency is present, which direct dependency pulls it in, and whether the lockfile churn matches the intended scope.
+   - For CI actions, container images, packages with install scripts, vendored code, or publish paths, check publisher identity, provenance/attestation, SBOM availability, signing or checksum guidance when the ecosystem supports it.
    - Check repo docs for manual-only test policy or dependency rules.
 
 3. Check current primary sources when facts can change.
@@ -47,6 +58,11 @@ Do not use for source-only edits that merely import an existing dependency.
    - Name breaking changes, migration steps, tests run, tests not run, rollback path, and residual risk.
    - Use `security-review` if the dependency affects auth, crypto, parsing untrusted input, execution, CI, install scripts, MCP/plugin trust, or known vulnerabilities.
    - Use `decision-record` if accepting risk, pinning long-term, changing platform/runtime, or adding a new strategic dependency.
+
+6. Apply publish and supply-chain guards when relevant.
+   - If a workflow, script, package, container, or action can publish, release, deploy, upload artifacts, or use secrets, require explicit scope review before running it.
+   - Prefer pinned actions/images/packages when the repo policy supports it; document why tag-only or floating references are acceptable when they remain.
+   - Treat SBOM, attestation, provenance, signature, checksum, license, and publisher checks as evidence inputs, not as automatic approval.
 
 ## Output Shape
 
@@ -67,3 +83,4 @@ Dependency review:
 - Do not upgrade unrelated packages to "clean things up".
 - Do not run dependency installs, downloads, Docker pulls, publish/release, or external actions without checking repo policy and approval boundaries.
 - Do not replace deterministic tools such as dependency review, secret scanning, or SBOM generation; use their output as evidence when available.
+- Do not treat a lockfile diff as harmless just because direct manifests look small; inspect reachable transitive churn when the blast radius matters.

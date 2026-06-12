@@ -3,14 +3,7 @@ import shutil
 import subprocess
 
 from scripts.build_release import build_manifest, verify_archive
-from scripts.verify_toolkit import (
-    EXPECTED_SKILLS,
-    REQUIRED_PROACTIVE_SUBAGENT_TERMS,
-    ToolkitIssue,
-    build_report,
-    check_toolkit,
-    main,
-)
+from scripts.verify_toolkit import EXPECTED_SKILLS, ToolkitIssue, build_report, check_toolkit, main
 
 
 def _write(path: Path, text: str) -> None:
@@ -103,6 +96,176 @@ def test_check_toolkit_requires_live_install_docs(tmp_path):
 
     assert any(issue.code == "readme-missing-term" for issue in issues)
     assert any(issue.code == "quickstart-missing-term" for issue in issues)
+
+
+def test_check_toolkit_requires_v3_1_files(tmp_path):
+    shadow = _clean_package_copy(tmp_path)
+    for relative in (
+        "docs/V3.1-ADOPTION-EVIDENCE.md",
+        "docs/V3.1-SKILL-POLISH-BENCHMARK.md",
+        "docs/V3.1-SKILL-POLISH-BENCHMARK.json",
+        "docs/V3.1-AGENT-RESEARCH-20.md",
+        "docs/V3.1-AGENT-CONTRACT-BENCHMARK.md",
+        "docs/V3.1-AGENT-CONTRACT-BENCHMARK.json",
+        "docs/external-component-intake.md",
+        "scripts/audit_external_component.py",
+        "scripts/benchmark_skill_polish.py",
+        "scripts/benchmark_agent_contract.py",
+        "tests/test_benchmark_agent_contract.py",
+        "tests/test_audit_external_component.py",
+        "repo-template/docs/codegraph-pilot.md",
+        "repo-template/docs/memory-recall-pilot.md",
+        "skills/skill-plugin-intake-review/SKILL.md",
+        "skills/release-readiness/SKILL.md",
+        "skills/spec-kit-xl/references/spec-template.md",
+    ):
+        (shadow / relative).unlink(missing_ok=True)
+
+    issues = check_toolkit(shadow)
+
+    missing_paths = {issue.path for issue in issues if issue.code in {"missing-required-file", "missing-skill"}}
+    assert "docs/V3.1-ADOPTION-EVIDENCE.md" in missing_paths
+    assert "docs/V3.1-SKILL-POLISH-BENCHMARK.md" in missing_paths
+    assert "docs/V3.1-SKILL-POLISH-BENCHMARK.json" in missing_paths
+    assert "docs/V3.1-AGENT-RESEARCH-20.md" in missing_paths
+    assert "docs/V3.1-AGENT-CONTRACT-BENCHMARK.md" in missing_paths
+    assert "docs/V3.1-AGENT-CONTRACT-BENCHMARK.json" in missing_paths
+    assert "docs/external-component-intake.md" in missing_paths
+    assert "scripts/audit_external_component.py" in missing_paths
+    assert "scripts/benchmark_skill_polish.py" in missing_paths
+    assert "scripts/benchmark_agent_contract.py" in missing_paths
+    assert "tests/test_benchmark_agent_contract.py" in missing_paths
+    assert "tests/test_audit_external_component.py" in missing_paths
+    assert "repo-template/docs/codegraph-pilot.md" in missing_paths
+    assert "repo-template/docs/memory-recall-pilot.md" in missing_paths
+    assert "skills/skill-plugin-intake-review/SKILL.md" in missing_paths
+    assert "skills/release-readiness/SKILL.md" in missing_paths
+    assert "skills/spec-kit-xl/references/spec-template.md" in missing_paths
+
+
+def test_check_toolkit_requires_v3_1_external_intake_reject_lines(tmp_path):
+    shadow = _clean_package_copy(tmp_path)
+    intake = shadow / "docs/external-component-intake.md"
+    intake.write_text(
+        intake.read_text(encoding="utf-8")
+        .replace("默认 MCP server", "MCP server")
+        .replace("curl-to-shell", "curl shell")
+        .replace("GPL/unknown license", "unclear license"),
+        encoding="utf-8",
+    )
+
+    issues = check_toolkit(shadow)
+
+    assert any(issue.code == "external-intake-missing-term" for issue in issues)
+
+
+def test_check_toolkit_requires_agent_self_diagnosis_terms(tmp_path):
+    shadow = _clean_package_copy(tmp_path)
+    debug_loop = shadow / "skills/debug-loop/SKILL.md"
+    completion_review = shadow / "skills/completion-review/SKILL.md"
+    debug_loop.write_text(debug_loop.read_text(encoding="utf-8").replace("goal drift", "goal mismatch"), encoding="utf-8")
+    completion_review.write_text(
+        completion_review.read_text(encoding="utf-8").replace("subagent lifecycle", "subagent cleanup"),
+        encoding="utf-8",
+    )
+
+    issues = check_toolkit(shadow)
+
+    assert any(issue.code == "debug-loop-missing-agent-self-diagnosis" for issue in issues)
+    assert any(issue.code == "completion-review-missing-agent-self-diagnosis" for issue in issues)
+
+
+def test_check_toolkit_requires_skill_polish_contracts(tmp_path):
+    shadow = _clean_package_copy(tmp_path)
+    replacements = {
+        "skills/debug-loop/SKILL.md": ("deterministic loop", "stable loop"),
+        "skills/completion-review/SKILL.md": ("Artifact / Release Evidence Gate", "Evidence Gate"),
+        "skills/frontend-qa/SKILL.md": ("Reduced motion", "Motion"),
+        "skills/decision-record/SKILL.md": ("Completion Conditions", "Done Conditions"),
+        "skills/repo-onboarding/SKILL.md": ("minimal context pack", "context pack"),
+        "skills/spec-kit-xl/SKILL.md": ("references/spec-template.md", "assets/spec-template.md"),
+        "skills/release-readiness/SKILL.md": ("install drill", "install check"),
+    }
+    for relative, (old, new) in replacements.items():
+        path = shadow / relative
+        path.write_text(path.read_text(encoding="utf-8").replace(old, new), encoding="utf-8")
+
+    issues = check_toolkit(shadow)
+    codes = {issue.code for issue in issues}
+
+    assert "debug-loop-missing-feedback-loop-polish" in codes
+    assert "completion-review-missing-artifact-gate" in codes
+    assert "frontend-qa-missing-accessibility-polish" in codes
+    assert "decision-record-missing-output-contract" in codes
+    assert "repo-onboarding-missing-minimal-context-pack" in codes
+    assert "spec-kit-xl-missing-progressive-disclosure" in codes
+    assert "release-readiness-missing-contract" in codes
+
+
+def test_check_toolkit_requires_spec_template_in_references(tmp_path):
+    shadow = _clean_package_copy(tmp_path)
+    old_template = shadow / "skills/spec-kit-xl/assets/spec-template.md"
+    old_template.parent.mkdir(parents=True, exist_ok=True)
+    old_template.write_text("# Old template\n", encoding="utf-8")
+
+    issues = check_toolkit(shadow)
+
+    assert any(issue.code == "spec-template-in-assets" for issue in issues)
+
+
+def test_check_toolkit_requires_frontend_browser_routing_guidance(tmp_path):
+    shadow = _clean_package_copy(tmp_path)
+    frontend_qa = shadow / "skills/frontend-qa/SKILL.md"
+    global_agents = shadow / "global/AGENTS.md"
+    frontend_qa.write_text(
+        frontend_qa.read_text(encoding="utf-8")
+        .replace("in-app Browser", "browser")
+        .replace("不要静默降级到 Chrome", "可以降级到 Chrome"),
+        encoding="utf-8",
+    )
+    global_agents.write_text(
+        global_agents.read_text(encoding="utf-8").replace("in-app Browser", "browser"),
+        encoding="utf-8",
+    )
+
+    issues = check_toolkit(shadow)
+
+    assert any(issue.code == "frontend-qa-missing-browser-routing" for issue in issues)
+    assert any(issue.code == "global-agents-missing-browser-routing" for issue in issues)
+
+
+def test_check_toolkit_rejects_hardcoded_browser_plugin_paths(tmp_path):
+    shadow = _clean_package_copy(tmp_path)
+    frontend_qa = shadow / "skills/frontend-qa/SKILL.md"
+    hardcoded_path = (
+        "/" + "Users" + "/" + "junwei" + "/" + ".codex/plugins/cache/openai-bundled/browser/"
+        "26.602.40724/scripts/browser-client.mjs"
+    )
+    frontend_qa.write_text(
+        frontend_qa.read_text(encoding="utf-8")
+        + f"\n示例：{hardcoded_path}\n",
+        encoding="utf-8",
+    )
+
+    issues = check_toolkit(shadow)
+
+    assert any(issue.code == "hardcoded-browser-plugin-path" for issue in issues)
+
+
+def test_check_toolkit_requires_v2_2_closeout_evidence(tmp_path):
+    shadow = _clean_package_copy(tmp_path)
+    evidence = shadow / "docs/V2-ADOPTION-EVIDENCE.md"
+    evidence.write_text(
+        evidence.read_text(encoding="utf-8")
+        .replace("V2.2 Closeout", "Closeout")
+        .replace("scripts/verify_live_install.py", "scripts/live_check.py")
+        .replace("9 skills verified", "skills verified"),
+        encoding="utf-8",
+    )
+
+    issues = check_toolkit(shadow)
+
+    assert any(issue.code == "v2-evidence-missing-term" for issue in issues)
 
 
 def test_check_toolkit_requires_skill_frontmatter_and_boundaries(tmp_path):
@@ -229,8 +392,70 @@ def test_check_toolkit_requires_subagent_prompt_cards(tmp_path):
     assert any(issue.code == "subagents-missing-prompt-cards" for issue in issues)
 
 
+def test_check_toolkit_requires_agent_contract_guidance(tmp_path):
+    replacements = (
+        ("Handoff Envelope", "Dispatch Envelope"),
+        ("Return Envelope", "Result Envelope"),
+        ("History/Input Filter", "Context Filter"),
+        ("Command/Tool Risk Policy", "Tool Policy"),
+        ("Step Budget / Stop Condition", "Step Limits"),
+        ("Lifecycle Ledger", "Lifecycle Log"),
+        ("No-Dispatch Decision", "No Dispatch Reason"),
+    )
+    targets = ("global/AGENTS.md", "repo-template/AGENTS.md", "repo-template/docs/subagents.md")
+    for index, (relative, (old, new)) in enumerate((relative, replacement) for relative in targets for replacement in replacements):
+        case_root = tmp_path / f"agent-contract-case-{index}"
+        case_root.mkdir()
+        shadow = _clean_package_copy(case_root)
+        target = shadow / relative
+        target.write_text(target.read_text(encoding="utf-8").replace(old, new), encoding="utf-8")
+
+        issues = check_toolkit(shadow)
+
+        assert any(
+            issue.code == "subagents-missing-agent-contract-guidance" and issue.path == relative
+            for issue in issues
+        )
+
+
+def test_check_toolkit_requires_agent_research_evidence(tmp_path):
+    shadow = _clean_package_copy(tmp_path)
+    research = shadow / "docs/V3.1-AGENT-RESEARCH-20.md"
+    research.write_text(
+        research.read_text(encoding="utf-8")
+        .replace("20 real git checkouts", "local checkouts")
+        .replace("openai/openai-agents-python", "openai agents")
+        .replace("Why This Does Not Conflict", "Compatibility"),
+        encoding="utf-8",
+    )
+
+    issues = check_toolkit(shadow)
+
+    assert any(issue.code == "agent-research-missing-term" for issue in issues)
+
+
+def test_check_toolkit_requires_agent_contract_benchmark_terms(tmp_path):
+    shadow = _clean_package_copy(tmp_path)
+    benchmark = shadow / "docs/V3.1-AGENT-CONTRACT-BENCHMARK.md"
+    benchmark.write_text(
+        benchmark.read_text(encoding="utf-8")
+        .replace("pre-agent-contract", "pre")
+        .replace("post-agent-contract", "post")
+        .replace("Measured improvement", "Improvement"),
+        encoding="utf-8",
+    )
+
+    issues = check_toolkit(shadow)
+
+    assert any(issue.code == "agent-contract-benchmark-missing-term" for issue in issues)
+
+
 def test_check_toolkit_requires_proactive_subagent_guidance(tmp_path):
-    cases = tuple((term, f"removed-{index}") for index, term in enumerate(REQUIRED_PROACTIVE_SUBAGENT_TERMS))
+    cases = (
+        ("subagent suitability check", "parallel suitability check"),
+        ("2 个以上", "多个"),
+        ("不使用时", "跳过时"),
+    )
     targets = ("global/AGENTS.md", "repo-template/AGENTS.md", "repo-template/docs/subagents.md")
     for index, (relative, (old, new)) in enumerate((relative, case) for relative in targets for case in cases):
         case_root = tmp_path / f"case-{index}"
@@ -264,6 +489,47 @@ def test_check_toolkit_requires_quickstart(tmp_path):
     assert any(issue.code == "missing-required-file" and issue.path == "QUICKSTART.md" for issue in issues)
 
 
+def test_check_toolkit_requires_v2_adoption_plan(tmp_path):
+    shadow = _clean_package_copy(tmp_path)
+    (shadow / "docs/superpowers/plans/2026-06-07-workflow-kit-v2-adoption.md").unlink(missing_ok=True)
+
+    issues = check_toolkit(shadow)
+
+    assert any(
+        issue.code == "missing-required-file"
+        and issue.path == "docs/superpowers/plans/2026-06-07-workflow-kit-v2-adoption.md"
+        for issue in issues
+    )
+
+
+def test_check_toolkit_requires_v2_1_plan(tmp_path):
+    shadow = _clean_package_copy(tmp_path)
+    (shadow / "docs/superpowers/plans/2026-06-07-workflow-kit-v2-1-observability-subagents-mcp.md").unlink(
+        missing_ok=True
+    )
+
+    issues = check_toolkit(shadow)
+
+    assert any(
+        issue.code == "missing-required-file"
+        and issue.path == "docs/superpowers/plans/2026-06-07-workflow-kit-v2-1-observability-subagents-mcp.md"
+        for issue in issues
+    )
+
+
+def test_check_toolkit_requires_v2_adoption_evidence(tmp_path):
+    shadow = _clean_package_copy(tmp_path)
+    (shadow / "docs/V2-ADOPTION-EVIDENCE.md").unlink(missing_ok=True)
+
+    issues = check_toolkit(shadow)
+
+    assert any(
+        issue.code == "missing-required-file"
+        and issue.path == "docs/V2-ADOPTION-EVIDENCE.md"
+        for issue in issues
+    )
+
+
 def test_check_toolkit_flags_incomplete_workflow_review(tmp_path):
     shadow = _clean_package_copy(tmp_path)
     _write(shadow / "WORKFLOW-REVIEW.md", "# Review\n")
@@ -280,6 +546,201 @@ def test_check_toolkit_flags_incomplete_quickstart(tmp_path):
     issues = check_toolkit(shadow)
 
     assert any(issue.code == "quickstart-missing-term" for issue in issues)
+
+
+def test_check_toolkit_flags_incomplete_v2_adoption_plan(tmp_path):
+    shadow = _clean_package_copy(tmp_path)
+    _write(shadow / "docs/superpowers/plans/2026-06-07-workflow-kit-v2-adoption.md", "# Plan\n")
+
+    issues = check_toolkit(shadow)
+
+    assert any(issue.code == "v2-plan-missing-term" for issue in issues)
+
+
+def test_check_toolkit_flags_incomplete_v2_1_plan(tmp_path):
+    shadow = _clean_package_copy(tmp_path)
+    _write(
+        shadow / "docs/superpowers/plans/2026-06-07-workflow-kit-v2-1-observability-subagents-mcp.md",
+        "# Plan\n",
+    )
+
+    issues = check_toolkit(shadow)
+
+    assert any(issue.code == "v2-1-plan-missing-term" for issue in issues)
+
+
+def test_check_toolkit_flags_incomplete_v2_adoption_evidence(tmp_path):
+    shadow = _clean_package_copy(tmp_path)
+    _write(shadow / "docs/V2-ADOPTION-EVIDENCE.md", "# Evidence\n")
+
+    issues = check_toolkit(shadow)
+
+    assert any(issue.code == "v2-evidence-missing-term" for issue in issues)
+
+
+def test_check_toolkit_requires_v3_1_evidence_for_current_version(tmp_path):
+    shadow = _clean_package_copy(tmp_path)
+    (shadow / "VERSION").write_text("2099.01.02\n", encoding="utf-8")
+    evidence = shadow / "docs/V3.1-ADOPTION-EVIDENCE.md"
+    evidence.write_text(
+        evidence.read_text(encoding="utf-8").replace(
+            "codex-workflow-kit-2026.06.12.tar.gz: OK",
+            "codex-workflow-kit-2026.06.11.tar.gz: OK",
+        ),
+        encoding="utf-8",
+    )
+
+    issues = check_toolkit(shadow)
+
+    assert any(
+        issue.code == "v3-1-evidence-release-mismatch"
+        and "codex-workflow-kit-2099.01.02.tar.gz: OK" in issue.message
+        for issue in issues
+    )
+
+
+def test_check_toolkit_requires_repo_specific_calibration_evidence(tmp_path):
+    shadow = _clean_package_copy(tmp_path)
+    evidence = shadow / "docs/V2-ADOPTION-EVIDENCE.md"
+    evidence.write_text(
+        evidence.read_text(encoding="utf-8")
+        .replace("Repo-specific onboarding calibration", "Repo onboarding")
+        .replace("manual-only test policy", "test policy"),
+        encoding="utf-8",
+    )
+
+    issues = check_toolkit(shadow)
+
+    assert any(issue.code == "v2-evidence-missing-term" for issue in issues)
+
+
+def test_check_toolkit_requires_real_calibrated_repo_task_evidence(tmp_path):
+    shadow = _clean_package_copy(tmp_path)
+    evidence = shadow / "docs/V2-ADOPTION-EVIDENCE.md"
+    evidence.write_text(
+        evidence.read_text(encoding="utf-8").replace(
+            "Align Go version docs with go.mod/CI",
+            "Align docs",
+        ),
+        encoding="utf-8",
+    )
+
+    issues = check_toolkit(shadow)
+
+    assert any(issue.code == "v2-evidence-missing-term" for issue in issues)
+
+
+def test_check_toolkit_requires_docs_only_repo_task_evidence(tmp_path):
+    shadow = _clean_package_copy(tmp_path)
+    evidence = shadow / "docs/V2-ADOPTION-EVIDENCE.md"
+    evidence.write_text(
+        evidence.read_text(encoding="utf-8").replace(
+            "Guard README agent instruction append snippets",
+            "Guard README snippets",
+        ),
+        encoding="utf-8",
+    )
+
+    issues = check_toolkit(shadow)
+
+    assert any(issue.code == "v2-evidence-missing-term" for issue in issues)
+
+
+def test_check_toolkit_requires_manual_policy_task_evidence(tmp_path):
+    shadow = _clean_package_copy(tmp_path)
+    evidence = shadow / "docs/V2-ADOPTION-EVIDENCE.md"
+    evidence.write_text(
+        evidence.read_text(encoding="utf-8").replace(
+            "Lock manual-only Go test policy with static docs test",
+            "Lock policy",
+        ),
+        encoding="utf-8",
+    )
+
+    issues = check_toolkit(shadow)
+
+    assert any(issue.code == "v2-evidence-missing-term" for issue in issues)
+
+
+def test_check_toolkit_requires_claude_path_validation_task_evidence(tmp_path):
+    shadow = _clean_package_copy(tmp_path)
+    evidence = shadow / "docs/V2-ADOPTION-EVIDENCE.md"
+    evidence.write_text(
+        evidence.read_text(encoding="utf-8").replace(
+            "Validate CLAUDE.md repo paths with static docs test",
+            "Validate CLAUDE paths",
+        ),
+        encoding="utf-8",
+    )
+
+    issues = check_toolkit(shadow)
+
+    assert any(issue.code == "v2-evidence-missing-term" for issue in issues)
+
+
+def test_check_toolkit_requires_fail_fast_download_task_evidence(tmp_path):
+    shadow = _clean_package_copy(tmp_path)
+    evidence = shadow / "docs/V2-ADOPTION-EVIDENCE.md"
+    evidence.write_text(
+        evidence.read_text(encoding="utf-8").replace(
+            "Make raw workflow downloads fail fast",
+            "Make downloads safer",
+        ),
+        encoding="utf-8",
+    )
+
+    issues = check_toolkit(shadow)
+
+    assert any(issue.code == "v2-evidence-missing-term" for issue in issues)
+
+
+def test_check_toolkit_requires_first_adoption_review(tmp_path):
+    shadow = _clean_package_copy(tmp_path)
+    evidence = shadow / "docs/V2-ADOPTION-EVIDENCE.md"
+    evidence.write_text(
+        evidence.read_text(encoding="utf-8").replace("First Adoption Review", "Adoption Review"),
+        encoding="utf-8",
+    )
+
+    issues = check_toolkit(shadow)
+
+    assert any(issue.code == "v2-evidence-missing-term" for issue in issues)
+
+
+def test_check_toolkit_requires_second_adoption_review(tmp_path):
+    shadow = _clean_package_copy(tmp_path)
+    evidence = shadow / "docs/V2-ADOPTION-EVIDENCE.md"
+    evidence.write_text(
+        evidence.read_text(encoding="utf-8").replace("Second Adoption Review", "Adoption Review"),
+        encoding="utf-8",
+    )
+
+    issues = check_toolkit(shadow)
+
+    assert any(issue.code == "v2-evidence-missing-term" for issue in issues)
+
+
+def test_check_toolkit_requires_final_v2_completion_audit(tmp_path):
+    shadow = _clean_package_copy(tmp_path)
+    evidence = shadow / "docs/V2-ADOPTION-EVIDENCE.md"
+    evidence.write_text(
+        evidence.read_text(encoding="utf-8").replace("Final V2 Completion Audit", "Completion Audit"),
+        encoding="utf-8",
+    )
+
+    issues = check_toolkit(shadow)
+
+    assert any(issue.code == "v2-evidence-missing-term" for issue in issues)
+
+
+def test_check_toolkit_requires_v2_1_evidence(tmp_path):
+    shadow = _clean_package_copy(tmp_path)
+    evidence = shadow / "docs/V2-ADOPTION-EVIDENCE.md"
+    evidence.write_text(evidence.read_text(encoding="utf-8").replace("V2.1 Tooling Layer", "Tooling Layer"), encoding="utf-8")
+
+    issues = check_toolkit(shadow)
+
+    assert any(issue.code == "v2-evidence-missing-term" for issue in issues)
 
 
 def test_build_report_counts_errors(tmp_path):

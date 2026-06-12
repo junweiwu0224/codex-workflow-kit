@@ -18,6 +18,8 @@ REQUIRED_FILES = (
     "docs/subagents.md",
     "docs/observability.md",
     "docs/mcp-pilot.md",
+    "docs/codegraph-pilot.md",
+    "docs/memory-recall-pilot.md",
     "docs/codex-usage.md",
     "docs/codex-playbook.md",
     "docs/glossary.md",
@@ -33,6 +35,8 @@ TEXT_FILES = (
     "docs/subagents.md",
     "docs/observability.md",
     "docs/mcp-pilot.md",
+    "docs/codegraph-pilot.md",
+    "docs/memory-recall-pilot.md",
     "docs/codex-usage.md",
     "docs/codex-playbook.md",
     "docs/glossary.md",
@@ -45,6 +49,50 @@ SECRET_RE = re.compile(
     r"sk-[A-Za-z0-9]{20,}|BEGIN (?:RSA|OPENSSH|PRIVATE) KEY|"
     r"(?:api[_-]?key|secret|password)\s*=",
     re.IGNORECASE,
+)
+PRIVATE_HOME_PATH_RE = re.compile(r"/(?:Users|home)/(?!\[|\<|path/to/)([A-Za-z0-9._-]+)(?:/|$)")
+REQUIRED_QUALITY_GATE_TERMS = (
+    "Hook Review Checklist",
+    "advisory",
+    "fail-open",
+    "blocking",
+    "External Component Gate",
+    "curl-to-shell",
+    "自动 memory 写入",
+)
+REQUIRED_MCP_PERMISSION_TERMS = (
+    "docs-only",
+    "read-only local",
+    "local write",
+    "external read",
+    "external write",
+    "destructive / production-risk",
+    "allowed tools",
+    "denied tools",
+    "rollback/fallback",
+)
+REQUIRED_SUBAGENT_CONTRACT_TERMS = (
+    "V3.1 Prompt Contract",
+    "allowed write set",
+    "off-limits",
+    "lifecycle close",
+    "implementation worker",
+    "batch worker",
+)
+REQUIRED_CODEGRAPH_TERMS = (
+    "Code Graph Pilot",
+    "不是真相源",
+    "不默认安装",
+    "不默认启用",
+    "python3 scripts/render_usage_row.py pilot --pilot codegraph",
+)
+REQUIRED_MEMORY_RECALL_TERMS = (
+    "Memory Recall Pilot",
+    "不是真相源",
+    "不默认启用 memory hook",
+    "不默认启用 MCP memory writer",
+    "raw transcript",
+    "provenance",
 )
 
 
@@ -96,6 +144,29 @@ def _has_usage_review_mechanism(text: str) -> bool:
     return "周期复盘" in text or "阶段复盘" in text
 
 
+def _require_terms(
+    issues: list[ContextPackIssue],
+    root: Path,
+    relative: str,
+    terms: tuple[str, ...],
+    code: str,
+) -> None:
+    path = root / relative
+    if not path.exists():
+        return
+    text = _read_text(path)
+    for term in terms:
+        if term not in text:
+            issues.append(
+                ContextPackIssue(
+                    severity="error",
+                    code=code,
+                    path=relative,
+                    message=f"{relative} must include V3.1 guidance term: {term}.",
+                )
+            )
+
+
 def check_context_pack(root: str | Path = ".") -> list[ContextPackIssue]:
     root = Path(root)
     issues: list[ContextPackIssue] = []
@@ -144,6 +215,12 @@ def check_context_pack(root: str | Path = ".") -> list[ContextPackIssue]:
             )
         )
 
+    _require_terms(issues, root, "docs/quality-gates.md", REQUIRED_QUALITY_GATE_TERMS, "missing-v3-1-hook-guidance")
+    _require_terms(issues, root, "docs/mcp-pilot.md", REQUIRED_MCP_PERMISSION_TERMS, "missing-v3-1-mcp-permission-guidance")
+    _require_terms(issues, root, "docs/subagents.md", REQUIRED_SUBAGENT_CONTRACT_TERMS, "missing-v3-1-subagent-contract")
+    _require_terms(issues, root, "docs/codegraph-pilot.md", REQUIRED_CODEGRAPH_TERMS, "missing-codegraph-pilot-guidance")
+    _require_terms(issues, root, "docs/memory-recall-pilot.md", REQUIRED_MEMORY_RECALL_TERMS, "missing-memory-recall-guidance")
+
     for relative, text in _existing_text_files(root):
         for line_number, line in enumerate(text.splitlines(), start=1):
             if _line_has_bare_python(line) and not _is_usage_history(relative):
@@ -162,6 +239,15 @@ def check_context_pack(root: str | Path = ".") -> list[ContextPackIssue]:
                         code="sensitive-pattern",
                         path=relative,
                         message=f"Line {line_number} looks like it contains a secret or endpoint value.",
+                    )
+                )
+            if PRIVATE_HOME_PATH_RE.search(line) and "/path/to/" not in line:
+                issues.append(
+                    ContextPackIssue(
+                        severity="error",
+                        code="private-home-path",
+                        path=relative,
+                        message=f"Line {line_number} contains a private home path; use a placeholder.",
                     )
                 )
 

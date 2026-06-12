@@ -1,6 +1,15 @@
 ---
 name: decision-record
 description: Use when a task involves long-term technical decisions, ADRs, architecture tradeoffs, framework/database/auth/deployment choices, module boundaries, public APIs, data models, risks, or accepted technical debt.
+risk: low
+source_repo: personal-workflow-kit
+source_type: curated-local
+date_added: 2026-06-07
+setup: none
+write_surface: docs
+auth: none
+network: none
+status: active
 ---
 
 # decision-record
@@ -89,6 +98,27 @@ description: Use when a task involves long-term technical decisions, ADRs, archi
 
 6. 回连相关文档
    - 如果决策影响架构、测试、命令或 Codex 工作方式，更新 `docs/architecture.md`、`docs/testing.md`、`docs/commands.md`、`AGENTS.md` 或 `docs/codex-playbook.md`。
+
+## Output Shape
+
+交付 ADR 或决策更新时，输出应包含：
+
+- Decision：ADR 文件路径、标题、状态和日期。
+- Context：为什么需要记录，哪些约束或证据影响了决定。
+- Options：考虑过的主要方案，以及为什么没有选择。
+- Consequences：正面影响、负面影响、风险和接受的技术债。
+- Links：更新过的索引、架构/测试/命令文档或被 supersede 的旧 ADR。
+- Verification：Markdown/readback 检查、链接检查或相关 docs 更新证据。
+
+## Completion Conditions
+
+只有满足这些条件，才算完成：
+
+- ADR 状态准确：`Proposed`、`Accepted`、`Superseded` 等没有把未定方案写成既成事实。
+- 文件名、编号和索引不冲突。
+- 决策明确包含取舍和后果，不只是“做了什么”。
+- 被替代的旧 ADR 没有删除，且能追到新 ADR。
+- 影响到的 `AGENTS.md`、architecture、testing、commands 或 playbook 已更新，或明确说明为什么暂不更新。
 
 ## 质量标准
 

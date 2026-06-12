@@ -1,6 +1,15 @@
 ---
 name: completion-review
 description: Use when implementation and verification are complete and Codex is preparing the final response for code, docs, config, automation, frontend, security, data, build, or cross-file work.
+risk: low
+source_repo: personal-workflow-kit
+source_type: curated-local
+date_added: 2026-06-07
+setup: none
+write_surface: none-by-skill
+auth: none
+network: none
+status: active
 ---
 
 # completion-review
@@ -34,12 +43,33 @@ description: Use when implementation and verification are complete and Codex is 
 
 ## 检查清单
 
+### 0. Evidence Gate
+
+- No diff, no review：代码、文档或配置任务在最终回复前必须查看实际改动证据，例如 `git diff`、文件列表、manifest 变化、命令输出或当前文件内容；不能只凭记忆说完成。
+- 如果当前目录不是 git repo，也要用文件清单、验证器、release manifest、archive listing 或 targeted readback 替代 diff。
+- 最终回复中的每个完成声明都应能指向一个文件、命令结果、截图、日志、归档内容或明确的未验证说明。
+- 检查是否有生成物、缓存、临时文件、无关格式化或用户未要求的依赖/配置变化混进交付。
+
+### 0.1 Artifact / Release Evidence Gate
+
+如果任务交付的是可复用 artifact、toolkit、release archive、安装包、文档包、脚本包或迁移包，必须额外确认：
+
+- `VERSION`、manifest、archive、checksum、install docs 和 release notes / evidence docs 彼此一致。
+- 至少跑过 package verifier；如果包声称可安装，还要跑 dry-run install 和 live install / unpack drill。
+- archive listing 或解包后的文件树包含新增文件、引用资源和脚本权限；没有遗漏 `references/`、`scripts/`、assets 或 verifier tests。
+- 最终回复要说明 artifact 路径、checksum 验证、安装验证和未覆盖的发布风险。
+- 这不是生产 deploy 许可；涉及外部发布、账号、权限、生产配置或真实用户影响时仍需用户确认。
+
 ### 1. 目标完成度
 
 - 用户最初目标是否已经完成？
 - 是否存在被遗漏的子任务？
 - 是否有新增问题导致目标没有真正达成？
 - 实际完成内容是否和用户请求一致？
+- 是否存在 `goal drift`：最终答复回答的是旧目标、缩小后的目标或中途产生的方便目标？
+- 长线程或上下文压缩后是否发生 `context drift`：需要回读最新用户请求、当前 goal、计划和当前文件状态。
+- 是否存在 `unsupported claim`：声称已完成、已验证、已关闭或已发布，但没有对应文件、命令、manifest、截图、release 或工具返回证据？
+- 如本轮使用 subagents，是否完成 subagent lifecycle 检查：记录 id、review 结果、集成/丢弃结论，并在不再需要时 close。
 
 ### 2. 改动范围
 
@@ -115,6 +145,17 @@ description: Use when implementation and verification are complete and Codex is 
 - 无关改动已避免或解释。
 - 安全/数据/生产风险已处理或标明。
 - 必要的项目知识沉淀已完成或已提出具体建议。
+
+## Output Shape
+
+最终回复前，用这个形状自检并压缩成用户可读结果：
+
+- Result：目标是否完成，交付物在哪里。
+- Changed：关键文件、模块、artifact 或 release archive。
+- Verification：运行过的测试、lint、build、verifier、browser QA、checksum、install drill 或 readback。
+- Evidence：diff、manifest、archive listing、截图、日志、命令输出或明确的未验证说明。
+- Risk：残余风险、用户确认红线、外部依赖或未执行项。
+- Follow-up：只有自然衔接当前任务时给出具体下一步，不写空泛建议。
 
 ## 不要做
 

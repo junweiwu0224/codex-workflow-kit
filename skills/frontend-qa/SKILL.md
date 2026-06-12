@@ -1,6 +1,15 @@
 ---
 name: frontend-qa
 description: Use when frontend, UI, CSS, layout, interaction, route, form, canvas, chart, 3D, media, or user-visible changes need real browser, screenshot, responsive, state, or visual verification.
+risk: low
+source_repo: personal-workflow-kit
+source_type: curated-local
+date_added: 2026-06-07
+setup: none
+write_surface: task-dependent
+auth: task-dependent
+network: local-by-default
+status: active
 ---
 
 # frontend-qa
@@ -59,6 +68,10 @@ description: Use when frontend, UI, CSS, layout, interaction, route, form, canva
 ## 工作原则
 
 - 优先使用项目已有 dev server、preview、Storybook、Playwright、Cypress、Vitest browser、组件测试或 E2E 工具。
+- 本地 `localhost`、`127.0.0.1`、`::1`、`file://` 或 Codex 内嵌页面验证，优先使用 Browser 插件的 in-app Browser。
+- 不要静默降级到 Chrome。Chrome 只在用户明确要求 Chrome/`@chrome`，或任务必须使用用户现有 Chrome 登录态、cookie、扩展、已打开 tab 时使用。
+- 如果 in-app Browser 不可用，先说明原因；除非用户批准使用外部 Chrome，否则用项目测试、API/DOM 契约、截图产物或代码审查作为次优证据。
+- 不要硬编码 Browser 插件缓存路径、用户目录或版本号。使用当前会话提供的 Browser skill/plugin 路径；需要手动定位时，在 `~/.codex/plugins/cache/openai-bundled/browser/` 下发现当前存在的版本，再导入该版本的 `scripts/browser-client.mjs`。
 - 打开实际受影响页面，不只打开首页。
 - 用真实渲染结果验证，不只凭代码判断。
 - 同时考虑桌面和移动端，除非项目明确不支持移动端。
@@ -105,11 +118,13 @@ description: Use when frontend, UI, CSS, layout, interaction, route, form, canva
    - Form validation state
 
 6. 可访问性基础检查
-   - 按钮、链接、输入框有可理解标签。
-   - 键盘焦点没有明显丢失。
-   - 表单错误可见。
-   - 文本对比度没有明显问题。
-   - 交互元素尺寸合理。
+   - Keyboard：主要按钮、链接、输入框、菜单、弹窗和表单路径可用键盘到达和操作。
+   - Focus：焦点顺序合理，焦点样式可见，弹窗/菜单不会吞掉或丢失焦点。
+   - Contrast：正文、按钮、状态提示、禁用态和错误态没有明显低对比度问题。
+   - ARIA：图标按钮、dialog、menu、tab、combobox、alert、error message 等语义不缺关键 label / role / state。
+   - Reduced motion：动画、Canvas、3D、游戏或滚动效果应尊重 reduced motion；不能依赖动效传达唯一信息。
+   - 表单错误可见，且和对应输入有关联。
+   - 交互元素尺寸合理，触控目标不会过小。
 
 7. Canvas / 3D / 图表 / 游戏专项检查
    - 确认画面非空。
@@ -151,6 +166,17 @@ description: Use when frontend, UI, CSS, layout, interaction, route, form, canva
 - 发现并修复的问题。
 - 未能验证的内容和原因。
 - 残余风险。
+
+## Output Shape
+
+完成 frontend-qa 后，输出保持短但要有证据：
+
+- Target：实际打开的页面、路由、组件或 story。
+- Environment：dev server / preview / Storybook / test runner、浏览器工具和视口。
+- States：检查过的 loading、empty、error、success、disabled、long content、auth 或 network failure。
+- Accessibility：keyboard、focus、contrast、ARIA、reduced motion 的检查结果。
+- Findings：发现并修复的问题；没有问题也说明观察证据。
+- Gaps：无法浏览器验证、无法截图或未覆盖状态的原因。
 
 ## 不要做
 

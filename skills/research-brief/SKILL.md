@@ -1,6 +1,15 @@
 ---
 name: research-brief
 description: Use when evaluating current external options such as GitHub repositories, skills, MCP servers, hooks, subagents, APIs, models, tools, libraries, standards, pricing, release status, or ecosystem recommendations.
+risk: medium
+source_repo: personal-workflow-kit
+source_type: curated-local
+date_added: 2026-06-07
+setup: none
+write_surface: none-by-skill
+auth: task-dependent
+network: task-dependent
+status: active
 ---
 
 # research-brief
@@ -30,7 +39,7 @@ Do not use for repo-local implementation details that can be answered from sourc
 2. Gather sources.
    - Prefer primary sources: official docs, repository README, release notes, source, standards, advisories, current repo files.
    - For OpenAI/Codex facts, use official OpenAI docs/manual routes when available.
-   - Use local evidence first when evaluating this workflow kit: `README.md`, `WORKFLOW-REVIEW.md`, repo templates, tests, and current installed skills.
+   - Use local evidence first when evaluating this workflow kit: `WORKFLOW-REVIEW.md`, `docs/V2-ADOPTION-EVIDENCE.md`, repo templates, tests, and current installed skills.
 
 3. Grade evidence.
    - Strong: primary source plus local fit evidence or working verification.

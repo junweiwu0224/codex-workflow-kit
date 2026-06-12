@@ -1,0 +1,4 @@
+interface:
+  display_name: "Release Readiness"
+  short_description: "检查可复用包、checksum、安装演练和交付证据"
+  default_prompt: "Use $release-readiness to verify this portable artifact or release package before delivery."

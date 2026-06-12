@@ -1,235 +1,484 @@
 # Codex Workflow Kit
 
-中文 | [English](#english)
+这是一套用于增强个人 Codex 工作流的可迁移工具包，包含全局规则、repo context pack 模板、个人 skills、安装脚本、自检脚本和发布归档脚本。当前包是 V3.1 稳定口径：外部组件准入、code graph/memory pilot、hook discipline、subagent prompt cards 和自诊断收口都已打包，但不默认启用外部工具。
 
-一套可迁移的个人 Codex 工作流工具包：全局工作原则、repo context pack 模板、专项 skills、安装脚本、自检脚本，以及保守的质量门禁/并行/观测边界。
-
-它的核心目标不是“装更多工具”，而是让 Codex 在新机器和新仓库里更快建立上下文、更少误判、更稳定验证，同时避免默认启用高副作用自动化。
-
-## 包含内容
+## 目录
 
 ```text
-VERSION                         当前版本
-MANIFEST.sha256                 包内容 checksum manifest
-QUICKSTART.md                   双语快速开始
-WORKFLOW-REVIEW.md              双语工作流复盘
-global/AGENTS.md                 个人级 Codex 工作原则
-repo-template/                   新仓库 context pack 模板
-skills/                          9 个专项 skills
-scripts/verify_toolkit.py        工具包完整性自检
-scripts/verify_live_install.py   当前机器安装漂移检查
-scripts/audit_repo_adoption.py   新仓库只读采用审计
-scripts/render_usage_row.py      usage/evidence 表格行生成器
-scripts/build_release.py         刷新 MANIFEST.sha256 并构建 release tarball
-install.sh                       非破坏式安装器
+VERSION
+MANIFEST.sha256
+QUICKSTART.md
+WORKFLOW-REVIEW.md
+docs/
+  V2-ADOPTION-EVIDENCE.md
+  V3.1-ADOPTION-EVIDENCE.md
+  V3.1-BENCHMARK.md
+  V3.1-BENCHMARK.json
+  V3.1-SKILL-POLISH-BENCHMARK.md
+  V3.1-SKILL-POLISH-BENCHMARK.json
+  V3.1-AGENT-RESEARCH-20.md
+  V3.1-AGENT-CONTRACT-BENCHMARK.md
+  V3.1-AGENT-CONTRACT-BENCHMARK.json
+  external-component-intake.md
+  superpowers/
+    plans/
+      2026-06-07-workflow-kit-v2-adoption.md
+      2026-06-07-workflow-kit-v2-1-observability-subagents-mcp.md
+
+global/
+  AGENTS.md
+
+install.sh
+
+scripts/
+  audit_external_component.py
+  audit_repo_adoption.py
+  benchmark_agent_contract.py
+  benchmark_skill_polish.py
+  benchmark_v31_vs_v22.py
+  build_release.py
+  codex_doctor.py
+  render_usage_row.py
+  verify_live_install.py
+  verify_toolkit.py
+
+repo-template/
+  AGENTS.md
+  scripts/
+    verify_context_pack.py
+  tests/
+    test_verify_context_pack.py
+  docs/
+    architecture.md
+    commands.md
+    testing.md
+    quality-gates.md
+    subagents.md
+    observability.md
+    mcp-pilot.md
+    codegraph-pilot.md
+    memory-recall-pilot.md
+    codex-usage.md
+    codex-playbook.md
+    glossary.md
+    decisions/
+      README.md
+      0001-template.md
+    specs/
+      README.md
+      0001-template.md
+
+skills/
+  repo-onboarding/
+  spec-kit-xl/
+  debug-loop/
+  frontend-qa/
+  decision-record/
+  completion-review/
+  security-review/
+  dependency-upgrade-review/
+  research-brief/
+  skill-plugin-intake-review/
+  release-readiness/
 ```
 
-## 9 个 Skills
+## 用法
 
-- `repo-onboarding`: 建立仓库 context pack。
-- `spec-kit-xl`: 只用于 XL/正式规格任务。
-- `debug-loop`: 测试、构建、运行失败后的证据驱动调试循环。
-- `frontend-qa`: 前端/UI/交互的真实浏览器和响应式验证。
-- `decision-record`: 长期技术取舍和 ADR。
-- `completion-review`: 实现和验证之后的交付前检查。
-- `security-review`: 安全、权限、密钥、用户数据、生产配置和信任边界审查。
-- `dependency-upgrade-review`: 依赖、lockfile、base image、GitHub Actions、CVE/license/supply-chain 审查。
-- `research-brief`: GitHub 仓库、MCP、hooks、subagents、模型/API、工具选型的证据化 promote/hold/reject。
+`QUICKSTART.md` 是迁移清单，包含新机器最短安装命令、验证命令、以及首次应用到新 repo 的 10 分钟流程。
 
-这些 skills 是对 Superpowers 或其他主流程的专项补强，不替代计划、TDD、阶段推进和最终验证。
+`WORKFLOW-REVIEW.md` 是一页总复盘，记录最终路线、完成状态、可复用能力、候选边界、新机器演练结果和后续触发条件。迁移或继续扩展前，先读它确认当前边界。
 
-## 快速安装
+`docs/superpowers/plans/2026-06-07-workflow-kit-v2-adoption.md` 是 V1 之后的详细后续计划，用于真实 repo 采用、效果评估、hooks/MCP/memory/subagents 候选晋升和 V2 打包。
+
+`docs/superpowers/plans/2026-06-07-workflow-kit-v2-1-observability-subagents-mcp.md` 是 V2.1 的详细计划，用于新增 observability、subagent prompt cards、MCP/code graph pilot 和 `render_usage_row.py pilot`，同时保持 no default automation。
+
+`docs/V2-ADOPTION-EVIDENCE.md` 是 V2 当前证据包，记录 baseline 验证、候选 repo dry-run、已晋升能力、拒绝默认化能力、外部 repo baseline 安装、repo-specific onboarding calibration、V2.1 tooling layer 和 V2.2 P0 specialist skills closeout。
+
+`docs/V3.1-ADOPTION-EVIDENCE.md` 是当前 V3.1 证据包，记录 `promote != install`、`pilot != enable`、`core != runtime/background`、11 skills verified、reject lines、新机器演练要求和 release checksum 证据。
+
+`docs/V3.1-BENCHMARK.md` / `docs/V3.1-BENCHMARK.json` 是 V3.1 对比 V2.2 的量化 benchmark，覆盖 XS/S/M/L 任务、耗时、检查覆盖、风险发现和任务通过数。对应脚本是 `scripts/benchmark_v31_vs_v22.py`。
+
+`docs/V3.1-SKILL-POLISH-BENCHMARK.md` / `docs/V3.1-SKILL-POLISH-BENCHMARK.json` 是 V3.1 skill polish 对比 pre-polish release 的量化 benchmark，覆盖 skill count、Output Shape、accessibility、release readiness、progressive disclosure 等改进。对应脚本是 `scripts/benchmark_skill_polish.py`。
+
+`docs/V3.1-AGENT-RESEARCH-20.md` 是 20 个高星/流行 agent 仓库的本地源码研究证据，记录哪些 agent 协作模式被 promote/pilot/hold/reject。
+
+`docs/V3.1-AGENT-CONTRACT-BENCHMARK.md` / `docs/V3.1-AGENT-CONTRACT-BENCHMARK.json` 是 agent contract 对比 `2026.06.12.1` release 的量化 benchmark，覆盖 Handoff Envelope、Return Envelope、History/Input Filter、Command/Tool Risk Policy、Step Budget / Stop Condition、Lifecycle Ledger、usage pilots 和研究证据覆盖。对应脚本是 `scripts/benchmark_agent_contract.py`。
+
+`docs/external-component-intake.md` 是外部 skill/plugin/MCP/hook/subagent prompt/workflow pack 的准入协议。对应只读脚本是 `scripts/audit_external_component.py`。
+
+### 1. 先验证 toolkit 包
+
+在新机器或复制后的目录里，先运行：
 
 ```bash
-git clone https://github.com/junweiwu0224/codex-workflow-kit.git
-cd codex-workflow-kit
 python3 scripts/verify_toolkit.py
-./install.sh --dry-run
-./install.sh --backup
-python3 scripts/verify_live_install.py
 ```
 
-预期关键输出：
+期望输出：
 
 ```text
 Workflow toolkit OK
-Live install OK (12 files checked)
 ```
 
-默认安装位置：
+这个检查会确认：
+
+- 全局 `AGENTS.md`、repo 模板、11 个个人 Codex skills 都在包里。
+- 外部组件准入文档、`scripts/audit_external_component.py`、`skill-plugin-intake-review` 都在包里。
+- `implementation-plan` 没有重新出现，避免和 Superpowers 计划职责冲突。
+- repo 模板自带的 `scripts/verify_context_pack.py` 可以通过。
+- repo 模板包含 `docs/codegraph-pilot.md` 和 `docs/memory-recall-pilot.md`。
+- repo 模板 `docs/subagents.md` 包含 Handoff Envelope、Return Envelope、History/Input Filter、Command/Tool Risk Policy、Step Budget / Stop Condition、Lifecycle Ledger 和 No-Dispatch Decision。
+- 包里没有 `__pycache__`、`.pytest_cache`、`.pyc` 等生成缓存。
+- 文档里没有明显凭证模式或私有 home path。
+- `MANIFEST.sha256` 和当前文件内容一致。
+
+如果已经安装到当前机器，再检查 live install 是否和 toolkit 完全一致：
+
+```bash
+python3 scripts/verify_live_install.py
+```
+
+期望输出：
 
 ```text
-~/.codex/AGENTS.md
-~/.agents/skills/
+Live install OK (15 files checked)
 ```
 
-## 应用到新仓库
+这个检查只读比较 `~/.codex/AGENTS.md` 和 `~/.agents/skills/` 下的所有 packaged skill 文件，并检查活跃 Codex/Chrome 插件、native host 和 plugin cache symlink 路径没有指向其他 macOS 用户目录；发现本机配置与 output 包不一致或插件路径跑偏时会报告问题，不会自动覆盖。
 
-先做只读审计：
+如果想跑一条更完整但仍然只读的本机巡检命令：
 
 ```bash
-python3 scripts/audit_repo_adoption.py /path/to/repo
-python3 scripts/audit_repo_adoption.py --json /path/to/repo
-python3 scripts/audit_repo_adoption.py --markdown /path/to/repo
+python3 scripts/codex_doctor.py
 ```
 
-如果建议为 `repo-only-install`，再安装 context pack：
+期望输出：
 
-```bash
-./install.sh --repo-only --repo /path/to/repo --dry-run
-./install.sh --repo-only --repo /path/to/repo --backup
-cd /path/to/repo
-python3 scripts/verify_context_pack.py
+```text
+Codex doctor OK
+- live_install: OK
+- active_plugin_paths: OK
 ```
 
-已有 `AGENTS.md`、已有 context docs、dirty worktree 或大小写等价文档时，优先人工合并，不要机械覆盖。
-
-安装后可以记录 baseline usage 行，也可以为 observability、subagents、MCP/code graph pilot 生成只记录证据的 `pilot` 行：
+如果要运行 toolkit 自身测试，需要使用已安装 `pytest` 的 Python 环境：
 
 ```bash
-python3 scripts/render_usage_row.py baseline
-python3 scripts/render_usage_row.py pilot --pilot observability
-python3 scripts/render_usage_row.py pilot --pilot subagents
-python3 scripts/render_usage_row.py pilot --pilot mcp-code-graph
-```
-
-## 默认边界
-
-- 不默认启用 blocking hooks。
-- 不默认启用 MCP/code graph/memory。
-- 不默认安装外部监控、后台服务或 SaaS 写入能力。
-- 不把 subagents 设为无条件执行路径；L/XL、跨模块、多独立失败源或多文件审查时先做 suitability check。
-- 不把浏览器 QA 强加给所有任务；只在 UI、布局、交互、资源、viewport 或真实用户可见风险存在时触发。
-
-## 验证
-
-```bash
-python3 scripts/verify_toolkit.py
-python3 scripts/verify_live_install.py
-python3 -m pytest tests/test_verify_toolkit.py tests/test_verify_live_install.py tests/test_audit_repo_adoption.py tests/test_render_usage_row.py -q
+python3 -m pytest tests/test_verify_toolkit.py tests/test_verify_live_install.py tests/test_render_usage_row.py tests/test_codex_doctor.py tests/test_audit_repo_adoption.py tests/test_audit_external_component.py tests/test_benchmark_skill_polish.py -q
 cd repo-template
 python3 scripts/verify_context_pack.py
 python3 -m pytest tests/test_verify_context_pack.py -q
 ```
 
-## 公开版说明
+两组测试的工作目录不同：toolkit 测试在包根目录运行，repo context pack 测试在 `repo-template/` 目录运行。
 
-这个仓库是公开可复用版本，已移除个人机器路径、私有试跑仓库证据和历史 release tarball。模板里的规则仍然偏个人工作流风格，建议 fork 后按自己的团队和项目约束调整。
+### 2. 构建可迁移发布包
 
----
-
-## English
-
-A portable personal workflow kit for Codex: global working principles, a repo context-pack template, specialist skills, non-destructive install scripts, self-checks, and conservative boundaries for quality gates, subagents, observability, MCP/code graph, and memory.
-
-The goal is not to install more tools. The goal is to help Codex build context faster, make fewer wrong assumptions, verify more consistently, and avoid enabling high-side-effect automation by default.
-
-## What's Included
-
-```text
-VERSION                         Current version
-MANIFEST.sha256                 Package checksum manifest
-QUICKSTART.md                   Bilingual quickstart
-WORKFLOW-REVIEW.md              Bilingual workflow review
-global/AGENTS.md                 Personal Codex working principles
-repo-template/                   Context-pack template for new repositories
-skills/                          9 specialist skills
-scripts/verify_toolkit.py        Package integrity verifier
-scripts/verify_live_install.py   Local installed-file drift checker
-scripts/audit_repo_adoption.py   Read-only adoption audit for target repos
-scripts/render_usage_row.py      Usage/evidence table row generator
-scripts/build_release.py         Refresh MANIFEST.sha256 and build release tarballs
-install.sh                       Non-destructive installer
-```
-
-## The 9 Skills
-
-- `repo-onboarding`: create a repo context pack.
-- `spec-kit-xl`: only for XL/formal specification work.
-- `debug-loop`: evidence-driven debugging after test/build/runtime failures.
-- `frontend-qa`: real browser and responsive checks for frontend/UI/interaction work.
-- `decision-record`: durable technical decisions and ADRs.
-- `completion-review`: pre-delivery check after implementation and verification.
-- `security-review`: security, permissions, secrets, user data, production config, and trust-boundary review.
-- `dependency-upgrade-review`: dependency, lockfile, base image, GitHub Actions, CVE/license/supply-chain review.
-- `research-brief`: evidence-backed promote/hold/reject decisions for repos, MCP, hooks, subagents, models/APIs, and tooling.
-
-These skills are specialist supplements to your main workflow. They do not replace planning, TDD, phased execution, or final verification.
-
-## Quick Install
+目录可以直接复制，也可以构建带 checksum 的归档包：
 
 ```bash
-git clone https://github.com/junweiwu0224/codex-workflow-kit.git
-cd codex-workflow-kit
-python3 scripts/verify_toolkit.py
-./install.sh --dry-run
-./install.sh --backup
-python3 scripts/verify_live_install.py
+python3 scripts/build_release.py
 ```
 
-Expected key output:
+输出位置：
 
 ```text
-Workflow toolkit OK
-Live install OK (12 files checked)
+releases/codex-workflow-kit-<VERSION>.tar.gz
+releases/codex-workflow-kit-<VERSION>.tar.gz.sha256
 ```
 
-Default install locations:
+归档包内容包含 `VERSION` 和 `MANIFEST.sha256`。换机器后可以解压并先运行：
+
+```bash
+python3 scripts/verify_toolkit.py
+```
+
+如果要校验归档文件本身：
+
+```bash
+cd releases
+shasum -a 256 -c codex-workflow-kit-<VERSION>.tar.gz.sha256
+```
+
+### 3. 一键安装到当前机器
+
+先 dry-run，看会写哪些文件：
+
+```bash
+./install.sh --dry-run
+```
+
+确认后安装全局 Codex 宪法和个人 skills：
+
+```bash
+./install.sh
+```
+
+默认行为是非破坏式：如果目标位置已经有不同内容，脚本会停止并提示冲突。需要保留旧文件再替换时使用：
+
+```bash
+./install.sh --backup
+```
+
+只在确认要覆盖时使用：
+
+```bash
+./install.sh --force
+```
+
+如果要安装到自定义位置，适合测试或迁移演练：
+
+```bash
+./install.sh --codex-home /tmp/codex-home --agents-home /tmp/agents-home
+```
+
+### 4. 全局 Codex 宪法
+
+`global/AGENTS.md` 是个人全局工作原则。安装脚本会把它放到 Codex home 的 `AGENTS.md`。
+
+安装位置：
 
 ```text
 ~/.codex/AGENTS.md
-~/.agents/skills/
 ```
 
-## Apply to a New Repo
+### 5. Repo context pack 模板
 
-Run a read-only audit first:
+`repo-template/` 是项目级模板。复制到目标仓库根目录后，根据项目实际情况填写。
+
+项目 `AGENTS.md` 只写项目事实、项目规则、项目边界和验证矩阵，不重复全局宪法。
+
+落地到已有仓库时要合并而不是机械覆盖：先检查是否已经存在同类文档或大小写等价文件，例如已有 `docs/ARCHITECTURE.md` 时，不再创建重复的 `docs/architecture.md`，而是在 `AGENTS.md` 和相关 docs 中索引现有文件。
+
+模板自带 `scripts/verify_context_pack.py` 和 `tests/test_verify_context_pack.py`。复制到新仓库后，先按目标仓库真实 Python 入口调整命令，再运行 context pack 验证，确认文件、命令、架构文档引用和敏感模式检查可用。
+
+安装位置：
+
+```text
+<repo>/
+  AGENTS.md
+  scripts/
+  tests/
+  docs/
+```
+
+也可以让安装脚本把 repo 模板复制到目标仓库：
 
 ```bash
-python3 scripts/audit_repo_adoption.py /path/to/repo
-python3 scripts/audit_repo_adoption.py --json /path/to/repo
-python3 scripts/audit_repo_adoption.py --markdown /path/to/repo
+./install.sh --repo /path/to/repo --dry-run
+./install.sh --repo /path/to/repo --backup
 ```
 
-If the recommendation is `repo-only-install`, install the context pack:
+如果全局 `AGENTS.md` 和个人 skills 已安装，只想给新仓库落地 context pack，使用更安静、写入面更小的 repo-only 模式：
 
 ```bash
 ./install.sh --repo-only --repo /path/to/repo --dry-run
 ./install.sh --repo-only --repo /path/to/repo --backup
+```
+
+落地前可以先做只读 adoption audit，判断适合 repo-only 安装还是人工合并：
+
+```bash
+python3 scripts/audit_repo_adoption.py /path/to/repo
+```
+
+批量审计或需要机器可读输出时使用：
+
+```bash
+python3 scripts/audit_repo_adoption.py --json /path/to/repo-a /path/to/repo-b
+```
+
+需要直接生成 adoption evidence 表格时使用：
+
+```bash
+python3 scripts/audit_repo_adoption.py --markdown /path/to/repo-a /path/to/repo-b
+```
+
+安装并验证 context pack 后，可以生成一行标准 baseline usage 记录，再追加到目标 repo 的 `docs/codex-usage.md`：
+
+```bash
+python3 scripts/render_usage_row.py baseline
+python3 scripts/render_usage_row.py baseline --verification-command ".venv/bin/python scripts/verify_context_pack.py"
+python3 scripts/render_usage_row.py pilot --pilot observability
+python3 scripts/render_usage_row.py pilot --pilot subagents
+python3 scripts/render_usage_row.py pilot --pilot mcp-code-graph
+python3 scripts/render_usage_row.py pilot --pilot codegraph
+python3 scripts/render_usage_row.py pilot --pilot memory-recall
+python3 scripts/render_usage_row.py pilot --pilot plugin-mcp-trust
+python3 scripts/render_usage_row.py pilot --pilot agent-config-lint
+python3 scripts/render_usage_row.py pilot --pilot domain-pilot
+python3 scripts/render_usage_row.py pilot --pilot external-component-intake
+```
+
+`pilot` 子命令只打印 Markdown 行，用于把可选工具试点记录到 `docs/codex-usage.md`；它不会写目标 repo、安装外部工具、启用 hooks 或启动 MCP。
+
+评估外部 skill、plugin、MCP、hook、subagent prompt 或 workflow pack 时，先运行只读 intake audit：
+
+```bash
+python3 scripts/audit_external_component.py /path/to/component
+python3 scripts/audit_external_component.py /path/to/component --json
+```
+
+这个脚本只读扫描本地文件，不安装、不启用、不联网、不写目标组件；输出用于决定 `promote`、`pilot`、`repo-local`、`hold` 或 `reject`。
+
+需要重新生成 V3.1/V2.2 量化对比时运行：
+
+```bash
+python3 scripts/benchmark_v31_vs_v22.py --repetitions 5
+```
+
+它会从 release tarball 解包到临时目录，分别运行 package health、repo context pack、live install drill 和 external component intake 任务，并更新 `docs/V3.1-BENCHMARK.md` 与 `docs/V3.1-BENCHMARK.json`。
+
+需要重新生成 skill polish 量化对比时运行：
+
+```bash
+python3 scripts/benchmark_skill_polish.py
+```
+
+它会从 pre-polish release tarball 解包 `2026.06.12`，和当前 post-polish toolkit tree 对比，并更新 `docs/V3.1-SKILL-POLISH-BENCHMARK.md` 与 `docs/V3.1-SKILL-POLISH-BENCHMARK.json`。
+
+落地到已有仓库时，优先使用 `--dry-run` 看冲突。脚本不会自动覆盖已有不同文件；如果目标仓库已经有大小写等价的架构文档，例如 `docs/ARCHITECTURE.md`，脚本会停止，要求人工合并引用，避免创建重复文档。
+
+### 6. 个人 skills
+
+`skills/` 包含 11 个个人 Codex skills：
+
+- `repo-onboarding`：为仓库建立 context pack。
+- `spec-kit-xl`：为 XL/正式规格任务沉淀需求、非目标、验收标准和风险边界。
+- `debug-loop`：失败后按观察、假设、修复、复测循环收敛。
+- `frontend-qa`：前端真实浏览器/截图/移动端/状态验证。
+- `decision-record`：长期技术取舍沉淀成 ADR。
+- `completion-review`：测试和验证之后、最终回复之前的交付闸门。
+- `security-review`：安全敏感代码、配置、依赖、hooks、MCP/plugin、CI 或信任边界变化时做专项审查。
+- `dependency-upgrade-review`：依赖、lockfile、runtime/base image、GitHub Actions、CVE/advisory、license 或供应链风险变更时做专项审查。
+- `research-brief`：评估 GitHub 仓库、skills、MCP、hooks、subagents、模型/API 或工具选型时形成证据化 promote/hold/reject 结论。
+- `skill-plugin-intake-review`：吸收外部 skill、plugin、MCP、hook、subagent prompt、workflow pack 前做 promote/pilot/repo-local/hold/reject 准入审查。
+- `release-readiness`：准备可复用 artifact、portable toolkit、release archive、checksum bundle 或迁移包时做发布前证据门禁；当前为 pilot。
+
+这些 skills 设计为补充 Superpowers：`spec-kit-xl` 只做 XL/正式规格，`security-review`、`dependency-upgrade-review`、`research-brief`、`skill-plugin-intake-review`、`release-readiness` 只做专项审查/研究/准入/发布证据门禁，计划、TDD、阶段推进和执行仍交给 Superpowers。
+
+安装位置：
+
+```text
+~/.agents/skills/
+```
+
+复制后应确认 Codex 的 skill 列表能看到：
+
+```text
+repo-onboarding
+spec-kit-xl
+debug-loop
+frontend-qa
+decision-record
+completion-review
+security-review
+dependency-upgrade-review
+research-brief
+skill-plugin-intake-review
+release-readiness
+```
+
+## 新机器落地顺序
+
+推荐按这个顺序执行：
+
+```bash
+cd codex-workflow-kit
+python3 scripts/verify_toolkit.py
+python3 scripts/build_release.py
+./install.sh --dry-run
+./install.sh
+python3 scripts/verify_live_install.py
+python3 scripts/codex_doctor.py
+```
+
+如果还要给某个仓库安装 context pack：
+
+```bash
+./install.sh --repo /path/to/repo --dry-run
+./install.sh --repo /path/to/repo --backup
 cd /path/to/repo
 python3 scripts/verify_context_pack.py
 ```
 
-If the target repo already has `AGENTS.md`, context docs, a dirty worktree, or case-equivalent docs, prefer manual merge over mechanical overwrite.
-
-After install, you can generate a baseline usage row, or generate `pilot` rows for observability, subagents, and MCP/code graph pilots. These commands only print evidence rows; they do not enable automation:
+如果目标仓库没有 `python3` 或使用虚拟环境，把最后一条命令替换成项目真实入口，例如：
 
 ```bash
-python3 scripts/render_usage_row.py baseline
-python3 scripts/render_usage_row.py pilot --pilot observability
-python3 scripts/render_usage_row.py pilot --pilot subagents
-python3 scripts/render_usage_row.py pilot --pilot mcp-code-graph
+.venv/bin/python scripts/verify_context_pack.py
 ```
 
-## Defaults and Boundaries
+## 试跑和效果评估
 
-- No blocking hooks by default.
-- No MCP/code graph/memory by default.
-- No external monitors, background services, or SaaS write actions by default.
-- Subagents are not unconditional; use a suitability check for L/XL, cross-module, multi-failure, or multi-file review work.
-- Browser QA is conditional; use it for UI, layout, interaction, resource, viewport, or real user-visible risk.
+给新仓库安装 context pack 后，不要立刻启用整套 hooks、MCP 或 memory。subagents 按全局协议主动评估：L/XL、已有实施计划、跨模块、多独立失败源、多文件审查和可并行调查要先做 suitability check；存在 2 个以上独立非重叠子任务时主动使用，不使用时说明原因。推荐先做 3-5 个真实 M/L/XL 任务，把结果写入：
 
-## Verification
-
-```bash
-python3 scripts/verify_toolkit.py
-python3 scripts/verify_live_install.py
-python3 -m pytest tests/test_verify_toolkit.py tests/test_verify_live_install.py tests/test_audit_repo_adoption.py tests/test_render_usage_row.py -q
-cd repo-template
-python3 scripts/verify_context_pack.py
-python3 -m pytest tests/test_verify_context_pack.py -q
+```text
+docs/codex-usage.md
 ```
 
-## Public Edition Note
+每条记录只保留可复用信号：用了什么流程、跑了什么验证、减少了什么误判或返工、暴露了什么副作用或成本。
 
-This is the public reusable edition. Personal machine paths, private trial-repo evidence, and historical release tarballs have been removed. The templates are still opinionated toward a personal Codex workflow, so fork and adapt them to your own team and repository constraints.
+完成 3-5 条后做一次阶段复盘：
+
+- 保留连续带来收益的规则或验证路径。
+- 把一次性经验留在记录中观察，不晋升为全局规则。
+- hooks、MCP、memory 和新脚本先作为文档化候选，只有在重复证明有收益、边界清晰、可回退后再启用；subagents 保持边界驱动，不做共享状态无条件并行。
+- subagents 必须做 lifecycle check：记录本轮 agent id，结果集成后调用 `close_agent`；只读检查、竞品观察和 reviewer 不再需要时也要关闭。
+- 如果流程只是弥补文档缺失，优先更新 `AGENTS.md`、`docs/testing.md`、`docs/quality-gates.md` 或 `docs/codex-playbook.md`。
+
+## 复用检查清单
+
+换机器或迁移到新 Codex 环境时，确认：
+
+- `python3 scripts/verify_toolkit.py` 输出 `Workflow toolkit OK`。
+- `python3 scripts/build_release.py` 已生成 `releases/codex-workflow-kit-<VERSION>.tar.gz` 和 `.sha256`。
+- `./install.sh --dry-run` 的计划符合预期。
+- `global/AGENTS.md` 已复制到 `~/.codex/AGENTS.md`。
+- `skills/*` 已复制到 `~/.agents/skills/`。
+- `python3 scripts/verify_live_install.py` 能确认安装内容没有 drift。
+- `python3 scripts/codex_doctor.py` 能确认 live install 和 active plugin paths 正常。
+- 新仓库已复制 `repo-template/AGENTS.md`、`repo-template/docs/`、`repo-template/scripts/`，以及可选的 `repo-template/tests/`；其中包含 `docs/codegraph-pilot.md` 和 `docs/memory-recall-pilot.md`。
+- Codex 可发现 11 个个人 Codex skills。
+- repo `AGENTS.md` 没有重复全局宪法，只保留项目事实和边界。
+- repo `docs/subagents.md` 包含 lifecycle 收口规则：本轮派出的 agent id 必须在不再需要时 `close_agent`。
+- 已检查目标仓库是否有同类文档或大小写等价文件，避免重复创建或覆盖人工文档。
+- `docs/commands.md`、`docs/testing.md`、`docs/quality-gates.md` 已按项目真实命令填写。
+- context pack verifier 已用目标仓库真实解释器运行通过。
+- `docs/codex-usage.md` 已按真实任务记录效果信号，不记录一次性过程或敏感信息。
+- `docs/specs/` 只用于 XL/正式规格任务。
+- 没有把凭证、token、私钥、生产数据或一次性调试过程写入模板、docs 或 memory。
+
+## 当前落地阶段
+
+已完成：
+
+- 个人 Codex 宪法和任务分级协议。
+- repo context pack 模板。
+- Superpowers/spec-kit 总控协议。
+- 11 个自定义核心/专项 skills。
+- V3.1 外部组件准入协议和只读审查脚本。
+- Code graph、memory/recall、plugin/MCP trust、agent config lint 和 domain skill 的 repo-local pilot 边界。
+- MCP、代码图谱和 memory 的使用边界协议。
+- hooks 质量门禁协议和 repo 模板。
+- subagents 并行协议和 repo 模板。
+- usage/效果评估协议和 repo 模板。
+- 真实仓库 5 个 M 级样本试跑，并将验证副作用分级回灌到 repo 模板。
+- hooks 候选集策略：默认只文档化，不自动启用；默认阻断 hooks 只考虑 A 级无写入/低副作用命令。
+
+当前盘点：
+
+- 已启用插件：Browser、Chrome、Computer Use、Documents、Spreadsheets、Presentations、Superpowers。
+- 显式 MCP server：内建 `node_repl`。
+- memory：Codex 本地存在内建 memory 状态；当前不新增自定义 memory server。
+- 代码图谱：当前不安装额外代码图谱服务；先使用 `rg`、语言工具、测试和 repo docs 构建临时图谱。
+
+下一阶段：
+
+- 在真实 repo 继续累计 V3.1 usage 证据：外部组件准入、codegraph、memory-recall、plugin/MCP trust、agent config lint、domain-pilot 都先记录为 pilot，不默认安装或启用。
+
+## 已校准的复盘结论
+
+- `scripts/verify_context_pack.py` 适合做 A 级低副作用文档/context pack 门禁。
+- 静态扫描和覆盖率这类会写 `test-results/`、coverage、trace 或截图的命令属于 B 级报告门禁；只有输出目录已忽略且成本可控时才前移。
+- 通过 TestClient、dev server、preview server 或 app startup 做 health check 的命令属于 C 级应用生命周期门禁；即使不连接外部服务，也可能初始化本地数据库、启动调度器、写缓存、占用端口或生成报告，不应默认放入 hooks。
+- 外部服务、真实数据同步、数据库迁移、部署、权限、交易、支付、生产或凭证相关命令属于 D 级高风险门禁，执行前需要用户确认。
+- Compile/typecheck/lint 也要先确认是否会写 bytecode、cache、coverage、build 产物或自动格式化文件；会写产物的命令不应标成严格无写入 hook。

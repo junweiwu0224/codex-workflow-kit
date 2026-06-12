@@ -94,6 +94,52 @@ def test_main_prints_mcp_pilot_row_with_context_defaults(capsys):
     assert "`docs/mcp-pilot.md` baseline compared" in output
 
 
+def test_main_prints_v3_1_pilot_rows_with_defaults(capsys):
+    cases = {
+        "codegraph": ("code graph pilot, rg baseline", "`docs/codegraph-pilot.md` baseline compared"),
+        "memory-recall": (
+            "memory/recall pilot, repo docs baseline",
+            "`docs/memory-recall-pilot.md` provenance reviewed",
+        ),
+        "plugin-mcp-trust": (
+            "skill-plugin-intake-review, external component audit",
+            "`docs/external-component-intake.md` trust review recorded",
+        ),
+        "agent-config-lint": (
+            "agent config lint pilot, read-only hygiene",
+            "`docs/quality-gates.md` agent config lint candidate recorded",
+        ),
+        "domain-pilot": (
+            "domain skill boundary, repo-local checklist",
+            "`docs/external-component-intake.md` domain boundary reviewed",
+        ),
+        "external-component-intake": (
+            "skill/plugin intake review, read-only audit",
+            "`scripts/audit_external_component.py` decision recorded",
+        ),
+        "subagent-contract": (
+            "subagent handoff/return contract, lifecycle evidence",
+            "`docs/subagents.md` Handoff Envelope and Return Envelope used",
+        ),
+        "agent-lifecycle-ledger": (
+            "subagent lifecycle ledger, close evidence",
+            "`docs/subagents.md` Lifecycle Ledger recorded",
+        ),
+        "agent-eval-evidence": (
+            "agent eval evidence, trajectory replay checklist",
+            "`docs/subagents.md` Return Envelope evidence paths reviewed",
+        ),
+    }
+
+    for pilot, (tools, evidence) in cases.items():
+        exit_code = main(["pilot", "--pilot", pilot, "--date", "2026-06-07"])
+        output = capsys.readouterr().out
+
+        assert exit_code == 0
+        assert f"| 2026-06-07 | {pilot} pilot | L | {tools} |" in output
+        assert evidence in output
+
+
 def test_main_prints_pilot_row_with_overrides(capsys):
     exit_code = main(
         [

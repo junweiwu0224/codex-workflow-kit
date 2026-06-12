@@ -1,0 +1,78 @@
+{
+  "versions": {
+    "pre-polish": "2026.06.12",
+    "post-polish": "2026.06.12.2"
+  },
+  "method": "Compare the archived pre-polish release with the current post-polish toolkit tree.",
+  "metrics": [
+    {
+      "name": "ADR completion contract",
+      "pre_polish": 1,
+      "post_polish": 4,
+      "delta": 3,
+      "maximum": 4
+    },
+    {
+      "name": "Accessibility coverage",
+      "pre_polish": 0,
+      "post_polish": 5,
+      "delta": 5,
+      "maximum": 5
+    },
+    {
+      "name": "Artifact gate coverage",
+      "pre_polish": 1,
+      "post_polish": 4,
+      "delta": 3,
+      "maximum": 4
+    },
+    {
+      "name": "Feedback Loop First",
+      "pre_polish": 1,
+      "post_polish": 6,
+      "delta": 5,
+      "maximum": 6
+    },
+    {
+      "name": "Output Shape",
+      "pre_polish": 4,
+      "post_polish": 11,
+      "delta": 7,
+      "maximum": null
+    },
+    {
+      "name": "Progressive disclosure",
+      "pre_polish": 0,
+      "post_polish": 3,
+      "delta": 3,
+      "maximum": 3
+    },
+    {
+      "name": "Release readiness",
+      "pre_polish": 0,
+      "post_polish": 6,
+      "delta": 6,
+      "maximum": 6
+    },
+    {
+      "name": "Repo onboarding scope control",
+      "pre_polish": 0,
+      "post_polish": 3,
+      "delta": 3,
+      "maximum": 3
+    },
+    {
+      "name": "Skill count",
+      "pre_polish": 10,
+      "post_polish": 11,
+      "delta": 1,
+      "maximum": null
+    }
+  ],
+  "totals": {
+    "pre_polish": 17,
+    "post_polish": 53,
+    "delta": 36,
+    "delta_percent": 211.76
+  }
+}

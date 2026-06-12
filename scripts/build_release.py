@@ -28,7 +28,6 @@ EXCLUDE_FILES = {
     ".DS_Store",
 }
 MANIFEST_PATH = "MANIFEST.sha256"
-PACKAGE_NAME = "codex-workflow-kit"
 
 
 def _load_verify_toolkit(root: Path):
@@ -92,7 +91,7 @@ def write_manifest(root: Path) -> Path:
 
 
 def _copy_package(root: Path, staging_root: Path) -> Path:
-    package_root = staging_root / PACKAGE_NAME
+    package_root = staging_root / root.name
     package_root.mkdir(parents=True, exist_ok=True)
     for path in _iter_package_files(root):
         relative = path.relative_to(root)
@@ -120,7 +119,7 @@ def _normalize_tar_info(info: tarfile.TarInfo) -> tarfile.TarInfo:
 def build_archive(root: Path, output_dir: Path) -> Path:
     version = (root / "VERSION").read_text(encoding="utf-8").strip()
     output_dir.mkdir(parents=True, exist_ok=True)
-    archive_path = output_dir / f"{PACKAGE_NAME}-{version}.tar.gz"
+    archive_path = output_dir / f"{root.name}-{version}.tar.gz"
 
     with tempfile.TemporaryDirectory() as temp_name:
         staging_root = Path(temp_name)
@@ -147,10 +146,10 @@ def verify_archive(archive_path: Path) -> None:
         if not members:
             raise RuntimeError("Archive is empty.")
         top_levels = {member.name.split("/", 1)[0] for member in members}
-        if top_levels != {PACKAGE_NAME}:
-            raise RuntimeError(f"Archive top level must be {PACKAGE_NAME}, got {sorted(top_levels)}")
+        if top_levels != {"codex-workflow-kit"}:
+            raise RuntimeError(f"Archive top level must be codex-workflow-kit, got {sorted(top_levels)}")
 
-        manifest_member = tar.getmember(f"{PACKAGE_NAME}/MANIFEST.sha256")
+        manifest_member = tar.getmember("codex-workflow-kit/MANIFEST.sha256")
         manifest_file = tar.extractfile(manifest_member)
         if manifest_file is None:
             raise RuntimeError("Archive manifest could not be read.")
@@ -158,7 +157,7 @@ def verify_archive(archive_path: Path) -> None:
         member_by_name = {member.name: member for member in members if member.isfile()}
         for line in manifest_lines:
             digest, relative = line.split(maxsplit=1)
-            member_name = f"{PACKAGE_NAME}/{relative}"
+            member_name = f"codex-workflow-kit/{relative}"
             member = member_by_name.get(member_name)
             if member is None:
                 raise RuntimeError(f"Manifest file missing from archive: {relative}")

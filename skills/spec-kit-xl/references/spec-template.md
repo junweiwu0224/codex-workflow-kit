@@ -1,6 +1,6 @@
 # <功能或项目名称> Spec
 
-状态：Draft
+状态：Draft | Review | Accepted | Planned | Implemented | Superseded
 负责人：
 创建日期：
 最后更新：

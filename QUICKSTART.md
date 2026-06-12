@@ -1,16 +1,38 @@
-# Quickstart / 快速开始
+# Quickstart
 
-## 中文
+这是一份迁移清单，用于把 Codex Workflow Kit 迁移到新机器，并在 10 分钟内应用到第一个新 repo。当前包是 V3.1 稳定口径：保留全局规则、11 个个人 Codex skills、repo context pack、live install 校验、doctor 巡检、外部组件准入、release-readiness pilot、codegraph/memory pilot、V3.1 证据和 baseline/pilot usage 记录。
 
-### 1. 安装到当前机器
+## 1. 新机器最短安装命令
+
+从 release 包安装：
 
 ```bash
-git clone https://github.com/junweiwu0224/codex-workflow-kit.git
+tar -xzf codex-workflow-kit-2026.06.12.2.tar.gz
 cd codex-workflow-kit
 python3 scripts/verify_toolkit.py
 ./install.sh --dry-run
-./install.sh --backup
+./install.sh
 python3 scripts/verify_live_install.py
+python3 scripts/codex_doctor.py
+python3 scripts/audit_external_component.py skills/skill-plugin-intake-review
+```
+
+从已复制的目录安装：
+
+```bash
+cd codex-workflow-kit
+python3 scripts/verify_toolkit.py
+./install.sh --dry-run
+./install.sh
+python3 scripts/verify_live_install.py
+python3 scripts/codex_doctor.py
+python3 scripts/audit_external_component.py skills/skill-plugin-intake-review
+```
+
+如果机器上已有个人配置，先用备份模式安装：
+
+```bash
+./install.sh --backup
 ```
 
 默认安装位置：
@@ -20,12 +42,39 @@ python3 scripts/verify_live_install.py
 ~/.agents/skills/
 ```
 
-### 2. 验证
+## 2. 最短验证命令
+
+验证 toolkit 包完整：
 
 ```bash
 python3 scripts/verify_toolkit.py
 python3 scripts/verify_live_install.py
-python3 -m pytest tests/test_verify_toolkit.py tests/test_verify_live_install.py tests/test_audit_repo_adoption.py tests/test_render_usage_row.py -q
+python3 scripts/codex_doctor.py
+python3 scripts/render_usage_row.py baseline
+python3 scripts/render_usage_row.py pilot --pilot observability
+python3 scripts/render_usage_row.py pilot --pilot external-component-intake
+python3 scripts/render_usage_row.py pilot --pilot subagent-contract
+python3 scripts/render_usage_row.py pilot --pilot agent-lifecycle-ledger
+python3 scripts/render_usage_row.py pilot --pilot agent-eval-evidence
+python3 scripts/audit_external_component.py skills/skill-plugin-intake-review
+```
+
+验证 release 包 checksum：
+
+```bash
+cd releases
+shasum -a 256 -c codex-workflow-kit-2026.06.12.2.tar.gz.sha256
+```
+
+验证 toolkit 自身测试：
+
+```bash
+python3 -m pytest tests/test_verify_toolkit.py tests/test_verify_live_install.py tests/test_render_usage_row.py tests/test_codex_doctor.py tests/test_audit_repo_adoption.py tests/test_audit_external_component.py tests/test_benchmark_skill_polish.py tests/test_benchmark_agent_contract.py -q
+```
+
+验证 repo context pack 模板：
+
+```bash
 cd repo-template
 python3 scripts/verify_context_pack.py
 python3 -m pytest tests/test_verify_context_pack.py -q
@@ -35,105 +84,98 @@ python3 -m pytest tests/test_verify_context_pack.py -q
 
 ```text
 Workflow toolkit OK
-Live install OK (12 files checked)
+Live install OK (15 files checked)
+Codex doctor OK
 Context pack OK
 ```
 
-### 3. 10 分钟流程：应用到新 repo
+`verify_toolkit.py`、`verify_live_install.py`、`codex_doctor.py` 和 `verify_context_pack.py` 都是只读验证：不联网、不安装外部工具、不启用 hooks、不启动 MCP、不写外部配置。`codex_doctor.py` 只汇总 live install drift 和活跃插件/native-host/plugin-cache 路径是否指向其他 macOS 用户目录。
 
-第 0-2 分钟：只读审计。
+`audit_external_component.py` 也是只读审查：不安装外部 skill/plugin/MCP/hook，不启用外部工具，不写目标组件，只输出 `promote`、`pilot`、`repo-local`、`hold` 或 `reject` 建议。
 
-```bash
-python3 scripts/audit_repo_adoption.py /path/to/repo
-```
+## 3. 首次应用到新 repo 的 10 分钟流程
 
-第 2-5 分钟：如果审计建议为 `repo-only-install`，安装 context pack。
+第 0-2 分钟：安装前检查。
 
 ```bash
-./install.sh --repo-only --repo /path/to/repo --dry-run
-./install.sh --repo-only --repo /path/to/repo --backup
-```
-
-第 5-8 分钟：验证目标 repo。
-
-```bash
-cd /path/to/repo
-python3 scripts/verify_context_pack.py
-```
-
-第 8-10 分钟：追加 baseline usage 行。
-
-```bash
-/path/to/codex-workflow-kit/scripts/render_usage_row.py baseline >> docs/codex-usage.md
-```
-
-首次任务建议选择一个 M 级真实小任务：先读 repo context pack，再做最小实现，运行 targeted verification，最后只把可复用流程信号记录到 `docs/codex-usage.md`。
-
-## English
-
-### 1. Install on this machine
-
-```bash
-git clone https://github.com/junweiwu0224/codex-workflow-kit.git
 cd codex-workflow-kit
 python3 scripts/verify_toolkit.py
 ./install.sh --dry-run
-./install.sh --backup
-python3 scripts/verify_live_install.py
 ```
 
-Default install locations:
-
-```text
-~/.codex/AGENTS.md
-~/.agents/skills/
-```
-
-### 2. Verify
+第 2-4 分钟：安装全局规则和个人 skills。
 
 ```bash
-python3 scripts/verify_toolkit.py
+./install.sh
 python3 scripts/verify_live_install.py
-python3 -m pytest tests/test_verify_toolkit.py tests/test_verify_live_install.py tests/test_audit_repo_adoption.py tests/test_render_usage_row.py -q
-cd repo-template
-python3 scripts/verify_context_pack.py
-python3 -m pytest tests/test_verify_context_pack.py -q
+python3 scripts/codex_doctor.py
 ```
 
-Expected key output:
-
-```text
-Workflow toolkit OK
-Live install OK (12 files checked)
-Context pack OK
-```
-
-### 3. Apply to a new repo in 10 minutes
-
-Minute 0-2: run a read-only audit.
-
-```bash
-python3 scripts/audit_repo_adoption.py /path/to/repo
-```
-
-Minute 2-5: if the recommendation is `repo-only-install`, install the context pack.
+第 4-6 分钟：给目标 repo 安装 context pack 模板。
 
 ```bash
 ./install.sh --repo-only --repo /path/to/repo --dry-run
 ./install.sh --repo-only --repo /path/to/repo --backup
 ```
 
-Minute 5-8: verify the target repo.
+第 6-8 分钟：在目标 repo 验证模板。
 
 ```bash
 cd /path/to/repo
 python3 scripts/verify_context_pack.py
 ```
 
-Minute 8-10: append a baseline usage row.
+如果项目使用虚拟环境，改用项目真实 Python：
 
 ```bash
+.venv/bin/python scripts/verify_context_pack.py
+```
+
+第 8-10 分钟：让 Codex 首次读取并校准 repo context pack。
+
+```bash
+cd /path/to/repo
 /path/to/codex-workflow-kit/scripts/render_usage_row.py baseline >> docs/codex-usage.md
 ```
 
-For the first real task, choose a small M-level change: read the repo context pack, implement the smallest safe change, run targeted verification, and record only reusable workflow signals in `docs/codex-usage.md`.
+如首次任务包含 V2.1 试点，例如 usage/session 观测、subagent prompt cards 或 MCP/code graph pilot，先只记录候选试用，不启用默认自动化：
+
+```bash
+/path/to/codex-workflow-kit/scripts/render_usage_row.py pilot --pilot observability >> docs/codex-usage.md
+/path/to/codex-workflow-kit/scripts/render_usage_row.py pilot --pilot subagents >> docs/codex-usage.md
+/path/to/codex-workflow-kit/scripts/render_usage_row.py pilot --pilot mcp-code-graph >> docs/codex-usage.md
+/path/to/codex-workflow-kit/scripts/render_usage_row.py pilot --pilot codegraph >> docs/codex-usage.md
+/path/to/codex-workflow-kit/scripts/render_usage_row.py pilot --pilot memory-recall >> docs/codex-usage.md
+/path/to/codex-workflow-kit/scripts/render_usage_row.py pilot --pilot external-component-intake >> docs/codex-usage.md
+/path/to/codex-workflow-kit/scripts/render_usage_row.py pilot --pilot subagent-contract >> docs/codex-usage.md
+/path/to/codex-workflow-kit/scripts/render_usage_row.py pilot --pilot agent-lifecycle-ledger >> docs/codex-usage.md
+/path/to/codex-workflow-kit/scripts/render_usage_row.py pilot --pilot agent-eval-evidence >> docs/codex-usage.md
+```
+
+首次打开目标 repo 后，给 Codex 的启动提示可以是：
+
+```text
+请先做 repo onboarding：阅读 AGENTS.md、docs/commands.md、docs/testing.md、docs/quality-gates.md、docs/architecture.md，确认当前仓库的验证命令和风险边界。
+```
+
+首次任务建议选择一个 M 级真实任务，要求 Codex：
+
+```text
+按当前 workflow 执行一个真实小改动：先读 repo context pack，再做最小实现，运行 targeted verification，最后把流程收益和问题记录到 docs/codex-usage.md。
+```
+
+## 4. 首次落地检查点
+
+完成第一次 repo 应用后，确认：
+
+- Codex 能看到 `repo-onboarding`、`spec-kit-xl`、`debug-loop`、`frontend-qa`、`decision-record`、`completion-review`、`security-review`、`dependency-upgrade-review`、`research-brief`、`skill-plugin-intake-review`、`release-readiness`。
+- `python3 scripts/verify_live_install.py` 能确认当前机器的全局 AGENTS、11 个 skill 入口和 packaged skill assets 与 output 包一致，并确认活跃 Codex/Chrome 插件、native host 和 plugin cache symlink 没有指向其他 macOS 用户目录。
+- `python3 scripts/codex_doctor.py` 输出 `Codex doctor OK`。
+- 目标 repo 有 `AGENTS.md`、`docs/commands.md`、`docs/testing.md`、`docs/quality-gates.md`、`docs/codex-usage.md`。
+- 目标 repo 有 V3.1 试点文档：`docs/observability.md`、`docs/mcp-pilot.md`、`docs/codegraph-pilot.md`、`docs/memory-recall-pilot.md`，但没有默认安装外部工具、启用 hooks 或启动 MCP。
+- 目标 repo 的 `docs/subagents.md` 有 Handoff Envelope、Return Envelope、History/Input Filter、Command/Tool Risk Policy、Step Budget / Stop Condition、Lifecycle Ledger 和 No-Dispatch Decision。
+- `python3 scripts/verify_context_pack.py` 或项目真实入口能输出 `Context pack OK`。
+- 小任务没有强行启用 XL/spec-kit 流程。
+- M/L/XL 任务优先由 Superpowers 做计划、TDD、阶段推进和验证。
+- usage 记录只沉淀可复用信号，不写一次性流水账。
+- `pilot` usage row 只作为 observability、subagents、MCP/code graph、codegraph、memory-recall、external-component-intake、subagent-contract、agent-lifecycle-ledger 或 agent-eval-evidence 证据入口，不作为晋升默认行为的证明。

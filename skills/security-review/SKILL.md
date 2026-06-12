@@ -1,6 +1,15 @@
 ---
 name: security-review
 description: Use when code, configuration, dependencies, hooks, MCP/plugin setup, CI, auth, permissions, secrets, user data, payments, production settings, external writes, or trust boundaries need security review.
+risk: medium
+source_repo: personal-workflow-kit
+source_type: curated-local
+date_added: 2026-06-07
+setup: none
+write_surface: task-dependent
+auth: task-dependent
+network: task-dependent
+status: active
 ---
 
 # security-review
@@ -28,10 +37,13 @@ Do not use for normal code review with no security surface. Do not test third-pa
    - Name the trust boundary: caller, callee, data, privilege, external system, or execution context.
 
 2. Build a threat-focused checklist for this diff only.
+   - Actor gate: who can trigger the code path, workflow, hook, MCP/tool, install script, or external write; whether forks, untrusted users, copied prompts, or third-party content can influence it.
    - Inputs and validation.
    - Authn/authz and tenant/data isolation.
    - Secret handling and logging.
    - Injection or execution paths.
+   - Prompt injection and instruction mixing when external docs, web pages, issues, PR comments, tool output, model output, or repo content can influence an agent/tool action.
+   - Shell quoting and subprocess boundaries; prefer structured argv APIs, quote untrusted values, and reject string-built shell commands for user-controlled input.
    - Network, file, webhook, parser, serialization, or template exposure.
    - CI/plugin/hook/MCP/install-script trust.
    - Rollback, auditability, and least privilege.
@@ -52,6 +64,12 @@ Do not use for normal code review with no security surface. Do not test third-pa
    - Use `decision-record` when accepting risk, changing permission models, replacing auth/security libraries, disabling alerts, or creating a long-term exception.
    - Use `debug-loop` when a security scan or verification command fails.
    - Let `completion-review` confirm this review was completed before final delivery.
+
+6. Do a sandbox-last-step check before final delivery.
+   - Confirm no secret values were copied into logs, docs, tests, screenshots, prompts, memory, or final response.
+   - Confirm no production config, permissions, accounts, billing, deployment, database, migration, token, key, webhook, or external write changed without explicit user approval.
+   - For hooks, MCP servers, plugins, CI actions, or install scripts, confirm the manifest/command has bounded permissions, timeout, path scope, and rollback.
+   - If the review depended on a tool or scanner, verify findings against source files before treating them as facts.
 
 ## Output Shape
 

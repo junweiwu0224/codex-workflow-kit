@@ -1,6 +1,15 @@
 ---
 name: spec-kit-xl
-description: Use when an XL task, formal product or engineering specification, durable PRD, long-lived acceptance criteria, large cross-module initiative, architecture migration, platform rewrite, or user-explicit spec/spec-kit request needs a versioned specification before Superpowers planning and execution. Do not use for normal bug fixes, small features, routine refactors, ordinary cross-file changes, or lightweight implementation plans.
+description: Use when an XL task, formal spec, durable PRD, long-lived acceptance criteria, large migration, or user-explicit spec/spec-kit request needs a versioned specification before Superpowers planning.
+risk: low
+source_repo: personal-workflow-kit
+source_type: curated-local
+date_added: 2026-06-07
+setup: none
+write_surface: docs
+auth: none
+network: none
+status: active
 ---
 
 # spec-kit-xl
@@ -49,6 +58,7 @@ description: Use when an XL task, formal product or engineering specification, d
 3. 起草规格
    - 新规格默认保存到 `docs/specs/YYYY-MM-DD-短名称.md`。
    - 如果仓库已有 `specs/`、`.specify/`、ADR 或产品文档惯例，沿用现有位置。
+   - 需要完整模板时读取 `references/spec-template.md`；不要把长模板重新复制进 `SKILL.md`。这是本 skill 的 progressive disclosure 边界。
    - 小心写入仓库外部位置；除非用户明确要求全局模板。
 
 4. 自检规格质量
@@ -68,119 +78,7 @@ description: Use when an XL task, formal product or engineering specification, d
 
 ## 规格模板
 
-```markdown
-# <功能或项目名称> Spec
-
-状态：Draft | Review | Accepted | Planned | Implemented | Superseded
-负责人：
-创建日期：
-最后更新：
-相关链接：
-
-## 1. 背景和问题
-
-- 当前状态：
-- 用户/业务问题：
-- 为什么现在要做：
-- 证据来源：
-
-## 2. 目标
-
-- 目标 1：
-- 目标 2：
-- 成功后用户或系统能做到什么：
-
-## 3. 非目标
-
-- 本次不做：
-- 明确不改变：
-- 延后处理：
-
-## 4. 用户和场景
-
-- 主要用户：
-- 次要用户：
-- 核心场景：
-- 失败/边界场景：
-
-## 5. 需求
-
-### 功能需求
-
-- FR-1：
-- FR-2：
-
-### 非功能需求
-
-- NFR-1 性能：
-- NFR-2 安全/隐私：
-- NFR-3 可用性/可访问性：
-- NFR-4 兼容性：
-- NFR-5 可观测性：
-
-## 6. 验收标准
-
-- AC-1：
-  - Given：
-  - When：
-  - Then：
-- AC-2：
-
-## 7. 当前系统影响
-
-- 相关模块：
-- API/接口：
-- 数据模型/存储：
-- 前端/UX：
-- 后台任务/队列：
-- 配置/部署：
-- 文档/支持：
-
-## 8. 技术约束和原则
-
-- 必须遵守：
-- 推荐方向：
-- 禁止方向：
-- 需要沿用的现有模式：
-
-## 9. 风险
-
-- 安全/权限：
-- 数据一致性：
-- 迁移/回滚：
-- 性能/容量：
-- 兼容性：
-- 依赖/外部服务：
-
-## 10. 验证计划
-
-- 单元测试：
-- 集成/API 测试：
-- E2E/用户流程：
-- 前端视觉验证：
-- 性能/负载：
-- 安全/权限：
-- 手动 smoke test：
-
-## 11. 发布、迁移和回滚
-
-- 发布策略：
-- 数据迁移：
-- Feature flag：
-- 监控指标：
-- 回滚方案：
-
-## 12. 开放问题
-
-- Q1：
-- Q2：
-
-## 13. 决策记录
-
-- 已决定：
-- 待 ADR：
-- 被拒绝方案：
-```
+完整模板在 `references/spec-template.md`。只有真正要起草或更新规格时才读取它；普通路由判断、触发边界或最终检查不需要加载模板全文。
 
 ## 状态定义
 
@@ -214,3 +112,14 @@ description: Use when an XL task, formal product or engineering specification, d
 - 风险章节覆盖了任务真实风险，而不是模板填空。
 - 和 `AGENTS.md`、repo docs、已有 ADR 没有冲突。
 - 下一步能自然交给 Superpowers 写计划。
+
+## Output Shape
+
+规格阶段交付应包含：
+
+- Spec file：路径、状态、最后更新时间。
+- Scope：目标、非目标、主要用户/场景。
+- Acceptance：最关键的 AC-*，以及对应验证方式。
+- Risks：安全、数据、迁移、性能、兼容性、回滚等真实风险。
+- Open questions：会阻塞第一阶段的问题和可延后问题分开。
+- Handoff：规格何时交给 Superpowers planning/TDD/verification。

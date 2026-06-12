@@ -16,7 +16,7 @@
 |---|---|---|---|---|
 | `ccusage` | 查看本地 agent CLI 用量、token、成本、日报/月报 | 候选 | 需要量化 usage 趋势，且确认只读本地日志 | 输出不准确、读取范围过宽、增加维护成本 |
 | `CodexBar` | macOS 菜单栏或 CLI 查看 Codex/Claude/Cursor/Gemini usage/cost | 候选 | 长任务多、需要菜单栏状态或本地 dashboard | 需要不接受的授权、后台行为不清楚、数据暴露风险 |
-| `CodexMonitor` / `oh-my-codex` | 长任务监控、通知、HUD 或 hooks 增强 | 候选 | 明确有长任务错过、等待批准未发现、或多 workspace 监控痛点 | 默认 hooks 过重、阻断规则不清楚、触发外部副作用 |
+| 本地监控 / HUD 工具 | 长任务监控、通知、HUD 或 hooks 增强 | 候选 | 明确有长任务错过、等待批准未发现、或多 workspace 监控痛点 | 默认 hooks 过重、阻断规则不清楚、触发外部副作用 |
 
 ## 最小试用流程
 

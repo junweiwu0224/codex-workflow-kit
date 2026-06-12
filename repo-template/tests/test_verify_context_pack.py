@@ -22,7 +22,72 @@ def _minimal_context_pack(root: Path) -> None:
     _write(root / "docs/architecture.md", "# Architecture\n")
     _write(root / "docs/commands.md", ".venv/bin/python -m pytest -q\n")
     _write(root / "docs/testing.md", ".venv/bin/python -m pytest tests/test_example.py -q\n")
-    _write(root / "docs/quality-gates.md", ".venv/bin/python scripts/verify_context_pack.py\n")
+    _write(
+        root / "docs/quality-gates.md",
+        "\n".join(
+            [
+                ".venv/bin/python scripts/verify_context_pack.py",
+                "## Hook Review Checklist",
+                "failure mode: advisory / fail-open / blocking",
+                "## External Component Gate",
+                "Reject curl-to-shell and 自动 memory 写入 by default.",
+            ]
+        ),
+    )
+    _write(
+        root / "docs/mcp-pilot.md",
+        "\n".join(
+            [
+                "docs-only",
+                "read-only local",
+                "local write",
+                "external read",
+                "external write",
+                "destructive / production-risk",
+                "allowed tools",
+                "denied tools",
+                "rollback/fallback",
+            ]
+        ),
+    )
+    _write(
+        root / "docs/subagents.md",
+        "\n".join(
+            [
+                "## V3.1 Prompt Contract",
+                "allowed write set",
+                "off-limits",
+                "lifecycle close",
+                "implementation worker",
+                "batch worker",
+            ]
+        ),
+    )
+    _write(
+        root / "docs/codegraph-pilot.md",
+        "\n".join(
+            [
+                "# Code Graph Pilot",
+                "不是真相源",
+                "不默认安装",
+                "不默认启用",
+                "python3 scripts/render_usage_row.py pilot --pilot codegraph",
+            ]
+        ),
+    )
+    _write(
+        root / "docs/memory-recall-pilot.md",
+        "\n".join(
+            [
+                "# Memory Recall Pilot",
+                "不是真相源",
+                "不默认启用 memory hook",
+                "不默认启用 MCP memory writer",
+                "raw transcript",
+                "provenance",
+            ]
+        ),
+    )
     _write(
         root / "docs/codex-usage.md",
         "\n".join(
@@ -95,6 +160,31 @@ def test_check_context_pack_requires_mcp_pilot_document(tmp_path):
         path="docs/mcp-pilot.md",
         message="Required context pack file is missing.",
     ) in issues
+
+
+def test_check_context_pack_requires_codegraph_and_memory_pilot_documents(tmp_path):
+    _minimal_context_pack(tmp_path)
+    (tmp_path / "docs/codegraph-pilot.md").unlink(missing_ok=True)
+    (tmp_path / "docs/memory-recall-pilot.md").unlink(missing_ok=True)
+
+    issues = check_context_pack(tmp_path)
+
+    missing_paths = {issue.path for issue in issues if issue.code == "missing-required-file"}
+    assert "docs/codegraph-pilot.md" in missing_paths
+    assert "docs/memory-recall-pilot.md" in missing_paths
+
+
+def test_check_context_pack_requires_v3_1_terms(tmp_path):
+    _minimal_context_pack(tmp_path)
+    _write(tmp_path / "docs/mcp-pilot.md", "docs-only\n")
+    _write(tmp_path / "docs/subagents.md", "allowed write set\n")
+    _write(tmp_path / "docs/quality-gates.md", "Hook Review Checklist\n")
+
+    issues = check_context_pack(tmp_path)
+
+    assert any(issue.code == "missing-v3-1-mcp-permission-guidance" for issue in issues)
+    assert any(issue.code == "missing-v3-1-subagent-contract" for issue in issues)
+    assert any(issue.code == "missing-v3-1-hook-guidance" for issue in issues)
 
 
 def test_check_context_pack_flags_architecture_reference_mismatch(tmp_path):

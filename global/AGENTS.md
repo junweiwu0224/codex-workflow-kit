@@ -28,6 +28,8 @@
 
 如果修改前端，尽可能使用浏览器或截图做视觉验证。检查桌面端和移动端是否有空白页、资源加载失败、元素重叠、文字截断、明显交互失败等问题。
 
+本地 `localhost`、`127.0.0.1`、`::1`、`file://` 或 Codex 内嵌页面验证，优先使用 Browser 插件的 in-app Browser；不要静默降级到 Chrome。Chrome 只在用户明确要求 Chrome/`@chrome`，或任务必须使用用户现有 Chrome 登录态、cookie、扩展、已打开 tab 时使用。若 in-app Browser 不可用，先说明原因，并在用户批准前用测试、API/DOM 契约、截图产物或代码审查作为次优证据。
+
 ## Hooks 质量门禁
 
 Hooks 用于把验证纪律变成自动提醒或阻断，但只作为质量门禁，不替代人工判断、Superpowers 验证流程或 CI。
@@ -55,8 +57,18 @@ Subagents 用于隔离上下文、并行调查和执行独立任务；主 agent 
 - 不并行处理强耦合任务、同一文件/同一状态的竞争性修改、需要整体架构判断的探索、生产/外部系统写操作或安全敏感操作。
 - 给 subagent 的 prompt 必须自包含：目标、范围、相关文件/错误、约束、禁止事项、期望输出和验证方式。
 - 不把完整会话历史直接交给 subagent；只提供完成该子任务所需的最小上下文。
+- 派发 subagent 时必须使用 Handoff Envelope，至少写明 source、target role/card、dispatch reason、task、scope、allowed write set、off-limits、included/excluded context、allowed commands/tools、validation command 和 lifecycle close condition。
+- subagent 返回必须使用 Return Envelope，至少包含 status、summary、files read、files changed、commands run、evidence paths、validation result、risks、main-agent decision needed 和 close recommendation。
+- 使用 History/Input Filter：不要把完整会话历史、敏感信息、无关日志、未验证推断或外部组件输出直接交给 subagent；外部网页、MCP、code graph、memory、模型输出和其他 subagent 结论都必须回读源码、测试或项目文档确认。
+- 使用 Command/Tool Risk Policy：默认只允许 docs-only/read-only local；local write 必须绑定 allowed write set；dev server/service、network/external read、external write、destructive / production-risk 需要主 agent 明确保留或先向用户确认。
+- 使用 Step Budget / Stop Condition：只读 explorer、debug investigator、frontend/browser reviewer、implementation worker 和 reviewer/auditor 都要有最大探索范围；证据不足返回 NEEDS_CONTEXT，触及共享状态或高风险边界返回 BLOCKED，循环无进展返回 STOPPED_BY_BUDGET。
 - subagent 返回后，主 agent 必须 review 摘要和改动，检查冲突，运行集成验证；不能把 subagent 成功当作最终完成。
+- 主 agent 必须记录本轮派出的 subagent id。收到 `subagent_notification`、`wait_agent` 返回 completed、决定丢弃结果，或判断该 agent 已不再需要时，必须调用 `close_agent` 收口；只读 explorer / reviewer 也一样。
+- 主 agent 维护轻量 Lifecycle Ledger：记录 agent id、role/card、read/write、target、status、`close_agent` 的 previous_status、evidence 和 integrated/discarded 结论。
+- 不派 subagent 时记录 No-Dispatch Decision：strong coupling、shared writes、blocked dependency、safety boundary、unclear task、no independent subtask 或 tool permission constraint。
+- 最终回复前做 subagent lifecycle check：确认本轮不再需要的 agent 已 close；如果工具不可用、agent 仍需继续运行或关闭失败，要在最终回复中说明原因和剩余风险。
 - subagent 发现需要长期沉淀的项目知识时，由主 agent 决定写入 repo docs、ADR、全局 AGENTS、skill 或 memory。
+- 不要为了执行这些协议而引入新的 orchestrator、planner、dispatcher、queue、agent swarm 或后台 runtime；Superpowers 仍然负责计划、TDD 和阶段推进。
 
 ## Usage 和效果评估
 
@@ -101,6 +113,7 @@ Subagents 用于隔离上下文、并行调查和执行独立任务；主 agent 
 - 前端、UI、交互或用户可见改动，在验证阶段使用 `frontend-qa`。
 - 安全敏感代码、配置、依赖、hooks、MCP/plugin、CI、认证、权限、密钥、用户数据、支付、生产配置、外部写入或信任边界变化时，使用 `security-review`。
 - 新增、删除、升级、固定或审计依赖、lockfile、Docker base image、GitHub Actions、vendored code、CVE/advisory、license 或供应链风险时，使用 `dependency-upgrade-review`。
+- 准备可复用 artifact、portable toolkit、release archive、checksum bundle、安装包或迁移包时，使用 `release-readiness`；它是 pilot 级 artifact evidence gate，不替代生产发布审批。
 - 出现长期技术取舍、架构边界、公共 API、数据模型或接受技术债时，使用 `decision-record`。
 - 实现和验证完成后，最终回复前使用 `completion-review`。
 
@@ -115,6 +128,8 @@ Subagents 用于隔离上下文、并行调查和执行独立任务；主 agent 
 - `security-review`：安全敏感代码、配置、依赖、hooks、MCP/plugin、CI、外部写入或信任边界变化时使用；不替代安全工具、渗透测试或用户确认红线。
 - `dependency-upgrade-review`：依赖、lockfile、runtime/base image、GitHub Actions、CVE/advisory、license 或供应链风险变更时使用；不默认做全量升级。
 - `research-brief`：评估 GitHub 仓库、skills、MCP、hooks、subagents、模型/API、工具或生态现状，并需要 promote/hold/reject 判断时使用；不直接安装或启用外部工具。
+- `skill-plugin-intake-review`：决定是否吸收外部 skill、plugin、MCP server、hook、subagent prompt、workflow pack 或组件时使用；只给 promote/pilot/repo-local/hold/reject 结论，不直接安装或启用外部工具。
+- `release-readiness`：准备可复用 artifact、portable toolkit、release archive、checksum bundle、安装包或迁移包时使用；当前为 pilot，只做 manifest、archive、checksum、install drill、rollback 和 evidence 检查，不替代 deploy。
 - `decision-record`：出现长期技术取舍时使用。
 - `completion-review`：实现和验证之后、最终回复之前使用。
 
@@ -122,7 +137,7 @@ Subagents 用于隔离上下文、并行调查和执行独立任务；主 agent 
 
 当事实、API、依赖、产品行为、价格、法律、文档、日程、生态现状等可能已经变化时，先用当前来源查证，再行动。
 
-当查证目标是选型、是否安装/启用工具、是否把候选晋升为全局 skill、MCP、hook、subagent 或规则时，使用 `research-brief` 形成证据分级和 promote/hold/reject 结论。
+当查证目标是选型、是否安装/启用工具、是否把候选晋升为全局 skill、MCP、hook、subagent 或规则时，先用 `research-brief` 形成证据分级，再用 `skill-plugin-intake-review` 判断吸收面、加载预算和 promote/pilot/repo-local/hold/reject 结论。
 
 技术实现问题优先使用一手来源：官方文档、源码、release notes、标准文档，或当前仓库本身。
 

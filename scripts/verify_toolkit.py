@@ -23,6 +23,8 @@ EXPECTED_SKILLS = (
     "security-review",
     "dependency-upgrade-review",
     "research-brief",
+    "skill-plugin-intake-review",
+    "release-readiness",
 )
 
 REQUIRED_FILES = (
@@ -32,9 +34,26 @@ REQUIRED_FILES = (
     "VERSION",
     "MANIFEST.sha256",
     "install.sh",
+    "docs/V2-ADOPTION-EVIDENCE.md",
+    "docs/V3.1-ADOPTION-EVIDENCE.md",
+    "docs/V3.1-BENCHMARK.json",
+    "docs/V3.1-BENCHMARK.md",
+    "docs/V3.1-SKILL-POLISH-BENCHMARK.json",
+    "docs/V3.1-SKILL-POLISH-BENCHMARK.md",
+    "docs/V3.1-AGENT-RESEARCH-20.md",
+    "docs/V3.1-AGENT-CONTRACT-BENCHMARK.json",
+    "docs/V3.1-AGENT-CONTRACT-BENCHMARK.md",
+    "docs/external-component-intake.md",
+    "docs/superpowers/plans/2026-06-07-workflow-kit-v2-adoption.md",
+    "docs/superpowers/plans/2026-06-07-workflow-kit-v2-1-observability-subagents-mcp.md",
     "global/AGENTS.md",
+    "scripts/audit_external_component.py",
     "scripts/audit_repo_adoption.py",
+    "scripts/benchmark_v31_vs_v22.py",
+    "scripts/benchmark_skill_polish.py",
+    "scripts/benchmark_agent_contract.py",
     "scripts/build_release.py",
+    "scripts/codex_doctor.py",
     "scripts/render_usage_row.py",
     "scripts/verify_live_install.py",
     "repo-template/AGENTS.md",
@@ -47,12 +66,19 @@ REQUIRED_FILES = (
     "repo-template/docs/subagents.md",
     "repo-template/docs/observability.md",
     "repo-template/docs/mcp-pilot.md",
+    "repo-template/docs/codegraph-pilot.md",
+    "repo-template/docs/memory-recall-pilot.md",
     "repo-template/docs/codex-usage.md",
     "repo-template/docs/codex-playbook.md",
     "repo-template/docs/glossary.md",
     "repo-template/docs/decisions/README.md",
     "repo-template/docs/specs/README.md",
     "scripts/verify_toolkit.py",
+    "skills/spec-kit-xl/references/spec-template.md",
+    "tests/test_audit_external_component.py",
+    "tests/test_benchmark_skill_polish.py",
+    "tests/test_benchmark_agent_contract.py",
+    "tests/test_verify_toolkit.py",
 )
 
 REQUIRED_README_TERMS = (
@@ -60,32 +86,56 @@ REQUIRED_README_TERMS = (
     "VERSION",
     "MANIFEST.sha256",
     "scripts/build_release.py",
+    "scripts/codex_doctor.py",
     "install.sh",
     "--repo-only",
     "scripts/verify_toolkit.py",
     "scripts/audit_repo_adoption.py",
     "scripts/render_usage_row.py",
     "scripts/verify_live_install.py",
+    "scripts/codex_doctor.py",
     "pilot",
     "--json",
     "--markdown",
     "scripts/verify_context_pack.py",
     "WORKFLOW-REVIEW.md",
+    "docs/V3.1-ADOPTION-EVIDENCE.md",
+    "docs/V3.1-BENCHMARK.md",
+    "docs/V3.1-SKILL-POLISH-BENCHMARK.md",
+    "docs/V3.1-AGENT-RESEARCH-20.md",
+    "docs/external-component-intake.md",
+    "docs/V2-ADOPTION-EVIDENCE.md",
+    "docs/superpowers/plans/2026-06-07-workflow-kit-v2-adoption.md",
+    "docs/superpowers/plans/2026-06-07-workflow-kit-v2-1-observability-subagents-mcp.md",
+    "scripts/audit_external_component.py",
+    "scripts/benchmark_v31_vs_v22.py",
+    "scripts/benchmark_skill_polish.py",
+    "scripts/benchmark_agent_contract.py",
     "~/.codex/AGENTS.md",
     "~/.agents/skills/",
+    "11 个个人 Codex skills",
+    "release-readiness",
 )
 
 REQUIRED_WORKFLOW_REVIEW_TERMS = (
-    "Workflow Review",
-    "工作流复盘",
-    "个人 Codex 宪法",
-    "repo context pack",
-    "MCP/代码图谱/memory",
-    "hooks 质量门禁",
-    "usage/效果评估",
+    "最终路线",
+    "完成状态",
+    "可复用",
+    "候选",
+    "新机器演练",
+    "触发条件",
+    "Superpowers",
+    "spec-kit-xl",
+    "质量门禁",
+    "subagents",
     "security-review",
     "dependency-upgrade-review",
     "research-brief",
+    "skill-plugin-intake-review",
+    "V3.1",
+    "promote != install",
+    "pilot != enable",
+    "core != runtime/background",
 )
 REQUIRED_P0_SKILL_ROUTE_TERMS = (
     "security-review",
@@ -93,21 +143,316 @@ REQUIRED_P0_SKILL_ROUTE_TERMS = (
     "research-brief",
 )
 REQUIRED_QUICKSTART_TERMS = (
-    "Quickstart",
-    "快速开始",
+    "最短安装命令",
+    "最短验证命令",
     "10 分钟流程",
     "python3 scripts/verify_toolkit.py",
     "python3 scripts/verify_live_install.py",
+    "python3 scripts/codex_doctor.py",
+    "python3 scripts/audit_external_component.py",
     "scripts/render_usage_row.py baseline",
     "./install.sh --dry-run",
     "./install.sh --repo-only --repo /path/to/repo --backup",
     "python3 scripts/verify_context_pack.py",
     "docs/codex-usage.md",
+    "11 个个人 Codex skills",
+    "release-readiness",
+    "V3.1",
+)
+REQUIRED_V2_PLAN_TERMS = (
+    "Workflow Kit V2 Adoption Implementation Plan",
+    "Freeze V1 Baseline",
+    "Select 3-5 Representative Trial Repositories",
+    "Run Real M/L/XL Tasks",
+    "First Adoption Review",
+    "Evaluate Hooks Candidates",
+    "Evaluate MCP, Code Graph, and Memory",
+    "Evaluate Subagents Parallelism",
+    "Browser and Frontend QA Calibration",
+    "Prepare V2 Toolkit Update",
+    "Final V2 Verification and Migration Drill",
+)
+REQUIRED_V2_1_PLAN_TERMS = (
+    "Workflow Kit V2.1 Observability, Subagents, and MCP Pilot Implementation Plan",
+    "observability",
+    "subagent prompt cards",
+    "MCP/code graph pilot",
+    "render_usage_row pilot",
+    "no default automation",
+    "Build and Verify Release",
+)
+REQUIRED_V2_EVIDENCE_TERMS = (
+    "V2 Adoption Evidence",
+    "Baseline Verification",
+    "Trial Repo Scan",
+    "Real Usage Evidence",
+    "Promotions",
+    "Rejections",
+    "Deferred Work",
+    "install.sh --repo-only",
+    "scripts/audit_repo_adoption.py",
+    "scripts/render_usage_row.py",
+    "--json",
+    "--markdown",
+    "repo-only-install",
+    "manual-merge",
+    "dirty worktree",
+    "dirty-worktree",
+    "docs/architecture.md",
+    "Repo-specific onboarding calibration",
+    "manual-only test policy",
+    "Align Go version docs with go.mod/CI",
+    "Guard README agent instruction append snippets",
+    "Lock manual-only Go test policy with static docs test",
+    "Validate CLAUDE.md repo paths with static docs test",
+    "Make raw workflow downloads fail fast",
+    "First Adoption Review",
+    "Second Adoption Review",
+    "Final V2 Completion Audit",
+    "V2.1 Tooling Layer",
+    "V2.2 P0 Specialist Skills",
+    "V2.2 Closeout",
+    "scripts/verify_live_install.py",
+    "9 skills verified",
+    "skill metadata/boundary quality gates",
+    "observability",
+    "prompt cards",
+    "MCP/code graph pilot",
+    "render_usage_row.py pilot",
+    "no default automation",
+)
+REQUIRED_V3_1_EVIDENCE_TERMS = (
+    "V3.1 Adoption Evidence",
+    "Core Semantics",
+    "promote != install",
+    "pilot != enable",
+    "core != runtime/background",
+    "External Component Intake",
+    "Code Graph Pilot",
+    "Memory Recall Pilot",
+    "Hook Discipline",
+    "Subagent Prompt Cards",
+    "Agent Research 20",
+    "Agent Self-Diagnosis",
+    "Skill Polish",
+    "Reject Lines",
+    "11 skills verified",
+    "release-readiness",
+    "Feedback Loop First",
+    "Output Shape",
+    "accessibility",
+    "references/spec-template.md",
+    "scripts/audit_external_component.py",
+    "scripts/benchmark_skill_polish.py",
+    "scripts/benchmark_agent_contract.py",
+    "scripts/verify_toolkit.py",
+    "scripts/verify_context_pack.py",
+    "no default MCP server",
+    "no default memory writer",
+    "no default hook stack",
+)
+REQUIRED_V3_1_BENCHMARK_TERMS = (
+    "V3.1 vs V2.2 Benchmark",
+    "Repetitions",
+    "package-health",
+    "repo-context-pack",
+    "live-install-drill",
+    "external-component-intake",
+    "Runtime delta",
+    "Coverage delta",
+    "Issue-detection delta",
+)
+REQUIRED_SKILL_POLISH_BENCHMARK_TERMS = (
+    "V3.1 Skill Polish Benchmark",
+    "pre-polish",
+    "post-polish",
+    "Skill count",
+    "Output Shape",
+    "Accessibility coverage",
+    "Release readiness",
+    "Progressive disclosure",
+    "Measured improvement",
+)
+REQUIRED_EXTERNAL_INTAKE_TERMS = (
+    "promote",
+    "pilot",
+    "repo-local",
+    "hold",
+    "reject",
+    "DAILY",
+    "LIBRARY",
+    "REJECT",
+    "license",
+    "auth",
+    "side_effect",
+    "daemon",
+    "network",
+    "install",
+    "superpowers_overlap",
+    "private_path_secret",
+    "promote` 不等于 install",
+    "默认拒绝",
+    "orchestrator",
+    "planner",
+    "dispatcher",
+    "queue",
+    "implementation-plan",
+    "默认 MCP server",
+    "默认 memory writer",
+    "curl-to-shell",
+    "GPL/unknown license",
+)
+REQUIRED_V3_1_MCP_PERMISSION_TERMS = (
+    "docs-only",
+    "read-only local",
+    "local write",
+    "external read",
+    "external write",
+    "destructive / production-risk",
+    "allowed tools",
+    "denied tools",
+    "rollback/fallback",
+    "pilot` 不等于启用",
+)
+REQUIRED_V3_1_HOOK_TERMS = (
+    "Hook Review Checklist",
+    "advisory",
+    "fail-open",
+    "blocking",
+    "External Component Gate",
+    "curl-to-shell",
+    "自动 memory 写入",
+    "后台 watcher",
+    "长期 daemon",
+)
+REQUIRED_V3_1_CODEGRAPH_TERMS = (
+    "Code Graph Pilot",
+    "orientation",
+    "不是真相源",
+    "rg",
+    "源码回读",
+    "不默认安装",
+    "不默认启用",
+    "python3 scripts/render_usage_row.py pilot --pilot codegraph",
+)
+REQUIRED_V3_1_MEMORY_TERMS = (
+    "Memory Recall Pilot",
+    "不是真相源",
+    "repo `AGENTS.md`",
+    "不默认启用 memory hook",
+    "不默认启用 MCP memory writer",
+    "raw transcript",
+    "provenance",
+    "python3 scripts/render_usage_row.py pilot --pilot memory-recall",
+)
+REQUIRED_V3_1_SUBAGENT_TERMS = (
+    "V3.1 Prompt Contract",
+    "Handoff Envelope",
+    "Return Envelope",
+    "History/Input Filter",
+    "Command/Tool Risk Policy",
+    "Step Budget / Stop Condition",
+    "Lifecycle Ledger",
+    "No-Dispatch Decision",
+    "allowed write set",
+    "off-limits",
+    "lifecycle close",
+    "implementation worker",
+    "coverage-gap auditor",
+    "batch worker",
+)
+REQUIRED_AGENT_CONTRACT_TERMS = REQUIRED_V3_1_SUBAGENT_TERMS[1:8]
+REQUIRED_V3_1_AGENT_RESEARCH_TERMS = (
+    "V3.1 Agent Research 20",
+    "20 real git checkouts",
+    "Handoff Envelope",
+    "Return Envelope",
+    "History/Input Filter",
+    "Command/Tool Risk Policy",
+    "Step Budget / Stop Condition",
+    "Lifecycle Ledger",
+    "No-Dispatch Decision",
+    "Promote Now",
+    "Pilot",
+    "Hold / Reject",
+    "Why This Does Not Conflict",
+    "langchain-ai/langgraph",
+    "microsoft/autogen",
+    "openai/openai-agents-python",
+    "browser-use/browser-use",
+    "langfuse/langfuse",
+)
+REQUIRED_AGENT_CONTRACT_BENCHMARK_TERMS = (
+    "V3.1 Agent Contract Benchmark",
+    "pre-agent-contract",
+    "post-agent-contract",
+    "Handoff Envelope",
+    "Return Envelope",
+    "Lifecycle Ledger",
+    "Measured improvement",
+)
+REQUIRED_AGENT_SELF_DIAGNOSIS_TERMS = (
+    "goal drift",
+    "context drift",
+    "unsupported claim",
+    "subagent lifecycle",
+)
+REQUIRED_DEBUG_LOOP_POLISH_TERMS = (
+    "Feedback Loop First",
+    "failing test",
+    "captured trace replay",
+    "property/fuzz loop",
+    "regression test",
+    "deterministic loop",
+    "Output Shape",
+)
+REQUIRED_COMPLETION_REVIEW_POLISH_TERMS = (
+    "Artifact / Release Evidence Gate",
+    "archive listing",
+    "checksum",
+    "install docs",
+    "Output Shape",
+)
+REQUIRED_FRONTEND_ACCESSIBILITY_TERMS = (
+    "Keyboard",
+    "Focus",
+    "Contrast",
+    "ARIA",
+    "Reduced motion",
+    "Output Shape",
+)
+REQUIRED_DECISION_RECORD_POLISH_TERMS = (
+    "Output Shape",
+    "Completion Conditions",
+    "Superseded",
+    "Consequences",
+)
+REQUIRED_REPO_ONBOARDING_POLISH_TERMS = (
+    "minimal context pack",
+    "Core context pack",
+    "Optional context pack",
+    "Output Shape",
+)
+REQUIRED_SPEC_PROGRESSIVE_DISCLOSURE_TERMS = (
+    "references/spec-template.md",
+    "progressive disclosure",
+    "Output Shape",
+)
+REQUIRED_RELEASE_READINESS_TERMS = (
+    "status: pilot",
+    "artifact quality gate",
+    "manifest",
+    "archive",
+    "checksum",
+    "install drill",
+    "live install",
+    "rollback",
+    "Output Shape",
+    "不要",
 )
 REQUIRED_PROACTIVE_SUBAGENT_TERMS = (
-    "subagent suitability check",
     "长期授权",
-    "没有再次说",
+    "subagent suitability check",
     "L/XL",
     "已有实施计划",
     "跨模块",
@@ -118,7 +463,7 @@ REQUIRED_PROACTIVE_SUBAGENT_TERMS = (
     "主 agent",
     "最终集成",
     "diff review",
-    "每 2-3 个切片",
+    "垂直切片",
     "只读 explorer",
 )
 REQUIRED_SUBAGENT_PROMPT_CARDS = (
@@ -146,7 +491,15 @@ REQUIRED_MCP_PILOT_TERMS = (
     "回滚",
     "render_usage_row.py pilot --pilot mcp-code-graph",
 )
-
+REQUIRED_FRONTEND_BROWSER_ROUTING_TERMS = (
+    "in-app Browser",
+    "localhost",
+    "不要静默降级到 Chrome",
+    "用户明确要求 Chrome",
+    "现有 Chrome 登录态",
+    "不要硬编码 Browser 插件缓存路径",
+    "scripts/browser-client.mjs",
+)
 GENERATED_PATTERNS = (
     "__pycache__",
     ".pytest_cache",
@@ -170,7 +523,21 @@ SECRET_RE = re.compile(
     r"(?:api[_-]?key|secret|password)\s*=",
     re.IGNORECASE,
 )
-ALLOWED_SECRET_FIXTURES = ("sk-thisisnotarealkeybutshouldbeflagged",)
+PRIVATE_HOME_PATH_RE = re.compile(r"/(?:Users|home)/(?!\[|\<|path/to/)([A-Za-z0-9._-]+)(?:/|$)")
+HARDCODED_BROWSER_PLUGIN_PATH_RE = re.compile(
+    r"/Users/[^/]+/\.codex/plugins/cache/openai-bundled/browser/|"
+    r"openai-bundled/browser/\d+\.\d+\.\d+/scripts/browser-client\.mjs"
+)
+ALLOWED_SECRET_FIXTURES = ("sk-thisisnotarealkeybutshouldbeflagged", "api_key=bad")
+ALLOWED_PRIVATE_PATH_FIXTURES = (
+    '"/Users/[^',
+    'r"/Users/[^',
+    '"/home/[^',
+    'r"/home/[^',
+    '"/Users/"',
+    '"/home/"',
+    "/path/to/",
+)
 SKILL_BOUNDARY_TERMS = (
     "不要",
     "Do not",
@@ -243,11 +610,11 @@ def _expected_manifest(root: Path) -> str:
     return "\n".join(lines) + "\n"
 
 
-def _load_context_pack_module(root: Path):
-    script = root / "repo-template/scripts/verify_context_pack.py"
-    spec = importlib.util.spec_from_file_location("verify_context_pack_template", script)
+def _load_script_module(root: Path, relative: str, module_name: str):
+    script = root / relative
+    spec = importlib.util.spec_from_file_location(module_name, script)
     if spec is None or spec.loader is None:
-        raise RuntimeError("Could not load repo-template/scripts/verify_context_pack.py")
+        raise RuntimeError(f"Could not load {relative}")
     module = importlib.util.module_from_spec(spec)
     sys.modules[spec.name] = module
     old_dont_write_bytecode = sys.dont_write_bytecode
@@ -259,8 +626,16 @@ def _load_context_pack_module(root: Path):
     return module
 
 
+def _load_context_pack_module(root: Path):
+    return _load_script_module(root, "repo-template/scripts/verify_context_pack.py", "verify_context_pack_template")
+
+
 def _secret_line_allowed(line: str) -> bool:
     return any(fixture in line for fixture in ALLOWED_SECRET_FIXTURES)
+
+
+def _private_path_line_allowed(line: str) -> bool:
+    return any(fixture in line for fixture in ALLOWED_PRIVATE_PATH_FIXTURES)
 
 
 def _parse_skill_frontmatter(text: str) -> dict[str, str]:
@@ -307,8 +682,12 @@ def check_toolkit(root: str | Path = ".") -> list[ToolkitIssue]:
 
     for relative in (
         "install.sh",
+        "scripts/audit_external_component.py",
         "scripts/audit_repo_adoption.py",
+        "scripts/benchmark_skill_polish.py",
+        "scripts/benchmark_agent_contract.py",
         "scripts/build_release.py",
+        "scripts/codex_doctor.py",
         "scripts/render_usage_row.py",
         "scripts/verify_live_install.py",
         "scripts/verify_toolkit.py",
@@ -448,6 +827,146 @@ def check_toolkit(root: str | Path = ".") -> list[ToolkitIssue]:
                 )
             )
 
+    v2_plan_path = root / "docs/superpowers/plans/2026-06-07-workflow-kit-v2-adoption.md"
+    v2_plan = _read_text(v2_plan_path) if v2_plan_path.exists() else ""
+    for term in REQUIRED_V2_PLAN_TERMS:
+        if v2_plan and term not in v2_plan:
+            issues.append(
+                ToolkitIssue(
+                    severity="error",
+                    code="v2-plan-missing-term",
+                    path="docs/superpowers/plans/2026-06-07-workflow-kit-v2-adoption.md",
+                    message=f"V2 adoption plan must document {term}.",
+                )
+            )
+
+    v2_1_plan_path = root / "docs/superpowers/plans/2026-06-07-workflow-kit-v2-1-observability-subagents-mcp.md"
+    v2_1_plan = _read_text(v2_1_plan_path) if v2_1_plan_path.exists() else ""
+    for term in REQUIRED_V2_1_PLAN_TERMS:
+        if v2_1_plan and term not in v2_1_plan:
+            issues.append(
+                ToolkitIssue(
+                    severity="error",
+                    code="v2-1-plan-missing-term",
+                    path="docs/superpowers/plans/2026-06-07-workflow-kit-v2-1-observability-subagents-mcp.md",
+                    message=f"V2.1 implementation plan must document {term}.",
+                )
+            )
+
+    v2_evidence_path = root / "docs/V2-ADOPTION-EVIDENCE.md"
+    v2_evidence = _read_text(v2_evidence_path) if v2_evidence_path.exists() else ""
+    for term in REQUIRED_V2_EVIDENCE_TERMS:
+        if v2_evidence and term not in v2_evidence:
+            issues.append(
+                ToolkitIssue(
+                    severity="error",
+                    code="v2-evidence-missing-term",
+                    path="docs/V2-ADOPTION-EVIDENCE.md",
+                    message=f"V2 adoption evidence must document {term}.",
+                )
+            )
+
+    v3_1_evidence_path = root / "docs/V3.1-ADOPTION-EVIDENCE.md"
+    v3_1_evidence = _read_text(v3_1_evidence_path) if v3_1_evidence_path.exists() else ""
+    for term in REQUIRED_V3_1_EVIDENCE_TERMS:
+        if v3_1_evidence and term not in v3_1_evidence:
+            issues.append(
+                ToolkitIssue(
+                    severity="error",
+                    code="v3-1-evidence-missing-term",
+                    path="docs/V3.1-ADOPTION-EVIDENCE.md",
+                    message=f"V3.1 adoption evidence must document {term}.",
+                )
+            )
+    for term in ("Agent Research 20", "docs/V3.1-AGENT-RESEARCH-20.md", "Handoff Envelope", "Return Envelope"):
+        if v3_1_evidence and term not in v3_1_evidence:
+            issues.append(
+                ToolkitIssue(
+                    severity="error",
+                    code="v3-1-evidence-missing-agent-contract-term",
+                    path="docs/V3.1-ADOPTION-EVIDENCE.md",
+                    message=f"V3.1 adoption evidence must document agent contract term: {term}.",
+                )
+            )
+    expected_release_evidence = f"codex-workflow-kit-{version_text}.tar.gz: OK" if version_text else ""
+    if v3_1_evidence and expected_release_evidence and expected_release_evidence not in v3_1_evidence:
+        issues.append(
+            ToolkitIssue(
+                severity="error",
+                code="v3-1-evidence-release-mismatch",
+                path="docs/V3.1-ADOPTION-EVIDENCE.md",
+                message=f"V3.1 adoption evidence must document {expected_release_evidence}.",
+            )
+        )
+
+    v3_1_benchmark_path = root / "docs/V3.1-BENCHMARK.md"
+    v3_1_benchmark = _read_text(v3_1_benchmark_path) if v3_1_benchmark_path.exists() else ""
+    for term in REQUIRED_V3_1_BENCHMARK_TERMS:
+        if v3_1_benchmark and term not in v3_1_benchmark:
+            issues.append(
+                ToolkitIssue(
+                    severity="error",
+                    code="v3-1-benchmark-missing-term",
+                    path="docs/V3.1-BENCHMARK.md",
+                    message=f"V3.1 benchmark must document {term}.",
+                )
+            )
+
+    skill_polish_benchmark_path = root / "docs/V3.1-SKILL-POLISH-BENCHMARK.md"
+    skill_polish_benchmark = _read_text(skill_polish_benchmark_path) if skill_polish_benchmark_path.exists() else ""
+    for term in REQUIRED_SKILL_POLISH_BENCHMARK_TERMS:
+        if skill_polish_benchmark and term not in skill_polish_benchmark:
+            issues.append(
+                ToolkitIssue(
+                    severity="error",
+                    code="skill-polish-benchmark-missing-term",
+                    path="docs/V3.1-SKILL-POLISH-BENCHMARK.md",
+                    message=f"Skill polish benchmark must document {term}.",
+                )
+            )
+
+    agent_research_path = root / "docs/V3.1-AGENT-RESEARCH-20.md"
+    agent_research = _read_text(agent_research_path) if agent_research_path.exists() else ""
+    for term in REQUIRED_V3_1_AGENT_RESEARCH_TERMS:
+        if agent_research and term not in agent_research:
+            issues.append(
+                ToolkitIssue(
+                    severity="error",
+                    code="agent-research-missing-term",
+                    path="docs/V3.1-AGENT-RESEARCH-20.md",
+                    message=f"Agent research evidence must document {term}.",
+                )
+            )
+
+    agent_contract_benchmark_path = root / "docs/V3.1-AGENT-CONTRACT-BENCHMARK.md"
+    agent_contract_benchmark = _read_text(agent_contract_benchmark_path) if agent_contract_benchmark_path.exists() else ""
+    for term in REQUIRED_AGENT_CONTRACT_BENCHMARK_TERMS:
+        if agent_contract_benchmark and term not in agent_contract_benchmark:
+            issues.append(
+                ToolkitIssue(
+                    severity="error",
+                    code="agent-contract-benchmark-missing-term",
+                    path="docs/V3.1-AGENT-CONTRACT-BENCHMARK.md",
+                    message=f"Agent contract benchmark must document {term}.",
+                )
+            )
+
+    external_intake = (
+        _read_text(root / "docs/external-component-intake.md")
+        if (root / "docs/external-component-intake.md").exists()
+        else ""
+    )
+    for term in REQUIRED_EXTERNAL_INTAKE_TERMS:
+        if external_intake and term not in external_intake:
+            issues.append(
+                ToolkitIssue(
+                    severity="error",
+                    code="external-intake-missing-term",
+                    path="docs/external-component-intake.md",
+                    message=f"External component intake must document {term}.",
+                )
+            )
+
     global_agents = _read_text(root / "global/AGENTS.md") if (root / "global/AGENTS.md").exists() else ""
     for term in ("Superpowers", "spec-kit-xl", "completion-review", "任务分级"):
         if term not in global_agents:
@@ -469,6 +988,15 @@ def check_toolkit(root: str | Path = ".") -> list[ToolkitIssue]:
                     message=f"Global AGENTS.md must route the P0 specialist skill: {term}.",
                 )
             )
+    if global_agents and not all(term in global_agents for term in ("in-app Browser", "不要静默降级到 Chrome", "用户明确要求 Chrome")):
+        issues.append(
+            ToolkitIssue(
+                severity="error",
+                code="global-agents-missing-browser-routing",
+                path="global/AGENTS.md",
+                message="Global AGENTS.md must route local frontend QA through in-app Browser and prevent silent Chrome fallback.",
+            )
+        )
 
     quality_gates = (
         _read_text(root / "repo-template/docs/quality-gates.md")
@@ -491,6 +1019,16 @@ def check_toolkit(root: str | Path = ".") -> list[ToolkitIssue]:
                 code="quality-gates-missing-static-doc-contract-guidance",
                 path="repo-template/docs/quality-gates.md",
                 message="Quality gate template must document static docs/content-contract tests as repo-specific candidates.",
+            )
+        )
+    frontend_qa = _read_text(root / "skills/frontend-qa/SKILL.md") if (root / "skills/frontend-qa/SKILL.md").exists() else ""
+    if frontend_qa and not all(term in frontend_qa for term in REQUIRED_FRONTEND_BROWSER_ROUTING_TERMS):
+        issues.append(
+            ToolkitIssue(
+                severity="error",
+                code="frontend-qa-missing-browser-routing",
+                path="skills/frontend-qa/SKILL.md",
+                message="frontend-qa must route local QA through in-app Browser and prevent silent Chrome fallback.",
             )
         )
 
@@ -523,7 +1061,6 @@ def check_toolkit(root: str | Path = ".") -> list[ToolkitIssue]:
                 message="Observability guidance must keep tools optional, local-first, and evidence-recorded.",
             )
         )
-
     mcp_pilot = (
         _read_text(root / "repo-template/docs/mcp-pilot.md")
         if (root / "repo-template/docs/mcp-pilot.md").exists()
@@ -553,6 +1090,72 @@ def check_toolkit(root: str | Path = ".") -> list[ToolkitIssue]:
                     ),
                 )
             )
+        if text and not all(term in text for term in REQUIRED_AGENT_CONTRACT_TERMS):
+            issues.append(
+                ToolkitIssue(
+                    severity="error",
+                    code="subagents-missing-agent-contract-guidance",
+                    path=relative,
+                    message=(
+                        "Subagent guidance must document handoff, return, history/input filtering, "
+                        "tool risk policy, step budget, lifecycle ledger, and no-dispatch decisions."
+                    ),
+                )
+            )
+    if mcp_pilot:
+        for term in REQUIRED_V3_1_MCP_PERMISSION_TERMS:
+            if term not in mcp_pilot:
+                issues.append(
+                    ToolkitIssue(
+                        severity="error",
+                        code="mcp-pilot-missing-v3-1-permission-term",
+                        path="repo-template/docs/mcp-pilot.md",
+                        message=f"MCP/plugin pilot guidance must document V3.1 permission term: {term}.",
+                    )
+                )
+
+    codegraph_pilot = (
+        _read_text(root / "repo-template/docs/codegraph-pilot.md")
+        if (root / "repo-template/docs/codegraph-pilot.md").exists()
+        else ""
+    )
+    for term in REQUIRED_V3_1_CODEGRAPH_TERMS:
+        if codegraph_pilot and term not in codegraph_pilot:
+            issues.append(
+                ToolkitIssue(
+                    severity="error",
+                    code="codegraph-pilot-missing-term",
+                    path="repo-template/docs/codegraph-pilot.md",
+                    message=f"Code graph pilot guidance must document {term}.",
+                )
+            )
+
+    memory_recall = (
+        _read_text(root / "repo-template/docs/memory-recall-pilot.md")
+        if (root / "repo-template/docs/memory-recall-pilot.md").exists()
+        else ""
+    )
+    for term in REQUIRED_V3_1_MEMORY_TERMS:
+        if memory_recall and term not in memory_recall:
+            issues.append(
+                ToolkitIssue(
+                    severity="error",
+                    code="memory-recall-pilot-missing-term",
+                    path="repo-template/docs/memory-recall-pilot.md",
+                    message=f"Memory recall pilot guidance must document {term}.",
+                )
+            )
+
+    for term in REQUIRED_V3_1_HOOK_TERMS:
+        if quality_gates and term not in quality_gates:
+            issues.append(
+                ToolkitIssue(
+                    severity="error",
+                    code="quality-gates-missing-v3-1-hook-term",
+                    path="repo-template/docs/quality-gates.md",
+                    message=f"Quality gate template must document V3.1 hook discipline term: {term}.",
+                )
+            )
 
     subagents = (
         _read_text(root / "repo-template/docs/subagents.md")
@@ -568,6 +1171,162 @@ def check_toolkit(root: str | Path = ".") -> list[ToolkitIssue]:
                 message="Subagent guidance must include copy-ready prompt cards for common safe delegation roles.",
             )
         )
+    for term in REQUIRED_V3_1_SUBAGENT_TERMS:
+        if subagents and term not in subagents:
+            issues.append(
+                ToolkitIssue(
+                    severity="error",
+                    code="subagents-missing-v3-1-contract-term",
+                    path="repo-template/docs/subagents.md",
+                    message=f"Subagent guidance must include V3.1 prompt contract term: {term}.",
+                )
+            )
+
+    debug_loop = _read_text(root / "skills/debug-loop/SKILL.md") if (root / "skills/debug-loop/SKILL.md").exists() else ""
+    completion_review = (
+        _read_text(root / "skills/completion-review/SKILL.md")
+        if (root / "skills/completion-review/SKILL.md").exists()
+        else ""
+    )
+    for term in REQUIRED_AGENT_SELF_DIAGNOSIS_TERMS:
+        if debug_loop and term not in debug_loop:
+            issues.append(
+                ToolkitIssue(
+                    severity="error",
+                    code="debug-loop-missing-agent-self-diagnosis",
+                    path="skills/debug-loop/SKILL.md",
+                    message=f"debug-loop must cover agent self-diagnosis term: {term}.",
+                )
+            )
+        if completion_review and term not in completion_review:
+            issues.append(
+                ToolkitIssue(
+                    severity="error",
+                    code="completion-review-missing-agent-self-diagnosis",
+                    path="skills/completion-review/SKILL.md",
+                    message=f"completion-review must cover final self-diagnosis term: {term}.",
+                )
+            )
+
+    for term in REQUIRED_DEBUG_LOOP_POLISH_TERMS:
+        if debug_loop and term not in debug_loop:
+            issues.append(
+                ToolkitIssue(
+                    severity="error",
+                    code="debug-loop-missing-feedback-loop-polish",
+                    path="skills/debug-loop/SKILL.md",
+                    message=f"debug-loop must preserve feedback-loop-first polish term: {term}.",
+                )
+            )
+    for term in REQUIRED_COMPLETION_REVIEW_POLISH_TERMS:
+        if completion_review and term not in completion_review:
+            issues.append(
+                ToolkitIssue(
+                    severity="error",
+                    code="completion-review-missing-artifact-gate",
+                    path="skills/completion-review/SKILL.md",
+                    message=f"completion-review must preserve artifact/release evidence term: {term}.",
+                )
+            )
+    for term in REQUIRED_FRONTEND_ACCESSIBILITY_TERMS:
+        if frontend_qa and term not in frontend_qa:
+            issues.append(
+                ToolkitIssue(
+                    severity="error",
+                    code="frontend-qa-missing-accessibility-polish",
+                    path="skills/frontend-qa/SKILL.md",
+                    message=f"frontend-qa must preserve accessibility polish term: {term}.",
+                )
+            )
+
+    skill_polish_checks = (
+        (
+            "decision-record",
+            "skills/decision-record/SKILL.md",
+            REQUIRED_DECISION_RECORD_POLISH_TERMS,
+            "decision-record-missing-output-contract",
+        ),
+        (
+            "repo-onboarding",
+            "skills/repo-onboarding/SKILL.md",
+            REQUIRED_REPO_ONBOARDING_POLISH_TERMS,
+            "repo-onboarding-missing-minimal-context-pack",
+        ),
+        (
+            "spec-kit-xl",
+            "skills/spec-kit-xl/SKILL.md",
+            REQUIRED_SPEC_PROGRESSIVE_DISCLOSURE_TERMS,
+            "spec-kit-xl-missing-progressive-disclosure",
+        ),
+        (
+            "release-readiness",
+            "skills/release-readiness/SKILL.md",
+            REQUIRED_RELEASE_READINESS_TERMS,
+            "release-readiness-missing-contract",
+        ),
+    )
+    for _skill_name, relative, required_terms, code in skill_polish_checks:
+        text = _read_text(root / relative) if (root / relative).exists() else ""
+        for term in required_terms:
+            if text and term not in text:
+                issues.append(
+                    ToolkitIssue(
+                        severity="error",
+                        code=code,
+                        path=relative,
+                        message=f"{relative} must preserve skill polish term: {term}.",
+                    )
+                )
+
+    spec_template = root / "skills/spec-kit-xl/references/spec-template.md"
+    if spec_template.exists():
+        spec_template_text = _read_text(spec_template)
+        for term in ("## 1. 背景和问题", "## 6. 验收标准", "## 11. 发布、迁移和回滚"):
+            if term not in spec_template_text:
+                issues.append(
+                    ToolkitIssue(
+                        severity="error",
+                        code="spec-template-missing-section",
+                        path="skills/spec-kit-xl/references/spec-template.md",
+                        message=f"Spec template must keep section: {term}.",
+                    )
+                )
+    if (root / "skills/spec-kit-xl/assets/spec-template.md").exists():
+        issues.append(
+            ToolkitIssue(
+                severity="error",
+                code="spec-template-in-assets",
+                path="skills/spec-kit-xl/assets/spec-template.md",
+                message="Spec template must live in references/ for progressive disclosure, not assets/.",
+            )
+        )
+
+    if (root / "scripts/audit_external_component.py").exists():
+        try:
+            audit_module = _load_script_module(
+                root,
+                "scripts/audit_external_component.py",
+                "audit_external_component_template",
+            )
+            audit_report = audit_module.audit_component(root / "skills/skill-plugin-intake-review")
+            if audit_report.get("recommended_decision") == "reject":
+                issues.append(
+                    ToolkitIssue(
+                        severity="error",
+                        code="external-component-auditor-unexpected-decision",
+                        path="scripts/audit_external_component.py",
+                        message="Auditor should not reject the packaged intake skill.",
+                    )
+                )
+        except Exception as exc:
+            issues.append(
+                ToolkitIssue(
+                    severity="error",
+                    code="external-component-auditor-error",
+                    path="scripts/audit_external_component.py",
+                    message=str(exc),
+                )
+            )
 
     if (root / "repo-template/scripts/verify_context_pack.py").exists():
         try:
@@ -619,6 +1378,15 @@ def check_toolkit(root: str | Path = ".") -> list[ToolkitIssue]:
                 )
             if path.is_file() and path.stat().st_size <= 1_000_000:
                 for line_number, line in enumerate(_read_text(path).splitlines(), start=1):
+                    if HARDCODED_BROWSER_PLUGIN_PATH_RE.search(line):
+                        issues.append(
+                            ToolkitIssue(
+                                severity="error",
+                                code="hardcoded-browser-plugin-path",
+                                path=relative,
+                                message=f"Line {line_number} hardcodes a Browser plugin cache path or version.",
+                            )
+                        )
                     if SECRET_RE.search(line) and not _secret_line_allowed(line):
                         issues.append(
                             ToolkitIssue(
@@ -626,6 +1394,15 @@ def check_toolkit(root: str | Path = ".") -> list[ToolkitIssue]:
                                 code="sensitive-pattern",
                                 path=relative,
                                 message=f"Line {line_number} looks like it contains a secret.",
+                            )
+                        )
+                    if PRIVATE_HOME_PATH_RE.search(line) and not _private_path_line_allowed(line):
+                        issues.append(
+                            ToolkitIssue(
+                                severity="error",
+                                code="private-home-path",
+                                path=relative,
+                                message=f"Line {line_number} contains a private home path; use a placeholder.",
                             )
                         )
 

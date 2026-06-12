@@ -1,0 +1,92 @@
+{
+  "versions": {
+    "pre-agent-contract": "2026.06.12.1",
+    "post-agent-contract": "2026.06.12.2"
+  },
+  "method": "Compare the archived pre-agent-contract release with the current toolkit tree and count explicit subagent handoff, return, context-filtering, command-risk, stop-condition, ledger, usage, and research-evidence coverage.",
+  "metrics": [
+    {
+      "name": "Agent research source coverage",
+      "pre_agent_contract": 0,
+      "post_agent_contract": 20,
+      "delta": 20,
+      "maximum": 20
+    },
+    {
+      "name": "Command/tool risk levels",
+      "pre_agent_contract": 0,
+      "post_agent_contract": 7,
+      "delta": 7,
+      "maximum": 7
+    },
+    {
+      "name": "Core contract terms in subagents.md",
+      "pre_agent_contract": 0,
+      "post_agent_contract": 7,
+      "delta": 7,
+      "maximum": 7
+    },
+    {
+      "name": "Evidence contract references",
+      "pre_agent_contract": 0,
+      "post_agent_contract": 7,
+      "delta": 7,
+      "maximum": null
+    },
+    {
+      "name": "Global AGENTS contract routing",
+      "pre_agent_contract": 0,
+      "post_agent_contract": 7,
+      "delta": 7,
+      "maximum": 7
+    },
+    {
+      "name": "Lifecycle ledger fields",
+      "pre_agent_contract": 3,
+      "post_agent_contract": 6,
+      "delta": 3,
+      "maximum": 6
+    },
+    {
+      "name": "Prompt card contract coverage",
+      "pre_agent_contract": 0,
+      "post_agent_contract": 40,
+      "delta": 40,
+      "maximum": null
+    },
+    {
+      "name": "Repo AGENTS contract routing",
+      "pre_agent_contract": 0,
+      "post_agent_contract": 7,
+      "delta": 7,
+      "maximum": 7
+    },
+    {
+      "name": "Stop-condition statuses",
+      "pre_agent_contract": 2,
+      "post_agent_contract": 3,
+      "delta": 1,
+      "maximum": 3
+    },
+    {
+      "name": "Usage pilot defaults",
+      "pre_agent_contract": 0,
+      "post_agent_contract": 3,
+      "delta": 3,
+      "maximum": 3
+    },
+    {
+      "name": "Verifier contract checks",
+      "pre_agent_contract": 0,
+      "post_agent_contract": 7,
+      "delta": 7,
+      "maximum": null
+    }
+  ],
+  "totals": {
+    "pre_agent_contract": 5,
+    "post_agent_contract": 114,
+    "delta": 109,
+    "delta_percent": 2180.0
+  }
+}

@@ -91,6 +91,36 @@ def test_check_live_install_reports_skill_asset_drift(tmp_path):
     )
 
 
+def test_check_live_install_reports_foreign_user_plugin_paths(tmp_path):
+    kit = _make_kit(tmp_path)
+    user_home = tmp_path / "Users" / "junwei"
+    codex_home = user_home / ".codex"
+    agents_home = user_home / ".agents"
+    _install_matching(kit, codex_home, agents_home)
+    _write(
+        codex_home / "chrome-native-hosts-v2.json",
+        json.dumps(
+            {
+                "entries": [
+                    {
+                        "paths": {
+                            "browserClientPath": (
+                                "/" + "Users" + "/" + "otheruser" + "/" + ".codex/plugins/cache/openai-bundled/"
+                                "chrome/latest/scripts/browser-client.mjs"
+                            ),
+                            "codexHome": str(codex_home),
+                        }
+                    }
+                ]
+            }
+        ),
+    )
+
+    issues = check_live_install(kit, codex_home, agents_home, user_home=user_home)
+
+    assert any(issue.code == "foreign-user-plugin-path" for issue in issues)
+
+
 def test_main_prints_json_report(tmp_path, capsys):
     kit = _make_kit(tmp_path)
     codex_home = tmp_path / "codex-home"

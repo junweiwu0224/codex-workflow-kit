@@ -36,6 +36,9 @@
 
 - 可观测性和长任务监控候选：`docs/observability.md`
 - MCP/code graph/memory 试点边界：`docs/mcp-pilot.md`
+- Code graph 试点边界：`docs/codegraph-pilot.md`
+- Memory/recall 试点边界：`docs/memory-recall-pilot.md`
+- 外部 skill/plugin/MCP/hook/subagent prompt 接入前，先用 toolkit 的 `docs/external-component-intake.md` 和 `scripts/audit_external_component.py` 做只读准入审查；不要直接安装或启用。
 - 本仓库推荐的 MCP/plugin：
 - 本仓库可用的代码图谱、索引或语言服务器：
 - 外部系统只读查询方式：
@@ -48,16 +51,6 @@
 - 修改前先阅读相关目录和既有实现，不要凭文件名猜测。
 - 涉及公共 API、数据结构、权限、安全、构建配置、迁移、跨模块行为时，先明确影响范围和验证方式。
 - 如果发现明显应该沉淀的项目知识，更新本文件或 `docs/` 中合适的位置。
-
-## Subagents
-
-完整边界见 `docs/subagents.md`。
-
-- 全局/仓库 subagent 协议就是长期授权；不要因为当前对话没有再次说“使用子代理/并行”就跳过 subagent suitability check 或 dispatch。
-- L/XL、已有实施计划、跨模块、多个独立失败源、多文件审查或预计可并行的调查，先做 subagent suitability check。
-- 存在 2 个以上互不重叠、可独立推进、不会共享写入状态的子任务时，主动使用 subagents；不使用时说明原因。
-- 主 agent 保留需求澄清、架构判断、共享文件、最终集成、diff review 和验证。
-- 长期 L/XL 产品落地如果采用垂直切片集中写入，可以不强行派实现 subagent；每 2-3 个切片后优先派只读 explorer 审查方案覆盖率、风险和验收缺口。
 
 ## Codex 使用效果
 
@@ -89,12 +82,21 @@
 ## Subagents
 
 - 项目 subagents 指南：`docs/subagents.md`
+- 本项目的 subagent 协议是长期授权；不要因为当前对话没有再次要求并行就跳过 suitability check 或安全 dispatch。
 - 需要主动评估 subagent suitability check 的任务：L/XL、已有实施计划、跨模块、多个独立失败源、多文件审查、可并行调查。
 - 存在 2 个以上互不重叠、可独立推进、不会共享写入状态的子任务时，应主动使用 subagents。
+- 派发 subagent 时必须遵守 `docs/subagents.md` 的 Handoff Envelope、History/Input Filter、Command/Tool Risk Policy、Step Budget / Stop Condition、Return Envelope 和 Lifecycle Ledger。
+- 默认 subagent 只允许 docs-only/read-only local；local write 必须绑定 allowed write set；dev server/service、network/external read、external write、destructive / production-risk 需要主 agent 明确保留或先向用户确认。
+- 不要把完整会话历史、敏感信息、无关日志、未验证推断或外部组件/MCP/code graph/memory 输出直接交给 subagent。
+- subagent 返回后，主 agent 必须 review Return Envelope、回读关键证据、运行集成验证，并记录 integrated/discarded 结论。
 - 适合并行的独立领域：
 - 禁止并行的共享状态/文件：
 - 不使用时需要说明的原因：强耦合、下一步阻塞依赖、文件 ownership 冲突、共享状态风险、高风险外部操作。
+- 不派 subagent 时记录 No-Dispatch Decision：strong coupling、shared writes、blocked dependency、safety boundary、unclear task、no independent subtask 或 tool permission constraint。
 - 主 agent 保留事项：需求澄清、架构判断、共享文件、外部/生产风险、最终集成、diff review 和验证。
+- 长期 L/XL 产品落地如果采用垂直切片集中写入，可以不强行派实现 subagent；但每 2-3 个切片后，应优先派只读 explorer 做方案覆盖率、风险和验收缺口审查。
+- 不要为了 subagent 协议引入新的 orchestrator、planner、dispatcher、queue、agent swarm 或后台 runtime；Superpowers 仍然负责计划、TDD 和阶段推进。
+- 最终回复前检查 Lifecycle Ledger：不再需要的 subagent 都已 close，关闭失败或仍需运行时说明原因和残余风险。
 - subagent 可用的验证命令：
 - subagent 禁止执行的命令：
 

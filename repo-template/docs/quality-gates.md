@@ -7,6 +7,7 @@
 - 让 Codex 和人工开发在提交前运行合适的验证。
 - 把低成本、高确定性的检查前移。
 - 避免 hooks 误触发破坏性、慢速、外部依赖或需要凭证的操作。
+- V3.1 只增加 hook 质量纪律和候选审查，不默认启用新的阻断 hook stack。
 
 ## 当前状态
 
@@ -54,6 +55,25 @@
 | coverage / 静态报告 / 截图 / trace | B | 不默认 | 会写 ignored 报告，适合人工触发或标准交付门禁 |
 | app health / TestClient / dev server smoke | C | 不默认 | 可能触发应用生命周期、本地 DB、缓存、端口或后台任务 |
 | 外部服务 / 迁移 / 部署 / 真实数据写入 | D | 禁止 | 需要用户确认或专门环境 |
+
+### V3.1 Hook Review Checklist
+
+每个 hook 候选启用前必须记录：
+
+- trigger event：
+- command：
+- max runtime：
+- read/write behavior：
+- output/cache/report location：
+- failure mode：advisory / fail-open / blocking
+- false-positive risk：
+- bypass/disable path：
+- first-run review：
+- owner/maintenance path：
+
+默认从 advisory/fail-open 开始。blocking 只用于快速、确定、低误报、有清晰修复路径、无网络、无凭证、无业务数据写入的检查。
+
+优先候选是 read-only hygiene 和文档契约检查，例如 private path、secret-like pattern、危险生产命令提示、context pack 结构、命令示例漂移。即使是这些候选，也必须先文档化，不自动安装。
 
 ### Level 2：标准交付门禁
 
@@ -106,10 +126,13 @@
 
 - hook 会在什么事件触发。
 - hook 会运行哪些命令。
+- hook 最大运行时间和超时行为。
 - 是否会修改文件。
+- 是否会写 cache、bytecode、coverage、report、trace、截图、索引或 build 产物。
 - 是否访问网络、凭证、数据库、生产系统或外部服务。
 - 失败时如何修复或豁免。
 - hook 配置是否已被 review 和信任。
+- hook 是否已经在真实任务中产生重复收益，而不是只增加流程噪音。
 
 ## 禁止放入 hooks
 
@@ -120,6 +143,19 @@
 - 访问生产系统、支付、账单、账号、权限、密钥。
 - 需要真实外部服务且不可稳定复现的命令。
 - 会启动应用生命周期并写本地数据库、缓存或报告的 health check，除非项目明确接受并记录了副作用。
+- LLM 判断、自动 memory 写入、自动学习全局规则、后台 watcher、dashboard 或长期 daemon。
+- 未经审查的外部脚本、curl-to-shell、全局路径写入或读浏览器/cookie/账号状态的命令。
+
+## External Component Gate
+
+准备把外部 skill、plugin、MCP、hook、subagent 模式、脚本或模板接入当前仓库前，先做外部组件准入审查：
+
+- 结果只允许 `promote`、`pilot`、`repo-local`、`hold`、`reject`。
+- `promote` 表示吸收规则、文档、只读检查或窄触发能力，不表示安装或启用。
+- `pilot` 必须有 baseline、权限级别、退出条件和回滚方式。
+- license、auth、side-effect、daemon、network、install、Superpowers overlap、private-data 风险必须显式记录。
+
+未经准入审查的外部组件不得进入 hooks、CI、MCP 配置、全局 Codex 配置或默认验证路径。
 
 ## 失败处理
 

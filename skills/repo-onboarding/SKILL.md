@@ -1,6 +1,15 @@
 ---
 name: repo-onboarding
 description: Use when a repository needs onboarding, AGENTS.md setup, project command discovery, architecture/testing docs, or a repo context pack so Codex can work reliably in the codebase.
+risk: low
+source_repo: personal-workflow-kit
+source_type: curated-local
+date_added: 2026-06-07
+setup: none
+write_surface: repo-docs
+auth: none
+network: none
+status: active
 ---
 
 # repo-onboarding
@@ -52,23 +61,26 @@ description: Use when a repository needs onboarding, AGENTS.md setup, project co
 
 ## 产出策略
 
-如果缺少 context pack，创建：
+默认只创建 minimal context pack，不要一次性创建所有 optional docs。先按后续任务最需要的上下文建立最小可靠入口；只有当仓库规模、任务风险或用户要求证明需要时，再补扩展文档。
+
+Core context pack：
 
 - `AGENTS.md`
-- `docs/architecture.md`
 - `docs/commands.md`
 - `docs/testing.md`
+- `docs/architecture.md`
 - `docs/quality-gates.md`
-- `docs/subagents.md`
-- `docs/observability.md`
-- `docs/mcp-pilot.md`
 - `docs/codex-usage.md`
-- `docs/codex-playbook.md`
-- `docs/glossary.md`
-- `docs/decisions/README.md`
-- `docs/decisions/0001-template.md`
-- `docs/specs/README.md`
-- `docs/specs/0001-template.md`
+
+Optional context pack，需要有明确触发再创建或补齐：
+
+- `docs/subagents.md`：L/XL、跨模块、多独立失败源或用户希望并行协议落地。
+- `docs/observability.md`：需要 usage/session 观测、长任务监控或效果评估 pilot。
+- `docs/mcp-pilot.md`、`docs/codegraph-pilot.md`、`docs/memory-recall-pilot.md`：准备试点 MCP、代码图谱或 memory recall。
+- `docs/codex-playbook.md`：已经有可复用经验需要沉淀。
+- `docs/glossary.md`：业务术语、缩写或命名约定反复影响理解。
+- `docs/decisions/`：出现长期架构取舍。
+- `docs/specs/`：出现 XL/正式规格任务。
 
 如果这些文件已经存在：
 
@@ -115,6 +127,17 @@ description: Use when a repository needs onboarding, AGENTS.md setup, project co
 - 识别出的风险区域。
 - 尚未确认的信息。
 - 建议下一步最有价值的动作。
+
+## Output Shape
+
+repo onboarding 完成后，输出按这个顺序：
+
+- Context pack：core files 和 optional files 分别列出，说明为什么创建或跳过。
+- Stack / entrypoints：只写已确认的技术栈、入口和主要目录职责。
+- Commands：安装、运行、测试、lint、build、frontend QA 等已确认命令；待确认命令单独列出。
+- Risks：认证、支付、DB、CI/CD、生成文件、legacy、外部服务等风险区域。
+- Verification：运行过的只读检查、context pack verifier、路径/link/readback 证据。
+- Next best task：一个最有价值的后续动作，避免泛泛列愿望清单。
 
 ## 不要做
 

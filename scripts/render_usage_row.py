@@ -23,9 +23,43 @@ PILOT_DEFAULTS = {
         "tools": "MCP/code graph, rg baseline",
         "evidence": "`docs/mcp-pilot.md` baseline compared",
     },
+    "codegraph": {
+        "tools": "code graph pilot, rg baseline",
+        "evidence": "`docs/codegraph-pilot.md` baseline compared",
+    },
+    "memory-recall": {
+        "tools": "memory/recall pilot, repo docs baseline",
+        "evidence": "`docs/memory-recall-pilot.md` provenance reviewed",
+    },
+    "plugin-mcp-trust": {
+        "tools": "skill-plugin-intake-review, external component audit",
+        "evidence": "`docs/external-component-intake.md` trust review recorded",
+    },
+    "agent-config-lint": {
+        "tools": "agent config lint pilot, read-only hygiene",
+        "evidence": "`docs/quality-gates.md` agent config lint candidate recorded",
+    },
+    "domain-pilot": {
+        "tools": "domain skill boundary, repo-local checklist",
+        "evidence": "`docs/external-component-intake.md` domain boundary reviewed",
+    },
+    "external-component-intake": {
+        "tools": "skill/plugin intake review, read-only audit",
+        "evidence": "`scripts/audit_external_component.py` decision recorded",
+    },
+    "subagent-contract": {
+        "tools": "subagent handoff/return contract, lifecycle evidence",
+        "evidence": "`docs/subagents.md` Handoff Envelope and Return Envelope used",
+    },
+    "agent-lifecycle-ledger": {
+        "tools": "subagent lifecycle ledger, close evidence",
+        "evidence": "`docs/subagents.md` Lifecycle Ledger recorded",
+    },
+    "agent-eval-evidence": {
+        "tools": "agent eval evidence, trajectory replay checklist",
+        "evidence": "`docs/subagents.md` Return Envelope evidence paths reviewed",
+    },
 }
-
-
 def build_baseline_row(
     *,
     date: str,
@@ -87,9 +121,17 @@ def main(argv: list[str] | None = None) -> int:
         help="Next action cell.",
     )
 
-    pilot = subparsers.add_parser("pilot", help="Render a V2.1 optional tooling pilot row.")
+    pilot = subparsers.add_parser("pilot", help="Render an optional tooling or V3.1 intake pilot row.")
     pilot.add_argument("--date", default=date_type.today().isoformat(), help="Usage row date. Default: today.")
-    pilot.add_argument("--pilot", required=True, help="Pilot name, for example observability, subagents, or mcp-code-graph.")
+    pilot.add_argument(
+        "--pilot",
+        required=True,
+        help=(
+            "Pilot name, for example observability, subagents, mcp-code-graph, codegraph, "
+            "memory-recall, plugin-mcp-trust, agent-config-lint, domain-pilot, external-component-intake, "
+            "subagent-contract, agent-lifecycle-ledger, or agent-eval-evidence."
+        ),
+    )
     pilot.add_argument("--level", default="L", help="Task level cell.")
     pilot.add_argument("--tools", help="Workflow/tools cell. Defaults are selected from --pilot when omitted.")
     pilot.add_argument("--evidence", help="Evidence cell. Defaults are selected from --pilot when omitted.")

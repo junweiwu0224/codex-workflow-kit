@@ -1,0 +1,822 @@
+{
+  "versions": {
+    "v2.2": "2026.06.07.13",
+    "v3.1": "2026.06.12.2"
+  },
+  "repetitions": 5,
+  "runs": [
+    {
+      "iteration": 1,
+      "results": [
+        {
+          "task": "package-health",
+          "level": "XS",
+          "kit": "v2.2",
+          "seconds": 0.08,
+          "ok": true,
+          "passed_checks": 1,
+          "detected_issues": 0,
+          "coverage_points": 4,
+          "notes": [
+            "skills=9"
+          ]
+        },
+        {
+          "task": "repo-context-pack",
+          "level": "S",
+          "kit": "v2.2",
+          "seconds": 0.6382,
+          "ok": true,
+          "passed_checks": 6,
+          "detected_issues": 0,
+          "coverage_points": 6,
+          "notes": [
+            "usage_rows=1"
+          ]
+        },
+        {
+          "task": "live-install-drill",
+          "level": "M",
+          "kit": "v2.2",
+          "seconds": 0.4782,
+          "ok": true,
+          "passed_checks": 14,
+          "detected_issues": 0,
+          "coverage_points": 14,
+          "notes": [
+            "checked_files=12"
+          ]
+        },
+        {
+          "task": "external-component-intake",
+          "level": "L",
+          "kit": "v2.2",
+          "seconds": 0.0,
+          "ok": false,
+          "passed_checks": 0,
+          "detected_issues": 0,
+          "coverage_points": 0,
+          "notes": [
+            "not-supported"
+          ]
+        },
+        {
+          "task": "package-health",
+          "level": "XS",
+          "kit": "v3.1",
+          "seconds": 0.1052,
+          "ok": true,
+          "passed_checks": 1,
+          "detected_issues": 0,
+          "coverage_points": 5,
+          "notes": [
+            "skills=11"
+          ]
+        },
+        {
+          "task": "repo-context-pack",
+          "level": "S",
+          "kit": "v3.1",
+          "seconds": 0.6759,
+          "ok": true,
+          "passed_checks": 6,
+          "detected_issues": 0,
+          "coverage_points": 8,
+          "notes": [
+            "usage_rows=2"
+          ]
+        },
+        {
+          "task": "live-install-drill",
+          "level": "M",
+          "kit": "v3.1",
+          "seconds": 0.546,
+          "ok": true,
+          "passed_checks": 17,
+          "detected_issues": 0,
+          "coverage_points": 17,
+          "notes": [
+            "checked_files=15"
+          ]
+        },
+        {
+          "task": "external-component-intake",
+          "level": "L",
+          "kit": "v3.1",
+          "seconds": 0.0439,
+          "ok": true,
+          "passed_checks": 8,
+          "detected_issues": 7,
+          "coverage_points": 8,
+          "notes": [
+            "decision=reject",
+            "redacted=True"
+          ]
+        }
+      ],
+      "scores": {
+        "v2.2": {
+          "total_seconds": 1.1965,
+          "passed_checks": 21,
+          "detected_issues": 0,
+          "coverage_points": 24,
+          "ok_tasks": 3,
+          "mean_seconds": 0.2991
+        },
+        "v3.1": {
+          "total_seconds": 1.371,
+          "passed_checks": 32,
+          "detected_issues": 7,
+          "coverage_points": 38,
+          "ok_tasks": 4,
+          "mean_seconds": 0.3427
+        }
+      },
+      "deltas": {
+        "time_delta_seconds": 0.1745,
+        "time_delta_percent": 14.58,
+        "passed_checks_delta": 11,
+        "detected_issues_delta": 7,
+        "coverage_points_delta": 14,
+        "ok_tasks_delta": 1
+      }
+    },
+    {
+      "iteration": 2,
+      "results": [
+        {
+          "task": "package-health",
+          "level": "XS",
+          "kit": "v2.2",
+          "seconds": 0.0736,
+          "ok": true,
+          "passed_checks": 1,
+          "detected_issues": 0,
+          "coverage_points": 4,
+          "notes": [
+            "skills=9"
+          ]
+        },
+        {
+          "task": "repo-context-pack",
+          "level": "S",
+          "kit": "v2.2",
+          "seconds": 0.4791,
+          "ok": true,
+          "passed_checks": 6,
+          "detected_issues": 0,
+          "coverage_points": 6,
+          "notes": [
+            "usage_rows=1"
+          ]
+        },
+        {
+          "task": "live-install-drill",
+          "level": "M",
+          "kit": "v2.2",
+          "seconds": 0.4411,
+          "ok": true,
+          "passed_checks": 14,
+          "detected_issues": 0,
+          "coverage_points": 14,
+          "notes": [
+            "checked_files=12"
+          ]
+        },
+        {
+          "task": "external-component-intake",
+          "level": "L",
+          "kit": "v2.2",
+          "seconds": 0.0,
+          "ok": false,
+          "passed_checks": 0,
+          "detected_issues": 0,
+          "coverage_points": 0,
+          "notes": [
+            "not-supported"
+          ]
+        },
+        {
+          "task": "package-health",
+          "level": "XS",
+          "kit": "v3.1",
+          "seconds": 0.0997,
+          "ok": true,
+          "passed_checks": 1,
+          "detected_issues": 0,
+          "coverage_points": 5,
+          "notes": [
+            "skills=11"
+          ]
+        },
+        {
+          "task": "repo-context-pack",
+          "level": "S",
+          "kit": "v3.1",
+          "seconds": 0.5084,
+          "ok": true,
+          "passed_checks": 6,
+          "detected_issues": 0,
+          "coverage_points": 8,
+          "notes": [
+            "usage_rows=2"
+          ]
+        },
+        {
+          "task": "live-install-drill",
+          "level": "M",
+          "kit": "v3.1",
+          "seconds": 0.5315,
+          "ok": true,
+          "passed_checks": 17,
+          "detected_issues": 0,
+          "coverage_points": 17,
+          "notes": [
+            "checked_files=15"
+          ]
+        },
+        {
+          "task": "external-component-intake",
+          "level": "L",
+          "kit": "v3.1",
+          "seconds": 0.0406,
+          "ok": true,
+          "passed_checks": 8,
+          "detected_issues": 7,
+          "coverage_points": 8,
+          "notes": [
+            "decision=reject",
+            "redacted=True"
+          ]
+        }
+      ],
+      "scores": {
+        "v2.2": {
+          "total_seconds": 0.9938,
+          "passed_checks": 21,
+          "detected_issues": 0,
+          "coverage_points": 24,
+          "ok_tasks": 3,
+          "mean_seconds": 0.2484
+        },
+        "v3.1": {
+          "total_seconds": 1.1801,
+          "passed_checks": 32,
+          "detected_issues": 7,
+          "coverage_points": 38,
+          "ok_tasks": 4,
+          "mean_seconds": 0.295
+        }
+      },
+      "deltas": {
+        "time_delta_seconds": 0.1863,
+        "time_delta_percent": 18.75,
+        "passed_checks_delta": 11,
+        "detected_issues_delta": 7,
+        "coverage_points_delta": 14,
+        "ok_tasks_delta": 1
+      }
+    },
+    {
+      "iteration": 3,
+      "results": [
+        {
+          "task": "package-health",
+          "level": "XS",
+          "kit": "v2.2",
+          "seconds": 0.0753,
+          "ok": true,
+          "passed_checks": 1,
+          "detected_issues": 0,
+          "coverage_points": 4,
+          "notes": [
+            "skills=9"
+          ]
+        },
+        {
+          "task": "repo-context-pack",
+          "level": "S",
+          "kit": "v2.2",
+          "seconds": 0.4418,
+          "ok": true,
+          "passed_checks": 6,
+          "detected_issues": 0,
+          "coverage_points": 6,
+          "notes": [
+            "usage_rows=1"
+          ]
+        },
+        {
+          "task": "live-install-drill",
+          "level": "M",
+          "kit": "v2.2",
+          "seconds": 0.4582,
+          "ok": true,
+          "passed_checks": 14,
+          "detected_issues": 0,
+          "coverage_points": 14,
+          "notes": [
+            "checked_files=12"
+          ]
+        },
+        {
+          "task": "external-component-intake",
+          "level": "L",
+          "kit": "v2.2",
+          "seconds": 0.0,
+          "ok": false,
+          "passed_checks": 0,
+          "detected_issues": 0,
+          "coverage_points": 0,
+          "notes": [
+            "not-supported"
+          ]
+        },
+        {
+          "task": "package-health",
+          "level": "XS",
+          "kit": "v3.1",
+          "seconds": 0.0994,
+          "ok": true,
+          "passed_checks": 1,
+          "detected_issues": 0,
+          "coverage_points": 5,
+          "notes": [
+            "skills=11"
+          ]
+        },
+        {
+          "task": "repo-context-pack",
+          "level": "S",
+          "kit": "v3.1",
+          "seconds": 0.5041,
+          "ok": true,
+          "passed_checks": 6,
+          "detected_issues": 0,
+          "coverage_points": 8,
+          "notes": [
+            "usage_rows=2"
+          ]
+        },
+        {
+          "task": "live-install-drill",
+          "level": "M",
+          "kit": "v3.1",
+          "seconds": 0.5431,
+          "ok": true,
+          "passed_checks": 17,
+          "detected_issues": 0,
+          "coverage_points": 17,
+          "notes": [
+            "checked_files=15"
+          ]
+        },
+        {
+          "task": "external-component-intake",
+          "level": "L",
+          "kit": "v3.1",
+          "seconds": 0.0423,
+          "ok": true,
+          "passed_checks": 8,
+          "detected_issues": 7,
+          "coverage_points": 8,
+          "notes": [
+            "decision=reject",
+            "redacted=True"
+          ]
+        }
+      ],
+      "scores": {
+        "v2.2": {
+          "total_seconds": 0.9753,
+          "passed_checks": 21,
+          "detected_issues": 0,
+          "coverage_points": 24,
+          "ok_tasks": 3,
+          "mean_seconds": 0.2438
+        },
+        "v3.1": {
+          "total_seconds": 1.1888,
+          "passed_checks": 32,
+          "detected_issues": 7,
+          "coverage_points": 38,
+          "ok_tasks": 4,
+          "mean_seconds": 0.2972
+        }
+      },
+      "deltas": {
+        "time_delta_seconds": 0.2135,
+        "time_delta_percent": 21.89,
+        "passed_checks_delta": 11,
+        "detected_issues_delta": 7,
+        "coverage_points_delta": 14,
+        "ok_tasks_delta": 1
+      }
+    },
+    {
+      "iteration": 4,
+      "results": [
+        {
+          "task": "package-health",
+          "level": "XS",
+          "kit": "v2.2",
+          "seconds": 0.0714,
+          "ok": true,
+          "passed_checks": 1,
+          "detected_issues": 0,
+          "coverage_points": 4,
+          "notes": [
+            "skills=9"
+          ]
+        },
+        {
+          "task": "repo-context-pack",
+          "level": "S",
+          "kit": "v2.2",
+          "seconds": 0.4676,
+          "ok": true,
+          "passed_checks": 6,
+          "detected_issues": 0,
+          "coverage_points": 6,
+          "notes": [
+            "usage_rows=1"
+          ]
+        },
+        {
+          "task": "live-install-drill",
+          "level": "M",
+          "kit": "v2.2",
+          "seconds": 0.4613,
+          "ok": true,
+          "passed_checks": 14,
+          "detected_issues": 0,
+          "coverage_points": 14,
+          "notes": [
+            "checked_files=12"
+          ]
+        },
+        {
+          "task": "external-component-intake",
+          "level": "L",
+          "kit": "v2.2",
+          "seconds": 0.0,
+          "ok": false,
+          "passed_checks": 0,
+          "detected_issues": 0,
+          "coverage_points": 0,
+          "notes": [
+            "not-supported"
+          ]
+        },
+        {
+          "task": "package-health",
+          "level": "XS",
+          "kit": "v3.1",
+          "seconds": 0.0989,
+          "ok": true,
+          "passed_checks": 1,
+          "detected_issues": 0,
+          "coverage_points": 5,
+          "notes": [
+            "skills=11"
+          ]
+        },
+        {
+          "task": "repo-context-pack",
+          "level": "S",
+          "kit": "v3.1",
+          "seconds": 0.5181,
+          "ok": true,
+          "passed_checks": 6,
+          "detected_issues": 0,
+          "coverage_points": 8,
+          "notes": [
+            "usage_rows=2"
+          ]
+        },
+        {
+          "task": "live-install-drill",
+          "level": "M",
+          "kit": "v3.1",
+          "seconds": 0.5452,
+          "ok": true,
+          "passed_checks": 17,
+          "detected_issues": 0,
+          "coverage_points": 17,
+          "notes": [
+            "checked_files=15"
+          ]
+        },
+        {
+          "task": "external-component-intake",
+          "level": "L",
+          "kit": "v3.1",
+          "seconds": 0.0469,
+          "ok": true,
+          "passed_checks": 8,
+          "detected_issues": 7,
+          "coverage_points": 8,
+          "notes": [
+            "decision=reject",
+            "redacted=True"
+          ]
+        }
+      ],
+      "scores": {
+        "v2.2": {
+          "total_seconds": 1.0004,
+          "passed_checks": 21,
+          "detected_issues": 0,
+          "coverage_points": 24,
+          "ok_tasks": 3,
+          "mean_seconds": 0.2501
+        },
+        "v3.1": {
+          "total_seconds": 1.209,
+          "passed_checks": 32,
+          "detected_issues": 7,
+          "coverage_points": 38,
+          "ok_tasks": 4,
+          "mean_seconds": 0.3023
+        }
+      },
+      "deltas": {
+        "time_delta_seconds": 0.2086,
+        "time_delta_percent": 20.85,
+        "passed_checks_delta": 11,
+        "detected_issues_delta": 7,
+        "coverage_points_delta": 14,
+        "ok_tasks_delta": 1
+      }
+    },
+    {
+      "iteration": 5,
+      "results": [
+        {
+          "task": "package-health",
+          "level": "XS",
+          "kit": "v2.2",
+          "seconds": 0.0689,
+          "ok": true,
+          "passed_checks": 1,
+          "detected_issues": 0,
+          "coverage_points": 4,
+          "notes": [
+            "skills=9"
+          ]
+        },
+        {
+          "task": "repo-context-pack",
+          "level": "S",
+          "kit": "v2.2",
+          "seconds": 0.4567,
+          "ok": true,
+          "passed_checks": 6,
+          "detected_issues": 0,
+          "coverage_points": 6,
+          "notes": [
+            "usage_rows=1"
+          ]
+        },
+        {
+          "task": "live-install-drill",
+          "level": "M",
+          "kit": "v2.2",
+          "seconds": 0.4509,
+          "ok": true,
+          "passed_checks": 14,
+          "detected_issues": 0,
+          "coverage_points": 14,
+          "notes": [
+            "checked_files=12"
+          ]
+        },
+        {
+          "task": "external-component-intake",
+          "level": "L",
+          "kit": "v2.2",
+          "seconds": 0.0,
+          "ok": false,
+          "passed_checks": 0,
+          "detected_issues": 0,
+          "coverage_points": 0,
+          "notes": [
+            "not-supported"
+          ]
+        },
+        {
+          "task": "package-health",
+          "level": "XS",
+          "kit": "v3.1",
+          "seconds": 0.0992,
+          "ok": true,
+          "passed_checks": 1,
+          "detected_issues": 0,
+          "coverage_points": 5,
+          "notes": [
+            "skills=11"
+          ]
+        },
+        {
+          "task": "repo-context-pack",
+          "level": "S",
+          "kit": "v3.1",
+          "seconds": 0.5008,
+          "ok": true,
+          "passed_checks": 6,
+          "detected_issues": 0,
+          "coverage_points": 8,
+          "notes": [
+            "usage_rows=2"
+          ]
+        },
+        {
+          "task": "live-install-drill",
+          "level": "M",
+          "kit": "v3.1",
+          "seconds": 0.5657,
+          "ok": true,
+          "passed_checks": 17,
+          "detected_issues": 0,
+          "coverage_points": 17,
+          "notes": [
+            "checked_files=15"
+          ]
+        },
+        {
+          "task": "external-component-intake",
+          "level": "L",
+          "kit": "v3.1",
+          "seconds": 0.0441,
+          "ok": true,
+          "passed_checks": 8,
+          "detected_issues": 7,
+          "coverage_points": 8,
+          "notes": [
+            "decision=reject",
+            "redacted=True"
+          ]
+        }
+      ],
+      "scores": {
+        "v2.2": {
+          "total_seconds": 0.9766,
+          "passed_checks": 21,
+          "detected_issues": 0,
+          "coverage_points": 24,
+          "ok_tasks": 3,
+          "mean_seconds": 0.2441
+        },
+        "v3.1": {
+          "total_seconds": 1.2098,
+          "passed_checks": 32,
+          "detected_issues": 7,
+          "coverage_points": 38,
+          "ok_tasks": 4,
+          "mean_seconds": 0.3024
+        }
+      },
+      "deltas": {
+        "time_delta_seconds": 0.2332,
+        "time_delta_percent": 23.88,
+        "passed_checks_delta": 11,
+        "detected_issues_delta": 7,
+        "coverage_points_delta": 14,
+        "ok_tasks_delta": 1
+      }
+    }
+  ],
+  "results": [
+    {
+      "task": "package-health",
+      "level": "XS",
+      "kit": "v2.2",
+      "seconds": 0.0689,
+      "ok": true,
+      "passed_checks": 1,
+      "detected_issues": 0,
+      "coverage_points": 4,
+      "notes": [
+        "skills=9"
+      ]
+    },
+    {
+      "task": "repo-context-pack",
+      "level": "S",
+      "kit": "v2.2",
+      "seconds": 0.4567,
+      "ok": true,
+      "passed_checks": 6,
+      "detected_issues": 0,
+      "coverage_points": 6,
+      "notes": [
+        "usage_rows=1"
+      ]
+    },
+    {
+      "task": "live-install-drill",
+      "level": "M",
+      "kit": "v2.2",
+      "seconds": 0.4509,
+      "ok": true,
+      "passed_checks": 14,
+      "detected_issues": 0,
+      "coverage_points": 14,
+      "notes": [
+        "checked_files=12"
+      ]
+    },
+    {
+      "task": "external-component-intake",
+      "level": "L",
+      "kit": "v2.2",
+      "seconds": 0.0,
+      "ok": false,
+      "passed_checks": 0,
+      "detected_issues": 0,
+      "coverage_points": 0,
+      "notes": [
+        "not-supported"
+      ]
+    },
+    {
+      "task": "package-health",
+      "level": "XS",
+      "kit": "v3.1",
+      "seconds": 0.0992,
+      "ok": true,
+      "passed_checks": 1,
+      "detected_issues": 0,
+      "coverage_points": 5,
+      "notes": [
+        "skills=11"
+      ]
+    },
+    {
+      "task": "repo-context-pack",
+      "level": "S",
+      "kit": "v3.1",
+      "seconds": 0.5008,
+      "ok": true,
+      "passed_checks": 6,
+      "detected_issues": 0,
+      "coverage_points": 8,
+      "notes": [
+        "usage_rows=2"
+      ]
+    },
+    {
+      "task": "live-install-drill",
+      "level": "M",
+      "kit": "v3.1",
+      "seconds": 0.5657,
+      "ok": true,
+      "passed_checks": 17,
+      "detected_issues": 0,
+      "coverage_points": 17,
+      "notes": [
+        "checked_files=15"
+      ]
+    },
+    {
+      "task": "external-component-intake",
+      "level": "L",
+      "kit": "v3.1",
+      "seconds": 0.0441,
+      "ok": true,
+      "passed_checks": 8,
+      "detected_issues": 7,
+      "coverage_points": 8,
+      "notes": [
+        "decision=reject",
+        "redacted=True"
+      ]
+    }
+  ],
+  "scores": {
+    "v2.2": {
+      "total_seconds": 0.9938,
+      "passed_checks": 21,
+      "detected_issues": 0,
+      "coverage_points": 24,
+      "ok_tasks": 3,
+      "mean_seconds": 0.2484
+    },
+    "v3.1": {
+      "total_seconds": 1.209,
+      "passed_checks": 32,
+      "detected_issues": 7,
+      "coverage_points": 38,
+      "ok_tasks": 4,
+      "mean_seconds": 0.3023
+    }
+  },
+  "deltas": {
+    "time_delta_seconds": 0.2152,
+    "time_delta_percent": 21.65,
+    "passed_checks_delta": 11,
+    "detected_issues_delta": 7,
+    "coverage_points_delta": 14,
+    "ok_tasks_delta": 1
+  }
+}
