@@ -43,10 +43,14 @@ REQUIRED_FILES = (
     "docs/V3.1-AGENT-RESEARCH-20.md",
     "docs/V3.1-AGENT-CONTRACT-BENCHMARK.json",
     "docs/V3.1-AGENT-CONTRACT-BENCHMARK.md",
+    "docs/V3.1-LOCAL-CODEX-SMOKE-REPORT.md",
+    "docs/agent-collaboration-smoke.md",
+    "docs/codex-usage.md",
     "docs/external-component-intake.md",
     "docs/superpowers/plans/2026-06-07-workflow-kit-v2-adoption.md",
     "docs/superpowers/plans/2026-06-07-workflow-kit-v2-1-observability-subagents-mcp.md",
     "global/AGENTS.md",
+    "scripts/audit_skill_contracts.py",
     "scripts/audit_external_component.py",
     "scripts/audit_repo_adoption.py",
     "scripts/benchmark_v31_vs_v22.py",
@@ -54,6 +58,7 @@ REQUIRED_FILES = (
     "scripts/benchmark_agent_contract.py",
     "scripts/build_release.py",
     "scripts/codex_doctor.py",
+    "scripts/codex_runtime_smoke.py",
     "scripts/render_usage_row.py",
     "scripts/verify_live_install.py",
     "repo-template/AGENTS.md",
@@ -75,9 +80,11 @@ REQUIRED_FILES = (
     "repo-template/docs/specs/README.md",
     "scripts/verify_toolkit.py",
     "skills/spec-kit-xl/references/spec-template.md",
+    "tests/test_audit_skill_contracts.py",
     "tests/test_audit_external_component.py",
     "tests/test_benchmark_skill_polish.py",
     "tests/test_benchmark_agent_contract.py",
+    "tests/test_codex_runtime_smoke.py",
     "tests/test_verify_toolkit.py",
 )
 
@@ -103,18 +110,44 @@ REQUIRED_README_TERMS = (
     "docs/V3.1-BENCHMARK.md",
     "docs/V3.1-SKILL-POLISH-BENCHMARK.md",
     "docs/V3.1-AGENT-RESEARCH-20.md",
+    "docs/V3.1-LOCAL-CODEX-SMOKE-REPORT.md",
+    "docs/agent-collaboration-smoke.md",
+    "docs/codex-usage.md",
     "docs/external-component-intake.md",
     "docs/V2-ADOPTION-EVIDENCE.md",
     "docs/superpowers/plans/2026-06-07-workflow-kit-v2-adoption.md",
     "docs/superpowers/plans/2026-06-07-workflow-kit-v2-1-observability-subagents-mcp.md",
+    "scripts/audit_skill_contracts.py",
     "scripts/audit_external_component.py",
     "scripts/benchmark_v31_vs_v22.py",
     "scripts/benchmark_skill_polish.py",
     "scripts/benchmark_agent_contract.py",
+    "scripts/codex_runtime_smoke.py",
+    "scripts/render_usage_row.py trial",
+    "scripts/render_usage_row.py trial --preset",
     "~/.codex/AGENTS.md",
     "~/.agents/skills/",
     "11 个个人 Codex skills",
     "release-readiness",
+)
+REQUIRED_CODEX_USAGE_TERMS = (
+    "Real Trial Records",
+    "Stage Review: 4 Real V3.1 Trials",
+    "Closeout Trial Records",
+    "Closeout Review: 4 Additional V3.1 Trials",
+    "Trial row helper for real M/L/XL samples",
+    "Runtime smoke and skill audit evidence layer",
+    "Package verifier coverage for real usage evidence",
+    "Release-readiness drill after workflow changes",
+    "Release evidence version alignment",
+    "Trial row preset helper",
+    "Package and docs contract alignment",
+    "Release-readiness closeout drill",
+    "Positive Signal",
+    "Friction",
+    "Tighten next",
+    "Do not advance",
+    "do not auto-append docs",
 )
 
 REQUIRED_WORKFLOW_REVIEW_TERMS = (
@@ -149,8 +182,12 @@ REQUIRED_QUICKSTART_TERMS = (
     "python3 scripts/verify_toolkit.py",
     "python3 scripts/verify_live_install.py",
     "python3 scripts/codex_doctor.py",
+    "python3 scripts/codex_runtime_smoke.py",
+    "python3 scripts/audit_skill_contracts.py",
     "python3 scripts/audit_external_component.py",
     "scripts/render_usage_row.py baseline",
+    "scripts/render_usage_row.py trial",
+    "scripts/render_usage_row.py trial --preset",
     "./install.sh --dry-run",
     "./install.sh --repo-only --repo /path/to/repo --backup",
     "python3 scripts/verify_context_pack.py",
@@ -245,11 +282,26 @@ REQUIRED_V3_1_EVIDENCE_TERMS = (
     "scripts/audit_external_component.py",
     "scripts/benchmark_skill_polish.py",
     "scripts/benchmark_agent_contract.py",
+    "scripts/audit_skill_contracts.py",
+    "scripts/codex_runtime_smoke.py",
     "scripts/verify_toolkit.py",
     "scripts/verify_context_pack.py",
     "no default MCP server",
     "no default memory writer",
     "no default hook stack",
+)
+REQUIRED_AGENT_COLLABORATION_SMOKE_TERMS = (
+    "Agent Collaboration Smoke",
+    "Read-Only Dual Explorer",
+    "No-Dispatch Strong Coupling",
+    "Local-Write Boundary",
+    "Visibility Policy",
+    "Skill Coupling",
+    "Handoff Envelope",
+    "Return Envelope",
+    "Lifecycle Ledger",
+    "close_agent previous_status",
+    "Do Not",
 )
 REQUIRED_V3_1_BENCHMARK_TERMS = (
     "V3.1 vs V2.2 Benchmark",
@@ -682,12 +734,14 @@ def check_toolkit(root: str | Path = ".") -> list[ToolkitIssue]:
 
     for relative in (
         "install.sh",
+        "scripts/audit_skill_contracts.py",
         "scripts/audit_external_component.py",
         "scripts/audit_repo_adoption.py",
         "scripts/benchmark_skill_polish.py",
         "scripts/benchmark_agent_contract.py",
         "scripts/build_release.py",
         "scripts/codex_doctor.py",
+        "scripts/codex_runtime_smoke.py",
         "scripts/render_usage_row.py",
         "scripts/verify_live_install.py",
         "scripts/verify_toolkit.py",
@@ -878,6 +932,19 @@ def check_toolkit(root: str | Path = ".") -> list[ToolkitIssue]:
                     message=f"V3.1 adoption evidence must document {term}.",
                 )
             )
+
+    codex_usage_path = root / "docs/codex-usage.md"
+    codex_usage = _read_text(codex_usage_path) if codex_usage_path.exists() else ""
+    for term in REQUIRED_CODEX_USAGE_TERMS:
+        if codex_usage and term not in codex_usage:
+            issues.append(
+                ToolkitIssue(
+                    severity="error",
+                    code="codex-usage-missing-term",
+                    path="docs/codex-usage.md",
+                    message=f"Toolkit usage evidence must document {term}.",
+                )
+            )
     for term in ("Agent Research 20", "docs/V3.1-AGENT-RESEARCH-20.md", "Handoff Envelope", "Return Envelope"):
         if v3_1_evidence and term not in v3_1_evidence:
             issues.append(
@@ -964,6 +1031,22 @@ def check_toolkit(root: str | Path = ".") -> list[ToolkitIssue]:
                     code="external-intake-missing-term",
                     path="docs/external-component-intake.md",
                     message=f"External component intake must document {term}.",
+                )
+            )
+
+    agent_collaboration_smoke = (
+        _read_text(root / "docs/agent-collaboration-smoke.md")
+        if (root / "docs/agent-collaboration-smoke.md").exists()
+        else ""
+    )
+    for term in REQUIRED_AGENT_COLLABORATION_SMOKE_TERMS:
+        if agent_collaboration_smoke and term not in agent_collaboration_smoke:
+            issues.append(
+                ToolkitIssue(
+                    severity="error",
+                    code="agent-collaboration-smoke-missing-term",
+                    path="docs/agent-collaboration-smoke.md",
+                    message=f"Agent collaboration smoke checklist must document {term}.",
                 )
             )
 
@@ -1324,6 +1407,44 @@ def check_toolkit(root: str | Path = ".") -> list[ToolkitIssue]:
                     severity="error",
                     code="external-component-auditor-error",
                     path="scripts/audit_external_component.py",
+                    message=str(exc),
+                )
+            )
+
+    if (root / "scripts/audit_skill_contracts.py").exists():
+        try:
+            skill_audit_module = _load_script_module(
+                root,
+                "scripts/audit_skill_contracts.py",
+                "audit_skill_contracts_template",
+            )
+            skill_audit_report = skill_audit_module.build_report(root)
+            expected_skill_count = len(EXPECTED_SKILLS)
+            totals = skill_audit_report.get("totals", {})
+            if not skill_audit_report.get("ok"):
+                issues.append(
+                    ToolkitIssue(
+                        severity="error",
+                        code="skill-contract-audit-failed",
+                        path="scripts/audit_skill_contracts.py",
+                        message="Packaged skills must pass the skill contract audit.",
+                    )
+                )
+            if totals.get("skills") != expected_skill_count or totals.get("ok") != expected_skill_count:
+                issues.append(
+                    ToolkitIssue(
+                        severity="error",
+                        code="skill-contract-audit-count-mismatch",
+                        path="scripts/audit_skill_contracts.py",
+                        message=f"Skill contract audit must report {expected_skill_count}/{expected_skill_count} skills OK.",
+                    )
+                )
+        except Exception as exc:
+            issues.append(
+                ToolkitIssue(
+                    severity="error",
+                    code="skill-contract-auditor-error",
+                    path="scripts/audit_skill_contracts.py",
                     message=str(exc),
                 )
             )

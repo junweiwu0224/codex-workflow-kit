@@ -14,7 +14,7 @@ from pathlib import Path
 
 
 DEFAULT_V22_VERSION = "2026.06.07.13"
-DEFAULT_V31_VERSION = "2026.06.12"
+DEFAULT_V31_VERSION = "2026.06.12.3"
 
 
 @dataclass

@@ -60,6 +60,51 @@ PILOT_DEFAULTS = {
         "evidence": "`docs/subagents.md` Return Envelope evidence paths reviewed",
     },
 }
+
+TRIAL_PRESETS = {
+    "release-evidence-alignment": {
+        "task": "Release evidence version alignment",
+        "level": "M",
+        "tools": "rg audit, verify_toolkit, release-readiness",
+        "verification": "`rg 2026.06.13` and `python3 scripts/verify_toolkit.py` -> stale release references found before build",
+        "effect": "Caught old archive/version wording before publishing a new checksum",
+        "friction": "Version strings still appear in multiple human docs",
+        "decision": "Keep strict release evidence; bump VERSION for content changes instead of mutating old archives",
+    },
+    "trial-preset-helper": {
+        "task": "Trial row preset helper",
+        "level": "M",
+        "tools": "render_usage_row --preset, targeted pytest",
+        "verification": "`python3 -m pytest -p no:cacheprovider tests/test_render_usage_row.py -q` -> passed",
+        "effect": "Common usage rows no longer require repeating all eight trial fields",
+        "friction": "Presets can hide task-specific context if overused",
+        "decision": "Keep render-only presets with explicit overrides; do not auto-append docs",
+    },
+    "package-doc-contract-alignment": {
+        "task": "Package and docs contract alignment",
+        "level": "M",
+        "tools": "verify_toolkit, content contract tests",
+        "verification": "`python3 scripts/verify_toolkit.py` -> Workflow toolkit OK",
+        "effect": "Docs, helper CLI, usage evidence, and verifier terms stay aligned",
+        "friction": "Every new durable term adds a small verifier maintenance cost",
+        "decision": "Add only closeout/preset terms; avoid turning verifier into a full prose linter",
+    },
+    "release-readiness-closeout": {
+        "task": "Release-readiness closeout drill",
+        "level": "L",
+        "tools": "release-readiness, build_release, checksum, unpack/install drill",
+        "verification": "new archive checksum, unpack, install, live install, doctor, runtime smoke, skill audit, and context-pack drill -> OK",
+        "effect": "Portable package claims are backed by archive and temporary-install evidence",
+        "friction": "Full drill is slower than targeted tests but only needed for release artifacts",
+        "decision": "Keep for toolkit releases; batch doc/code edits before final build",
+    },
+}
+
+
+def _trial_preset_help() -> str:
+    return ", ".join(sorted(TRIAL_PRESETS))
+
+
 def build_baseline_row(
     *,
     date: str,
@@ -92,6 +137,21 @@ def build_pilot_row(
     evidence = evidence if evidence is not None else defaults["evidence"]
     evidence_cell = evidence if "`" in evidence else f"`{evidence}`"
     cells = (date, task, level, tools, evidence_cell, effect, next_action)
+    return "| " + " | ".join(_markdown_cell(cell) for cell in cells) + " |"
+
+
+def build_trial_row(
+    *,
+    date: str,
+    task: str,
+    level: str,
+    tools: str,
+    verification: str,
+    effect: str,
+    friction: str,
+    decision: str,
+) -> str:
+    cells = (date, task, level, tools, verification, effect, friction, decision)
     return "| " + " | ".join(_markdown_cell(cell) for cell in cells) + " |"
 
 
@@ -145,6 +205,20 @@ def main(argv: list[str] | None = None) -> int:
         default="Keep documented; promote only after repeated positive signals",
         help="Next action cell.",
     )
+    trial = subparsers.add_parser("trial", help="Render a real M/L/XL workflow trial row.")
+    trial.add_argument("--date", default=date_type.today().isoformat(), help="Usage row date. Default: today.")
+    trial.add_argument(
+        "--preset",
+        choices=sorted(TRIAL_PRESETS),
+        help=f"Optional real-task preset to reduce repeated flags. Choices: {_trial_preset_help()}.",
+    )
+    trial.add_argument("--task", help="Task/scope cell.")
+    trial.add_argument("--level", choices=("M", "L", "XL"), help="Task level cell.")
+    trial.add_argument("--tools", help="Workflow/tools used.")
+    trial.add_argument("--verification", help="Verification evidence.")
+    trial.add_argument("--effect", help="Positive efficiency or quality signal.")
+    trial.add_argument("--friction", help="Observed friction or cost.")
+    trial.add_argument("--decision", help="Keep/tighten/loosen/remove decision.")
     args = parser.parse_args(argv)
 
     if args.command == "baseline":
@@ -170,6 +244,30 @@ def main(argv: list[str] | None = None) -> int:
                 evidence=args.evidence,
                 effect=args.effect,
                 next_action=args.next_action,
+            )
+        )
+    elif args.command == "trial":
+        defaults = TRIAL_PRESETS.get(args.preset or "", {})
+        missing = [
+            field
+            for field in ("task", "level", "tools", "verification", "effect", "friction", "decision")
+            if getattr(args, field) is None and field not in defaults
+        ]
+        if missing:
+            trial.error(
+                "the following arguments are required without a preset or explicit override: "
+                + ", ".join(f"--{field.replace('_', '-')}" for field in missing)
+            )
+        print(
+            build_trial_row(
+                date=args.date,
+                task=args.task or defaults["task"],
+                level=args.level or defaults["level"],
+                tools=args.tools or defaults["tools"],
+                verification=args.verification or defaults["verification"],
+                effect=args.effect or defaults["effect"],
+                friction=args.friction or defaults["friction"],
+                decision=args.decision or defaults["decision"],
             )
         )
     return 0

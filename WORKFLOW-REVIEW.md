@@ -31,6 +31,9 @@
 - `scripts/audit_external_component.py`：只读外部组件准入扫描，用于 skill/plugin/MCP/hook/subagent prompt/workflow pack 的 promote/pilot/repo-local/hold/reject 判断。
 - `scripts/benchmark_skill_polish.py`：对比 pre-polish `2026.06.12` release 和当前 post-polish tree，量化 skill count、Output Shape、accessibility、release readiness 和 progressive disclosure。
 - `scripts/verify_live_install.py`：只读比较当前机器 `~/.codex/AGENTS.md` 和 `~/.agents/skills/` 是否与 output 包一致，用于发现 live install drift。
+- `scripts/codex_runtime_smoke.py`：只读汇总本机 live install、local doctor、Codex CLI、可选 prompt-input skill 可见性和 `docs/agent-collaboration-smoke.md` 手动 agent smoke 证据。
+- `scripts/audit_skill_contracts.py`：只读审计 11 个 packaged skills 的 metadata、trigger、Output Shape、边界、验证条件、progressive disclosure 和 Superpowers overlap 信号。
+- `docs/agent-collaboration-smoke.md`：V3.1 subagent runtime 手动/HITL smoke checklist，覆盖 read-only dual explorer、No-Dispatch、local-write boundary、visibility policy、skill coupling 和 Lifecycle Ledger。
 - `scripts/build_release.py`：刷新 `MANIFEST.sha256`，构建 release tarball 和 checksum。
 
 已移除并保持移除：
@@ -91,6 +94,8 @@ V3.1 Core 的默认语义已锁定为文档规则、边界、prompt cards、只�
 - `skills/debug-loop` 和 `skills/completion-review`：补 `goal drift`、`context drift`、`unsupported claim` 和 subagent lifecycle 自诊断/收口检查。
 - `scripts/render_usage_row.py`：补 V3.1 pilot defaults：`codegraph`、`memory-recall`、`plugin-mcp-trust`、`agent-config-lint`、`domain-pilot`、`external-component-intake`。
 - `scripts/render_usage_row.py`：新增 `subagent-contract`、`agent-lifecycle-ledger`、`agent-eval-evidence` pilot rows，用于记录 agent handoff/return、close hygiene 和 eval evidence。
+- `scripts/render_usage_row.py trial`：新增真实 M/L/XL 试跑记录行，用于记录 efficiency signal、friction 和 keep/tighten/loosen/remove 决策。
+- `docs/codex-usage.md`：记录本 toolkit 仓库 4 个 V3.1 实战样本和阶段复盘，和 `repo-template/docs/codex-usage.md` 模板分离。
 - `scripts/benchmark_agent_contract.py`：对比 `2026.06.12.1` 和当前 tree，量化 agent contract coverage。
 - `skills/release-readiness`：新增 pilot 级 artifact evidence gate，用于 reusable artifact、portable toolkit、release archive、checksum bundle、install drill、rollback 和 release evidence，不替代生产发布审批。
 - Skill polish：`debug-loop` 补 Feedback Loop First / deterministic loop / regression test / Output Shape；`completion-review` 补 Artifact / Release Evidence Gate；`frontend-qa` 补 Keyboard / Focus / Contrast / ARIA / Reduced motion；`decision-record` 补 ADR Output Shape / Completion Conditions；`repo-onboarding` 区分 minimal context pack 和 optional context pack；`spec-kit-xl` 将完整模板移到 `references/spec-template.md`。
@@ -116,9 +121,12 @@ V3.1 verifier/tests/README/QUICKSTART/VERSION/MANIFEST/release 必须同步通�
 - repo-template 自检：`repo-template/scripts/verify_context_pack.py repo-template` 输出 `Context pack OK`。
 - toolkit tests：覆盖 toolkit 自检、manifest/release、安装器 preflight、质量门禁模板和 workflow review。
 - repo-template tests：覆盖 context pack verifier。
-- 新机器演练：`2026.06.12.2` release checksum 通过；临时解包后 toolkit 自检通过；安装到临时 Codex/Agents/repo 成功；目标 repo context pack 通过；baseline、V2.1 pilot、V3.1 pilot 和 agent-contract usage row 可追加并被找到；旧版演练也覆盖过第二次安装跳过相同文件、冲突安装返回失败且不会提前写入 Codex/Agents home。
+- 新机器演练：`2026.06.13.2` release checksum 通过；临时解包后 toolkit 自检通过；安装到临时 Codex/Agents/repo 成功；live install、doctor、runtime smoke、skill contract audit 和目标 repo context pack 均通过；旧版演练也覆盖过第二次安装跳过相同文件、冲突安装返回失败且不会提前写入 Codex/Agents home。
 - Skill polish benchmark：`scripts/benchmark_skill_polish.py` 输出显式 contract points `17 -> 53`，增量 `+36`，`+211.76%`；其中 Output Shape `4 -> 11`，accessibility `0 -> 5`，release readiness `0 -> 6`，progressive disclosure `0 -> 3`。
 - Agent contract benchmark：`scripts/benchmark_agent_contract.py` 输出显式 agent contract points `5 -> 114`，增量 `+109`，`+2180.0%`；其中 20-repo research source coverage `0 -> 20`，prompt card contract coverage `0 -> 40`，verifier contract checks `0 -> 7`，usage pilot defaults `0 -> 3`。
+- Local Codex smoke：`docs/V3.1-LOCAL-CODEX-SMOKE-REPORT.md` 记录本机 `codex-cli 0.140.0-alpha.2`、live install、prompt-input skill 可见性、三个只读 subagent 的 return/close 证据，以及 `codex_doctor.py` bytecode 修复。结论是 V3.1 skills 和 subagents 可配合使用，但 runtime envelope enforcement 仍依赖主 agent prompt/review/close。
+- Runtime evidence split：`scripts/codex_runtime_smoke.py` 将 package integrity 之外的 live install、doctor、Codex CLI、prompt-input 和手动 agent smoke 分层记录；`scripts/audit_skill_contracts.py` 输出 11/11 skill contract audit OK，避免后续 skill polish 只靠人工 `rg`。
+- V3.1 real usage calibration：`docs/codex-usage.md` 记录第一阶段 4 个 M/L 实战样本和 closeout 4 个 M/L 实战样本。结论是保留 package verifier、runtime smoke、skill audit、release-readiness 和 render-only `render_usage_row.py trial --preset`；继续把 No-Dispatch、Local-Write Boundary、Visibility Policy 留在 HITL checklist，不做伪自动化，不给 usage row 增加自动追加写入。
 
 已校准的副作用判断：
 
@@ -171,7 +179,7 @@ python3 scripts/verify_context_pack.py
 
 Evidence source:
 
-- Baseline toolkit: `python3 scripts/verify_toolkit.py` 输出 `Workflow toolkit OK`；current release checksum 输出 `codex-workflow-kit-2026.06.12.2.tar.gz: OK`。
+- Baseline toolkit: `python3 scripts/verify_toolkit.py` 输出 `Workflow toolkit OK`；current release checksum 输出 `codex-workflow-kit-2026.06.13.2.tar.gz: OK`。
 - Trial repo scan: 找到 `ai-quant-trading`、`coze-studio`、`ai-workflows`、`dify`、`dify-plugin-daemon` 5 个候选仓库。
 - Dry-run install: `ai-quant-trading` 和 `dify` 因已有 `AGENTS.md` 正确报冲突；`coze-studio` 因 dirty worktree 暂缓。
 - Dirty-worktree-aware audit: `ai-workflows` 和 `dify-plugin-daemon` 输出 `repo-only-install`、findings 为 0。

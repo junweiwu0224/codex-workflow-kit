@@ -1,7 +1,7 @@
 {
   "versions": {
     "pre-agent-contract": "2026.06.12.1",
-    "post-agent-contract": "2026.06.12.2"
+    "post-agent-contract": "2026.06.13.2"
   },
   "method": "Compare the archived pre-agent-contract release with the current toolkit tree and count explicit subagent handoff, return, context-filtering, command-risk, stop-condition, ledger, usage, and research-evidence coverage.",
   "metrics": [

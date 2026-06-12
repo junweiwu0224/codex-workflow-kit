@@ -4,12 +4,19 @@ from __future__ import annotations
 
 import argparse
 import json
+import sys
 from pathlib import Path
 
+_old_dont_write_bytecode = sys.dont_write_bytecode
+sys.dont_write_bytecode = True
 try:
-    from .verify_live_install import build_report as build_live_install_report
-except ImportError:
-    from verify_live_install import build_report as build_live_install_report
+    try:
+        from .verify_live_install import build_report as build_live_install_report
+    except ImportError:
+        from verify_live_install import build_report as build_live_install_report
+finally:
+    sys.dont_write_bytecode = _old_dont_write_bytecode
+
 
 
 def _active_plugin_path_issue_count(live_report: dict) -> int:

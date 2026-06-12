@@ -19,6 +19,9 @@ docs/
   V3.1-AGENT-RESEARCH-20.md
   V3.1-AGENT-CONTRACT-BENCHMARK.md
   V3.1-AGENT-CONTRACT-BENCHMARK.json
+  V3.1-LOCAL-CODEX-SMOKE-REPORT.md
+  agent-collaboration-smoke.md
+  codex-usage.md
   external-component-intake.md
   superpowers/
     plans/
@@ -31,6 +34,7 @@ global/
 install.sh
 
 scripts/
+  audit_skill_contracts.py
   audit_external_component.py
   audit_repo_adoption.py
   benchmark_agent_contract.py
@@ -38,9 +42,15 @@ scripts/
   benchmark_v31_vs_v22.py
   build_release.py
   codex_doctor.py
+  codex_runtime_smoke.py
   render_usage_row.py
   verify_live_install.py
   verify_toolkit.py
+
+tests/
+  test_audit_skill_contracts.py
+  test_codex_runtime_smoke.py
+  ...
 
 repo-template/
   AGENTS.md
@@ -104,6 +114,12 @@ skills/
 
 `docs/V3.1-AGENT-CONTRACT-BENCHMARK.md` / `docs/V3.1-AGENT-CONTRACT-BENCHMARK.json` 是 agent contract 对比 `2026.06.12.1` release 的量化 benchmark，覆盖 Handoff Envelope、Return Envelope、History/Input Filter、Command/Tool Risk Policy、Step Budget / Stop Condition、Lifecycle Ledger、usage pilots 和研究证据覆盖。对应脚本是 `scripts/benchmark_agent_contract.py`。
 
+`docs/V3.1-LOCAL-CODEX-SMOKE-REPORT.md` 是本机 Codex 配合实测报告，记录 live skills、Codex CLI、prompt-input skill 可见性、真实 subagent spawn/return/close、doctor bytecode 修复、验证结果和后续优化方向。
+
+`docs/agent-collaboration-smoke.md` 是 V3.1 subagent runtime 的手动/HITL smoke checklist，覆盖 read-only dual explorer、No-Dispatch、local-write boundary、visibility policy、skill coupling 和 lifecycle ledger。
+
+`docs/codex-usage.md` 是本 toolkit 仓库自己的 V3.1 真实试跑记录，当前包含第一阶段 4 个 M/L 样本、closeout 4 个 M/L 样本和阶段复盘，用于判断哪些规则真的省时间、哪些仍增加摩擦。它不同于 `repo-template/docs/codex-usage.md`，后者是复制到目标仓库的模板。
+
 `docs/external-component-intake.md` 是外部 skill/plugin/MCP/hook/subagent prompt/workflow pack 的准入协议。对应只读脚本是 `scripts/audit_external_component.py`。
 
 ### 1. 先验证 toolkit 包
@@ -163,7 +179,7 @@ Codex doctor OK
 如果要运行 toolkit 自身测试，需要使用已安装 `pytest` 的 Python 环境：
 
 ```bash
-python3 -m pytest tests/test_verify_toolkit.py tests/test_verify_live_install.py tests/test_render_usage_row.py tests/test_codex_doctor.py tests/test_audit_repo_adoption.py tests/test_audit_external_component.py tests/test_benchmark_skill_polish.py -q
+python3 -m pytest tests/test_verify_toolkit.py tests/test_verify_live_install.py tests/test_render_usage_row.py tests/test_codex_doctor.py tests/test_codex_runtime_smoke.py tests/test_audit_skill_contracts.py tests/test_audit_repo_adoption.py tests/test_audit_external_component.py tests/test_benchmark_skill_polish.py tests/test_benchmark_agent_contract.py -q
 cd repo-template
 python3 scripts/verify_context_pack.py
 python3 -m pytest tests/test_verify_context_pack.py -q
@@ -307,9 +323,13 @@ python3 scripts/render_usage_row.py pilot --pilot plugin-mcp-trust
 python3 scripts/render_usage_row.py pilot --pilot agent-config-lint
 python3 scripts/render_usage_row.py pilot --pilot domain-pilot
 python3 scripts/render_usage_row.py pilot --pilot external-component-intake
+python3 scripts/render_usage_row.py trial --task "Runtime smoke evidence" --level M --tools "codex_runtime_smoke" --verification "runtime smoke OK" --effect "drift found early" --friction "manual agent cases remain HITL" --decision "keep package/runtime split"
+python3 scripts/render_usage_row.py trial --preset trial-preset-helper
 ```
 
 `pilot` 子命令只打印 Markdown 行，用于把可选工具试点记录到 `docs/codex-usage.md`；它不会写目标 repo、安装外部工具、启用 hooks 或启动 MCP。
+
+`trial` 子命令只打印真实 M/L/XL 使用样本行，用于记录效率收益、摩擦和收紧决策；`--preset` 只填充常见 closeout 行的默认字段，仍允许显式覆盖 verification 或 decision。它不修改目标 repo，也不自动追加文档或晋升规则。
 
 评估外部 skill、plugin、MCP、hook、subagent prompt 或 workflow pack 时，先运行只读 intake audit：
 
@@ -319,6 +339,26 @@ python3 scripts/audit_external_component.py /path/to/component --json
 ```
 
 这个脚本只读扫描本地文件，不安装、不启用、不联网、不写目标组件；输出用于决定 `promote`、`pilot`、`repo-local`、`hold` 或 `reject`。
+
+需要审计 packaged skill 契约完整度时运行：
+
+```bash
+python3 scripts/audit_skill_contracts.py
+python3 scripts/audit_skill_contracts.py --json
+python3 scripts/audit_skill_contracts.py --markdown
+```
+
+它会检查 11 个个人 Codex skills 的 metadata、trigger、Output Shape、边界、验证条件、progressive disclosure 和 Superpowers overlap 信号；这是包内契约审计，不安装、不启用外部能力。
+
+需要汇总本机 Codex runtime 证据时运行：
+
+```bash
+python3 scripts/codex_runtime_smoke.py
+python3 scripts/codex_runtime_smoke.py --check-prompt-input
+python3 scripts/codex_runtime_smoke.py --markdown
+```
+
+它会汇总 live install、local doctor、Codex CLI 和 `docs/agent-collaboration-smoke.md` 手动 checklist。默认不跑 `codex debug prompt-input`；只有加 `--check-prompt-input` 时才验证模型可见的 11 个 custom skills。
 
 需要重新生成 V3.1/V2.2 量化对比时运行：
 
@@ -390,6 +430,8 @@ python3 scripts/build_release.py
 ./install.sh
 python3 scripts/verify_live_install.py
 python3 scripts/codex_doctor.py
+python3 scripts/codex_runtime_smoke.py
+python3 scripts/audit_skill_contracts.py
 ```
 
 如果还要给某个仓库安装 context pack：

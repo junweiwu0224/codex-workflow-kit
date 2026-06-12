@@ -1,19 +1,21 @@
 # Quickstart
 
-这是一份迁移清单，用于把 Codex Workflow Kit 迁移到新机器，并在 10 分钟内应用到第一个新 repo。当前包是 V3.1 稳定口径：保留全局规则、11 个个人 Codex skills、repo context pack、live install 校验、doctor 巡检、外部组件准入、release-readiness pilot、codegraph/memory pilot、V3.1 证据和 baseline/pilot usage 记录。
+这是一份迁移清单，用于把 Codex Workflow Kit 迁移到新机器，并在 10 分钟内应用到第一个新 repo。当前包是 V3.1 稳定口径：保留全局规则、11 个个人 Codex skills、repo context pack、live install 校验、doctor 巡检、runtime smoke、skill contract audit、外部组件准入、release-readiness pilot、codegraph/memory pilot、V3.1 证据和 baseline/pilot usage 记录。
 
 ## 1. 新机器最短安装命令
 
 从 release 包安装：
 
 ```bash
-tar -xzf codex-workflow-kit-2026.06.12.2.tar.gz
+tar -xzf codex-workflow-kit-2026.06.13.2.tar.gz
 cd codex-workflow-kit
 python3 scripts/verify_toolkit.py
 ./install.sh --dry-run
 ./install.sh
 python3 scripts/verify_live_install.py
 python3 scripts/codex_doctor.py
+python3 scripts/codex_runtime_smoke.py
+python3 scripts/audit_skill_contracts.py
 python3 scripts/audit_external_component.py skills/skill-plugin-intake-review
 ```
 
@@ -26,6 +28,8 @@ python3 scripts/verify_toolkit.py
 ./install.sh
 python3 scripts/verify_live_install.py
 python3 scripts/codex_doctor.py
+python3 scripts/codex_runtime_smoke.py
+python3 scripts/audit_skill_contracts.py
 python3 scripts/audit_external_component.py skills/skill-plugin-intake-review
 ```
 
@@ -50,12 +54,16 @@ python3 scripts/audit_external_component.py skills/skill-plugin-intake-review
 python3 scripts/verify_toolkit.py
 python3 scripts/verify_live_install.py
 python3 scripts/codex_doctor.py
+python3 scripts/codex_runtime_smoke.py
+python3 scripts/audit_skill_contracts.py
 python3 scripts/render_usage_row.py baseline
 python3 scripts/render_usage_row.py pilot --pilot observability
 python3 scripts/render_usage_row.py pilot --pilot external-component-intake
 python3 scripts/render_usage_row.py pilot --pilot subagent-contract
 python3 scripts/render_usage_row.py pilot --pilot agent-lifecycle-ledger
 python3 scripts/render_usage_row.py pilot --pilot agent-eval-evidence
+python3 scripts/render_usage_row.py trial --task "Runtime smoke evidence" --level M --tools "codex_runtime_smoke" --verification "runtime smoke OK" --effect "drift found early" --friction "manual agent cases remain HITL" --decision "keep package/runtime split"
+python3 scripts/render_usage_row.py trial --preset trial-preset-helper
 python3 scripts/audit_external_component.py skills/skill-plugin-intake-review
 ```
 
@@ -63,13 +71,13 @@ python3 scripts/audit_external_component.py skills/skill-plugin-intake-review
 
 ```bash
 cd releases
-shasum -a 256 -c codex-workflow-kit-2026.06.12.2.tar.gz.sha256
+shasum -a 256 -c codex-workflow-kit-2026.06.13.2.tar.gz.sha256
 ```
 
 验证 toolkit 自身测试：
 
 ```bash
-python3 -m pytest tests/test_verify_toolkit.py tests/test_verify_live_install.py tests/test_render_usage_row.py tests/test_codex_doctor.py tests/test_audit_repo_adoption.py tests/test_audit_external_component.py tests/test_benchmark_skill_polish.py tests/test_benchmark_agent_contract.py -q
+python3 -m pytest tests/test_verify_toolkit.py tests/test_verify_live_install.py tests/test_render_usage_row.py tests/test_codex_doctor.py tests/test_codex_runtime_smoke.py tests/test_audit_skill_contracts.py tests/test_audit_repo_adoption.py tests/test_audit_external_component.py tests/test_benchmark_skill_polish.py tests/test_benchmark_agent_contract.py -q
 ```
 
 验证 repo context pack 模板：
@@ -86,10 +94,16 @@ python3 -m pytest tests/test_verify_context_pack.py -q
 Workflow toolkit OK
 Live install OK (15 files checked)
 Codex doctor OK
+Codex runtime smoke OK
+Skill contract audit OK
 Context pack OK
 ```
 
-`verify_toolkit.py`、`verify_live_install.py`、`codex_doctor.py` 和 `verify_context_pack.py` 都是只读验证：不联网、不安装外部工具、不启用 hooks、不启动 MCP、不写外部配置。`codex_doctor.py` 只汇总 live install drift 和活跃插件/native-host/plugin-cache 路径是否指向其他 macOS 用户目录。
+`verify_toolkit.py`、`verify_live_install.py`、`codex_doctor.py`、`codex_runtime_smoke.py`、`audit_skill_contracts.py` 和 `verify_context_pack.py` 都是只读验证：不联网、不安装外部工具、不启用 hooks、不启动 MCP、不写外部配置。`codex_doctor.py` 只汇总 live install drift 和活跃插件/native-host/plugin-cache 路径是否指向其他 macOS 用户目录。
+
+`codex_runtime_smoke.py` 汇总 live install、local doctor、Codex CLI 和手动 agent checklist 证据；默认不运行 `codex debug prompt-input`，需要验证模型可见 skill 时加 `--check-prompt-input`。
+
+`audit_skill_contracts.py` 扫描 packaged skills 的 metadata、trigger、Output Shape、边界、验证条件和 progressive disclosure，确认 11 个个人 skills 的契约完整。
 
 `audit_external_component.py` 也是只读审查：不安装外部 skill/plugin/MCP/hook，不启用外部工具，不写目标组件，只输出 `promote`、`pilot`、`repo-local`、`hold` 或 `reject` 建议。
 
@@ -109,6 +123,8 @@ python3 scripts/verify_toolkit.py
 ./install.sh
 python3 scripts/verify_live_install.py
 python3 scripts/codex_doctor.py
+python3 scripts/codex_runtime_smoke.py
+python3 scripts/audit_skill_contracts.py
 ```
 
 第 4-6 分钟：给目标 repo 安装 context pack 模板。
@@ -171,6 +187,8 @@ cd /path/to/repo
 - Codex 能看到 `repo-onboarding`、`spec-kit-xl`、`debug-loop`、`frontend-qa`、`decision-record`、`completion-review`、`security-review`、`dependency-upgrade-review`、`research-brief`、`skill-plugin-intake-review`、`release-readiness`。
 - `python3 scripts/verify_live_install.py` 能确认当前机器的全局 AGENTS、11 个 skill 入口和 packaged skill assets 与 output 包一致，并确认活跃 Codex/Chrome 插件、native host 和 plugin cache symlink 没有指向其他 macOS 用户目录。
 - `python3 scripts/codex_doctor.py` 输出 `Codex doctor OK`。
+- `python3 scripts/codex_runtime_smoke.py` 输出 `Codex runtime smoke OK`；需要验证 prompt-input skill 可见性时可加 `--check-prompt-input`。
+- `python3 scripts/audit_skill_contracts.py` 输出 `Skill contract audit OK`，并确认 11/11 skills 通过契约审计。
 - 目标 repo 有 `AGENTS.md`、`docs/commands.md`、`docs/testing.md`、`docs/quality-gates.md`、`docs/codex-usage.md`。
 - 目标 repo 有 V3.1 试点文档：`docs/observability.md`、`docs/mcp-pilot.md`、`docs/codegraph-pilot.md`、`docs/memory-recall-pilot.md`，但没有默认安装外部工具、启用 hooks 或启动 MCP。
 - 目标 repo 的 `docs/subagents.md` 有 Handoff Envelope、Return Envelope、History/Input Filter、Command/Tool Risk Policy、Step Budget / Stop Condition、Lifecycle Ledger 和 No-Dispatch Decision。

@@ -1,6 +1,8 @@
 import re
 
-from scripts.render_usage_row import build_baseline_row, build_pilot_row, main
+import pytest
+
+from scripts.render_usage_row import build_baseline_row, build_pilot_row, build_trial_row, main
 
 
 def test_build_baseline_row_uses_defaults():
@@ -166,3 +168,92 @@ def test_main_prints_pilot_row_with_overrides(capsys):
     assert "| 2026-06-07 | mcp-code-graph pilot | M | deepcontext-mcp, rg baseline |" in output
     assert "`rg baseline compared`" in output
     assert "Keep as candidate" in output
+
+
+def test_build_trial_row_records_effect_and_friction():
+    row = build_trial_row(
+        date="2026-06-13",
+        task="Runtime smoke evidence",
+        level="M",
+        tools="codex_runtime_smoke, release-readiness",
+        verification="`python3 scripts/codex_runtime_smoke.py` -> OK",
+        effect="Caught live install drift before release",
+        friction="Prompt-input remains optional",
+        decision="Keep runtime smoke separate from package verifier",
+    )
+
+    assert row == (
+        "| 2026-06-13 | Runtime smoke evidence | M | codex_runtime_smoke, release-readiness | "
+        "`python3 scripts/codex_runtime_smoke.py` -> OK | Caught live install drift before release | "
+        "Prompt-input remains optional | Keep runtime smoke separate from package verifier |"
+    )
+
+
+def test_main_prints_trial_row(capsys):
+    exit_code = main(
+        [
+            "trial",
+            "--date",
+            "2026-06-13",
+            "--task",
+            "Usage evidence loop",
+            "--level",
+            "L",
+            "--tools",
+            "completion-review, verify_toolkit",
+            "--verification",
+            "`python3 scripts/verify_toolkit.py` -> Workflow toolkit OK",
+            "--effect",
+            "Evidence table made completion auditable",
+            "--friction",
+            "Manual table writing was repetitive",
+            "--decision",
+            "Promote trial row helper",
+        ]
+    )
+    output = capsys.readouterr().out
+
+    assert exit_code == 0
+    assert "| 2026-06-13 | Usage evidence loop | L | completion-review, verify_toolkit |" in output
+    assert "Manual table writing was repetitive" in output
+
+
+def test_main_prints_trial_row_from_preset(capsys):
+    exit_code = main(["trial", "--preset", "trial-preset-helper", "--date", "2026-06-13"])
+    output = capsys.readouterr().out
+
+    assert exit_code == 0
+    assert "| 2026-06-13 | Trial row preset helper | M | render_usage_row --preset, targeted pytest |" in output
+    assert "Common usage rows no longer require repeating all eight trial fields" in output
+    assert "do not auto-append docs" in output
+
+
+def test_main_allows_trial_preset_overrides(capsys):
+    exit_code = main(
+        [
+            "trial",
+            "--preset",
+            "release-readiness-closeout",
+            "--date",
+            "2026-06-13",
+            "--level",
+            "XL",
+            "--decision",
+            "Keep release drill; do not add background automation",
+        ]
+    )
+    output = capsys.readouterr().out
+
+    assert exit_code == 0
+    assert "| 2026-06-13 | Release-readiness closeout drill | XL |" in output
+    assert "Keep release drill; do not add background automation" in output
+
+
+def test_main_requires_complete_trial_fields_without_preset(capsys):
+    with pytest.raises(SystemExit) as exc_info:
+        main(["trial", "--date", "2026-06-13", "--task", "Incomplete"])
+
+    captured = capsys.readouterr()
+    assert exc_info.value.code == 2
+    assert "--level" in captured.err
+    assert "--decision" in captured.err

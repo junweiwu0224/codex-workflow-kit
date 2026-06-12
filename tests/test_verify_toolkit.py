@@ -107,10 +107,17 @@ def test_check_toolkit_requires_v3_1_files(tmp_path):
         "docs/V3.1-AGENT-RESEARCH-20.md",
         "docs/V3.1-AGENT-CONTRACT-BENCHMARK.md",
         "docs/V3.1-AGENT-CONTRACT-BENCHMARK.json",
+        "docs/V3.1-LOCAL-CODEX-SMOKE-REPORT.md",
+        "docs/agent-collaboration-smoke.md",
+        "docs/codex-usage.md",
         "docs/external-component-intake.md",
+        "scripts/audit_skill_contracts.py",
         "scripts/audit_external_component.py",
+        "scripts/codex_runtime_smoke.py",
         "scripts/benchmark_skill_polish.py",
         "scripts/benchmark_agent_contract.py",
+        "tests/test_audit_skill_contracts.py",
+        "tests/test_codex_runtime_smoke.py",
         "tests/test_benchmark_agent_contract.py",
         "tests/test_audit_external_component.py",
         "repo-template/docs/codegraph-pilot.md",
@@ -130,10 +137,17 @@ def test_check_toolkit_requires_v3_1_files(tmp_path):
     assert "docs/V3.1-AGENT-RESEARCH-20.md" in missing_paths
     assert "docs/V3.1-AGENT-CONTRACT-BENCHMARK.md" in missing_paths
     assert "docs/V3.1-AGENT-CONTRACT-BENCHMARK.json" in missing_paths
+    assert "docs/V3.1-LOCAL-CODEX-SMOKE-REPORT.md" in missing_paths
+    assert "docs/agent-collaboration-smoke.md" in missing_paths
+    assert "docs/codex-usage.md" in missing_paths
     assert "docs/external-component-intake.md" in missing_paths
+    assert "scripts/audit_skill_contracts.py" in missing_paths
     assert "scripts/audit_external_component.py" in missing_paths
+    assert "scripts/codex_runtime_smoke.py" in missing_paths
     assert "scripts/benchmark_skill_polish.py" in missing_paths
     assert "scripts/benchmark_agent_contract.py" in missing_paths
+    assert "tests/test_audit_skill_contracts.py" in missing_paths
+    assert "tests/test_codex_runtime_smoke.py" in missing_paths
     assert "tests/test_benchmark_agent_contract.py" in missing_paths
     assert "tests/test_audit_external_component.py" in missing_paths
     assert "repo-template/docs/codegraph-pilot.md" in missing_paths
@@ -448,6 +462,67 @@ def test_check_toolkit_requires_agent_contract_benchmark_terms(tmp_path):
     issues = check_toolkit(shadow)
 
     assert any(issue.code == "agent-contract-benchmark-missing-term" for issue in issues)
+
+
+def test_check_toolkit_requires_agent_collaboration_smoke_contract(tmp_path):
+    shadow = _clean_package_copy(tmp_path)
+    smoke = shadow / "docs/agent-collaboration-smoke.md"
+    smoke.write_text(
+        smoke.read_text(encoding="utf-8")
+        .replace("Read-Only Dual Explorer", "Dual Explorer")
+        .replace("close_agent previous_status", "close status"),
+        encoding="utf-8",
+    )
+
+    issues = check_toolkit(shadow)
+
+    assert any(issue.code == "agent-collaboration-smoke-missing-term" for issue in issues)
+
+
+def test_check_toolkit_requires_real_usage_trial_evidence(tmp_path):
+    shadow = _clean_package_copy(tmp_path)
+    usage = shadow / "docs/codex-usage.md"
+    usage.write_text(
+        usage.read_text(encoding="utf-8")
+        .replace("Stage Review: 4 Real V3.1 Trials", "Stage Review")
+        .replace("Package verifier coverage for real usage evidence", "Verifier evidence"),
+        encoding="utf-8",
+    )
+
+    issues = check_toolkit(shadow)
+
+    assert any(issue.code == "codex-usage-missing-term" for issue in issues)
+
+
+def test_check_toolkit_requires_closeout_trial_evidence(tmp_path):
+    shadow = _clean_package_copy(tmp_path)
+    usage = shadow / "docs/codex-usage.md"
+    usage.write_text(
+        usage.read_text(encoding="utf-8")
+        .replace("Closeout Trial Records", "Closeout Records")
+        .replace("Trial row preset helper", "Usage preset helper")
+        .replace("do not auto-append docs", "do not write docs"),
+        encoding="utf-8",
+    )
+
+    issues = check_toolkit(shadow)
+
+    assert any(issue.code == "codex-usage-missing-term" for issue in issues)
+
+
+def test_check_toolkit_runs_skill_contract_audit(tmp_path):
+    shadow = _clean_package_copy(tmp_path)
+    spec = shadow / "skills/spec-kit-xl/SKILL.md"
+    spec.write_text(
+        spec.read_text(encoding="utf-8")
+        .replace("## 不要做", "## 边界说明")
+        .replace("不要把本 skill 当成普通 M 级任务的必经流程。", "只用于正式规格。"),
+        encoding="utf-8",
+    )
+
+    issues = check_toolkit(shadow)
+
+    assert any(issue.code == "skill-contract-audit-failed" for issue in issues)
 
 
 def test_check_toolkit_requires_proactive_subagent_guidance(tmp_path):

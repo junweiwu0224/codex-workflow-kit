@@ -1,7 +1,7 @@
 {
   "versions": {
     "pre-polish": "2026.06.12",
-    "post-polish": "2026.06.12.2"
+    "post-polish": "2026.06.13.2"
   },
   "method": "Compare the archived pre-polish release with the current post-polish toolkit tree.",
   "metrics": [
