@@ -148,6 +148,26 @@ check_global_agents() {
   check_file "${KIT_ROOT}/global/AGENTS.md" "${CODEX_HOME}/AGENTS.md"
 }
 
+install_reverse_router_skill() {
+  copy_file \
+    "${KIT_ROOT}/reverse-skill-router/reverse-engineering/SKILL.md" \
+    "${CODEX_HOME}/skills/reverse-engineering/SKILL.md"
+}
+
+check_reverse_router_skill() {
+  check_file \
+    "${KIT_ROOT}/reverse-skill-router/reverse-engineering/SKILL.md" \
+    "${CODEX_HOME}/skills/reverse-engineering/SKILL.md"
+}
+
+install_reverse_pack() {
+  copy_tree_files "${KIT_ROOT}/reverse-skill" "${CODEX_HOME}/reverse-skill"
+}
+
+check_reverse_pack() {
+  check_tree_files "${KIT_ROOT}/reverse-skill" "${CODEX_HOME}/reverse-skill"
+}
+
 install_skills() {
   local skills_target="${AGENTS_HOME}/skills"
   while IFS= read -r -d '' source_dir; do
@@ -244,12 +264,16 @@ fi
 
 if [[ "${REPO_ONLY}" != "1" ]]; then
   check_global_agents
+  check_reverse_router_skill
+  check_reverse_pack
   check_skills
 fi
 check_repo_template
 
 if [[ "${REPO_ONLY}" != "1" ]]; then
   install_global_agents
+  install_reverse_router_skill
+  install_reverse_pack
   install_skills
 fi
 install_repo_template

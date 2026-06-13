@@ -44,6 +44,12 @@ def _iter_skill_files(root: Path) -> list[Path]:
     return sorted(path for path in skills_root.rglob("*") if path.is_file())
 
 
+def _iter_files(root: Path) -> list[Path]:
+    if not root.exists():
+        return []
+    return sorted(path for path in root.rglob("*") if path.is_file())
+
+
 def _compare_file(source: Path, target: Path, label: str) -> LiveInstallIssue | None:
     if not source.exists():
         return LiveInstallIssue(
@@ -142,6 +148,28 @@ def check_live_install(
         if issue:
             issues.append(issue)
 
+    reverse_router_root = root / "reverse-skill-router"
+    for router_file in _iter_files(reverse_router_root):
+        relative = router_file.relative_to(reverse_router_root)
+        issue = _compare_file(
+            router_file,
+            codex_home / "skills" / relative,
+            f"reverse router {relative.as_posix()}",
+        )
+        if issue:
+            issues.append(issue)
+
+    reverse_pack_root = root / "reverse-skill"
+    for reverse_file in _iter_files(reverse_pack_root):
+        relative = reverse_file.relative_to(reverse_pack_root)
+        issue = _compare_file(
+            reverse_file,
+            codex_home / "reverse-skill" / relative,
+            f"reverse pack {relative.as_posix()}",
+        )
+        if issue:
+            issues.append(issue)
+
     issues.extend(_check_active_plugin_paths(codex_home, user_home))
 
     return sorted(issues)
@@ -158,7 +186,12 @@ def build_report(
     agents_home_path = Path(agents_home).expanduser().resolve() if agents_home else Path.home() / ".agents"
     user_home_path = Path(user_home).expanduser().resolve() if user_home else Path.home()
     issues = check_live_install(root, codex_home_path, agents_home_path, user_home_path)
-    checked_count = 1 + len(_iter_skill_files(root))
+    checked_count = (
+        1
+        + len(_iter_skill_files(root))
+        + len(_iter_files(root / "reverse-skill-router"))
+        + len(_iter_files(root / "reverse-skill"))
+    )
     return {
         "ok": not issues,
         "root": str(root),

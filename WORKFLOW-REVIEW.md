@@ -24,6 +24,8 @@
 已完成并打包：
 
 - `global/AGENTS.md`：个人 Codex 宪法、任务分级、Superpowers/spec-kit 总控、MCP/memory/hooks/subagents 边界。
+- `reverse-skill/`：完整逆向工程/安全分析能力树，保留 routing、子技能、CTF orchestrator、Burp/Ghidra bridge、bootstrap 脚本、platform docs 和 field journal 结构。
+- `reverse-skill-router/reverse-engineering/SKILL.md`：全局 reverse router 入口，安装到 `~/.codex/skills/reverse-engineering/`，把 Desktop 侧逆向/渗透类请求稳定路由到 `~/.codex/reverse-skill/`。
 - `repo-template/`：项目级 `AGENTS.md`、commands/testing/quality-gates/subagents/observability/mcp-pilot/usage/playbook/ADR/specs/glossary 模板。
 - `skills/`：`repo-onboarding`、`spec-kit-xl`、`debug-loop`、`frontend-qa`、`decision-record`、`completion-review`、`security-review`、`dependency-upgrade-review`、`research-brief`、`skill-plugin-intake-review`、`release-readiness`。
 - `install.sh`：非破坏式安装器，支持 dry-run、自定义 Codex/Agents home、repo 模板安装、backup/force。
@@ -53,6 +55,7 @@
 - V2.1 subagent prompt cards：为 read-only code mapper、test/debug investigator、frontend QA reviewer、docs/content-contract reviewer、architecture/migration reviewer 提供可复制 prompt，同时保留主 agent 集成和共享状态边界。
 - V2.2 P0 专项 skills：`security-review`、`dependency-upgrade-review`、`research-brief` 补齐安全审查、依赖升级审查和生态研究选型缺口；它们不替代 Superpowers 计划/TDD/debug，不默认安装外部工具、不启用 hooks、不启动 MCP。
 - install/release 流程：可在新机器解包、验证、dry-run、安装、live install drift 检查、重复安装和冲突保护。
+- reverse-skill 迁移：通过保留独立子树和原相对路径，跨机器复用 reverse routing、bootstrap、MCP bridge 和 CTF 子技能，而不把能力摊平成噪音式平铺目录。
 
 ## 候选边界
 
@@ -112,6 +115,18 @@ V3.1 Core 的默认语义已锁定为文档规则、边界、prompt cards、只�
 
 V3.1 verifier/tests/README/QUICKSTART/VERSION/MANIFEST/release 必须同步通过；文档层通过不再单独视为完成。
 
+## V3.2 Reverse Merge
+
+本轮 v3.2 的核心收口是把 Codex Desktop 当前 `reverse-skill` 相关文件并入 workflow-kit，同时保留全量逆向能力，不把它退化成“只有一个 router skill 的薄壳”。
+
+合并原则：
+
+- 保留独立 `reverse-skill/` 子树，不把内容硬塞进 `skills/` 平铺层。
+- 保留关键 bridge/runtime 文件：`burp-mcp-full/mcp-bridge.js`、`ghidra-mcp/headless/ghidra_headless_mcp.py`、CTF orchestrator、bootstrap 脚本、field journal、平台文档。
+- 排除机器态和生成噪音：`.venv/`、`__pycache__/`、`.pyc`、生成的 `tool-index.md/json`、`.bak-*`、`.DS_Store`。
+- 安装器把 reverse pack 落到 `~/.codex/reverse-skill/`，把 router 落到 `~/.codex/skills/reverse-engineering/`，避免破坏原有路径假设。
+- live verifier 把 global AGENTS、11 个个人 skills、reverse router、reverse pack 和活跃插件路径一起校验，避免“仓库里有文件但 Desktop 里没接上”。
+
 ## 真实验证
 
 已完成的验证层：
@@ -122,6 +137,7 @@ V3.1 verifier/tests/README/QUICKSTART/VERSION/MANIFEST/release 必须同步通�
 - toolkit tests：覆盖 toolkit 自检、manifest/release、安装器 preflight、质量门禁模板和 workflow review。
 - repo-template tests：覆盖 context pack verifier。
 - 新机器演练：`2026.06.13.2` release checksum 通过；临时解包后 toolkit 自检通过；安装到临时 Codex/Agents/repo 成功；live install、doctor、runtime smoke、skill contract audit 和目标 repo context pack 均通过；旧版演练也覆盖过第二次安装跳过相同文件、冲突安装返回失败且不会提前写入 Codex/Agents home。
+- reverse merge drill：v3.2 安装路径新增 `~/.codex/skills/reverse-engineering/` 和 `~/.codex/reverse-skill/`，由 `verify_live_install.py` 逐文件比对，避免 reverse router 漂移或 reverse pack 缺文件。
 - Skill polish benchmark：`scripts/benchmark_skill_polish.py` 输出显式 contract points `17 -> 53`，增量 `+36`，`+211.76%`；其中 Output Shape `4 -> 11`，accessibility `0 -> 5`，release readiness `0 -> 6`，progressive disclosure `0 -> 3`。
 - Agent contract benchmark：`scripts/benchmark_agent_contract.py` 输出显式 agent contract points `5 -> 114`，增量 `+109`，`+2180.0%`；其中 20-repo research source coverage `0 -> 20`，prompt card contract coverage `0 -> 40`，verifier contract checks `0 -> 7`，usage pilot defaults `0 -> 3`。
 - Local Codex smoke：`docs/V3.1-LOCAL-CODEX-SMOKE-REPORT.md` 记录本机 `codex-cli 0.140.0-alpha.2`、live install、prompt-input skill 可见性、三个只读 subagent 的 return/close 证据，以及 `codex_doctor.py` bytecode 修复。结论是 V3.1 skills 和 subagents 可配合使用，但 runtime envelope enforcement 仍依赖主 agent prompt/review/close。

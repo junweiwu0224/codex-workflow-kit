@@ -21,6 +21,12 @@ def _make_kit(tmp_path: Path) -> Path:
         "---\nname: debug-loop\ndescription: Use when debugging failures.\n---\n\n# debug-loop\n",
     )
     _write(kit / "skills/debug-loop/assets/debug-template.md", "# Debug template\n")
+    _write(
+        kit / "reverse-skill-router/reverse-engineering/SKILL.md",
+        "---\nname: reverse-engineering\ndescription: Use when reverse engineering.\n---\n\n# reverse-engineering\n",
+    )
+    _write(kit / "reverse-skill/README.md", "# Reverse pack\n")
+    _write(kit / "reverse-skill/skills/routing.md", "# Routing\n")
     return kit
 
 
@@ -33,6 +39,14 @@ def _install_matching(kit: Path, codex_home: Path, agents_home: Path) -> None:
         if asset_file.is_file():
             target = agents_home / "skills" / asset_file.relative_to(kit / "skills")
             _write(target, asset_file.read_text(encoding="utf-8"))
+    for router_file in sorted((kit / "reverse-skill-router").rglob("*")):
+        if router_file.is_file():
+            target = codex_home / "skills" / router_file.relative_to(kit / "reverse-skill-router")
+            _write(target, router_file.read_text(encoding="utf-8"))
+    for reverse_file in sorted((kit / "reverse-skill").rglob("*")):
+        if reverse_file.is_file():
+            target = codex_home / "reverse-skill" / reverse_file.relative_to(kit / "reverse-skill")
+            _write(target, reverse_file.read_text(encoding="utf-8"))
 
 
 def test_check_live_install_accepts_matching_install(tmp_path):
@@ -121,6 +135,36 @@ def test_check_live_install_reports_foreign_user_plugin_paths(tmp_path):
     assert any(issue.code == "foreign-user-plugin-path" for issue in issues)
 
 
+def test_check_live_install_reports_missing_reverse_router(tmp_path):
+    kit = _make_kit(tmp_path)
+    codex_home = tmp_path / "codex-home"
+    agents_home = tmp_path / "agents-home"
+    _install_matching(kit, codex_home, agents_home)
+    (codex_home / "skills/reverse-engineering/SKILL.md").unlink()
+
+    issues = check_live_install(kit, codex_home, agents_home)
+
+    assert any(
+        issue.code == "missing" and issue.path == str(codex_home / "skills/reverse-engineering/SKILL.md")
+        for issue in issues
+    )
+
+
+def test_check_live_install_reports_reverse_pack_drift(tmp_path):
+    kit = _make_kit(tmp_path)
+    codex_home = tmp_path / "codex-home"
+    agents_home = tmp_path / "agents-home"
+    _install_matching(kit, codex_home, agents_home)
+    _write(codex_home / "reverse-skill/skills/routing.md", "# Local routing edit\n")
+
+    issues = check_live_install(kit, codex_home, agents_home)
+
+    assert any(
+        issue.code == "drift" and issue.path == str(codex_home / "reverse-skill/skills/routing.md")
+        for issue in issues
+    )
+
+
 def test_main_prints_json_report(tmp_path, capsys):
     kit = _make_kit(tmp_path)
     codex_home = tmp_path / "codex-home"
@@ -143,5 +187,5 @@ def test_main_prints_json_report(tmp_path, capsys):
 
     assert exit_code == 0
     assert report["ok"] is True
-    assert report["checked_count"] == 4
+    assert report["checked_count"] == 7
     assert report["issues"] == []

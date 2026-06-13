@@ -23,6 +23,7 @@ EXCLUDE_DIRS = {
 }
 EXCLUDE_SUFFIXES = {
     ".pyc",
+    ".bak",
 }
 EXCLUDE_FILES = {
     ".DS_Store",
@@ -69,6 +70,8 @@ def _iter_package_files(root: Path) -> list[Path]:
             path = current / file_name
             relative = path.relative_to(root).as_posix()
             if any(relative.endswith(suffix) for suffix in EXCLUDE_SUFFIXES):
+                continue
+            if ".bak-" in relative:
                 continue
             if relative == MANIFEST_PATH:
                 continue

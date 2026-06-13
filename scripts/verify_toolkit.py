@@ -50,6 +50,25 @@ REQUIRED_FILES = (
     "docs/superpowers/plans/2026-06-07-workflow-kit-v2-adoption.md",
     "docs/superpowers/plans/2026-06-07-workflow-kit-v2-1-observability-subagents-mcp.md",
     "global/AGENTS.md",
+    "reverse-skill/README.md",
+    "reverse-skill/PLATFORMS.md",
+    "reverse-skill/skills/SKILL.md",
+    "reverse-skill/skills/routing.md",
+    "reverse-skill/skills/reverse-engineering/SKILL.md",
+    "reverse-skill/skills/apk-reverse/SKILL.md",
+    "reverse-skill/skills/ida-reverse/SKILL.md",
+    "reverse-skill/skills/js-reverse/SKILL.md",
+    "reverse-skill/skills/mobile-reverse/SKILL.md",
+    "reverse-skill/skills/pentest-tools/SKILL.md",
+    "reverse-skill/skills/api-security/SKILL.md",
+    "reverse-skill/skills/llm-security/SKILL.md",
+    "reverse-skill/skills/supply-chain-security/SKILL.md",
+    "reverse-skill/skills/docs-generator/SKILL.md",
+    "reverse-skill/skills/diagram-generator/SKILL.md",
+    "reverse-skill/CTF-Sandbox-Orchestrator/ctf-sandbox-orchestrator/SKILL.md",
+    "reverse-skill/burp-mcp-full/mcp-bridge.js",
+    "reverse-skill/ghidra-mcp/headless/ghidra_headless_mcp.py",
+    "reverse-skill-router/reverse-engineering/SKILL.md",
     "scripts/audit_skill_contracts.py",
     "scripts/audit_external_component.py",
     "scripts/audit_repo_adoption.py",
@@ -127,8 +146,12 @@ REQUIRED_README_TERMS = (
     "scripts/render_usage_row.py trial --preset",
     "~/.codex/AGENTS.md",
     "~/.agents/skills/",
+    "~/.codex/reverse-skill/",
+    "~/.codex/skills/reverse-engineering/",
     "11 个个人 Codex skills",
     "release-readiness",
+    "reverse-skill",
+    "v3.2",
 )
 REQUIRED_CODEX_USAGE_TERMS = (
     "Real Trial Records",
@@ -169,6 +192,7 @@ REQUIRED_WORKFLOW_REVIEW_TERMS = (
     "promote != install",
     "pilot != enable",
     "core != runtime/background",
+    "reverse-skill",
 )
 REQUIRED_P0_SKILL_ROUTE_TERMS = (
     "security-review",
@@ -195,6 +219,18 @@ REQUIRED_QUICKSTART_TERMS = (
     "11 个个人 Codex skills",
     "release-readiness",
     "V3.1",
+    "~/.codex/reverse-skill/",
+    "~/.codex/skills/reverse-engineering/",
+)
+REQUIRED_REVERSE_PACK_TERMS = (
+    "Routing Execution Protocol",
+    "tool-index",
+    "docs-generator",
+    "diagram-generator",
+    "field-journal",
+    "CTF-Sandbox-Orchestrator",
+    "BurpSuite MCP",
+    "Ghidra",
 )
 REQUIRED_V2_PLAN_TERMS = (
     "Workflow Kit V2 Adoption Implementation Plan",
@@ -562,9 +598,11 @@ MANIFEST_EXCLUDED_DIRS = {
     "__pycache__",
     ".pytest_cache",
     "releases",
+    ".venv",
 }
 MANIFEST_EXCLUDED_SUFFIXES = {
     ".pyc",
+    ".bak",
 }
 MANIFEST_EXCLUDED_FILES = {
     ".DS_Store",
@@ -589,6 +627,16 @@ ALLOWED_PRIVATE_PATH_FIXTURES = (
     '"/Users/"',
     '"/home/"',
     "/path/to/",
+)
+REVERSE_PACK_PRIVATE_PATH_ALLOWED_PREFIXES = (
+    "reverse-skill/skills/field-journal/",
+    "reverse-skill/skills/pentest-tools/src-hunter/references/",
+    "reverse-skill/skills/reverse-engineering/",
+)
+REVERSE_PACK_SECRET_ALLOWED_PREFIXES = (
+    "reverse-skill/skills/field-journal/",
+    "reverse-skill/skills/pentest-tools/src-hunter/references/",
+    "reverse-skill/skills/reverse-engineering/",
 )
 SKILL_BOUNDARY_TERMS = (
     "不要",
@@ -651,6 +699,8 @@ def _iter_manifest_files(root: Path) -> list[Path]:
                 continue
             if any(relative.endswith(suffix) for suffix in MANIFEST_EXCLUDED_SUFFIXES):
                 continue
+            if ".bak-" in relative:
+                continue
             files.append(path)
     return files
 
@@ -688,6 +738,22 @@ def _secret_line_allowed(line: str) -> bool:
 
 def _private_path_line_allowed(line: str) -> bool:
     return any(fixture in line for fixture in ALLOWED_PRIVATE_PATH_FIXTURES)
+
+
+def _allow_reverse_pack_private_path(relative: str, line: str) -> bool:
+    if relative in {
+        "reverse-skill/README-kali.md",
+        "reverse-skill/ghidra-mcp/headless/ghidra_headless_mcp.py",
+        "reverse-skill/skills/apk-reverse/scripts/frida-run.sh",
+    }:
+        return True
+    return any(relative.startswith(prefix) for prefix in REVERSE_PACK_PRIVATE_PATH_ALLOWED_PREFIXES)
+
+
+def _allow_reverse_pack_secret_pattern(relative: str) -> bool:
+    if relative == "reverse-skill/kali/scripts/bootstrap-reverse.sh":
+        return True
+    return any(relative.startswith(prefix) for prefix in REVERSE_PACK_SECRET_ALLOWED_PREFIXES)
 
 
 def _parse_skill_frontmatter(text: str) -> dict[str, str]:
@@ -878,6 +944,21 @@ def check_toolkit(root: str | Path = ".") -> list[ToolkitIssue]:
                     code="quickstart-missing-term",
                     path="QUICKSTART.md",
                     message=f"QUICKSTART.md must document {term}.",
+                )
+            )
+
+    reverse_readme = _read_text(root / "reverse-skill/README.md") if (root / "reverse-skill/README.md").exists() else ""
+    reverse_routing = _read_text(root / "reverse-skill/skills/routing.md") if (root / "reverse-skill/skills/routing.md").exists() else ""
+    reverse_router = _read_text(root / "reverse-skill-router/reverse-engineering/SKILL.md") if (root / "reverse-skill-router/reverse-engineering/SKILL.md").exists() else ""
+    reverse_aggregate = "\n".join((reverse_readme, reverse_routing, reverse_router))
+    for term in REQUIRED_REVERSE_PACK_TERMS:
+        if reverse_aggregate and term not in reverse_aggregate:
+            issues.append(
+                ToolkitIssue(
+                    severity="error",
+                    code="reverse-pack-missing-term",
+                    path="reverse-skill",
+                    message=f"Reverse pack packaging must preserve {term}.",
                 )
             )
 
@@ -1509,6 +1590,8 @@ def check_toolkit(root: str | Path = ".") -> list[ToolkitIssue]:
                             )
                         )
                     if SECRET_RE.search(line) and not _secret_line_allowed(line):
+                        if relative.startswith("reverse-skill/") and _allow_reverse_pack_secret_pattern(relative):
+                            continue
                         issues.append(
                             ToolkitIssue(
                                 severity="error",
@@ -1518,6 +1601,8 @@ def check_toolkit(root: str | Path = ".") -> list[ToolkitIssue]:
                             )
                         )
                     if PRIVATE_HOME_PATH_RE.search(line) and not _private_path_line_allowed(line):
+                        if relative.startswith("reverse-skill/") and _allow_reverse_pack_private_path(relative, line):
+                            continue
                         issues.append(
                             ToolkitIssue(
                                 severity="error",

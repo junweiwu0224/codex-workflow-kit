@@ -1,13 +1,13 @@
 # Quickstart
 
-这是一份迁移清单，用于把 Codex Workflow Kit 迁移到新机器，并在 10 分钟内应用到第一个新 repo。当前包是 V3.1 稳定口径：保留全局规则、11 个个人 Codex skills、repo context pack、live install 校验、doctor 巡检、runtime smoke、skill contract audit、外部组件准入、release-readiness pilot、codegraph/memory pilot、V3.1 证据和 baseline/pilot usage 记录。
+这是一份迁移清单，用于把 Codex Workflow Kit 迁移到新机器，并在 10 分钟内应用到第一个新 repo。当前包是 v3.2 口径：保留全局规则、11 个个人 Codex skills、repo context pack、完整 `reverse-skill`、reverse router、live install 校验、doctor 巡检、runtime smoke、skill contract audit、外部组件准入、release-readiness pilot、codegraph/memory pilot、V3.1 证据和 baseline/pilot usage 记录。
 
 ## 1. 新机器最短安装命令
 
 从 release 包安装：
 
 ```bash
-tar -xzf codex-workflow-kit-2026.06.13.2.tar.gz
+tar -xzf codex-workflow-kit-2026.06.14.1.tar.gz
 cd codex-workflow-kit
 python3 scripts/verify_toolkit.py
 ./install.sh --dry-run
@@ -43,6 +43,8 @@ python3 scripts/audit_external_component.py skills/skill-plugin-intake-review
 
 ```text
 ~/.codex/AGENTS.md
+~/.codex/skills/reverse-engineering/
+~/.codex/reverse-skill/
 ~/.agents/skills/
 ```
 
@@ -71,7 +73,7 @@ python3 scripts/audit_external_component.py skills/skill-plugin-intake-review
 
 ```bash
 cd releases
-shasum -a 256 -c codex-workflow-kit-2026.06.13.2.tar.gz.sha256
+shasum -a 256 -c codex-workflow-kit-2026.06.14.1.tar.gz.sha256
 ```
 
 验证 toolkit 自身测试：
@@ -92,14 +94,14 @@ python3 -m pytest tests/test_verify_context_pack.py -q
 
 ```text
 Workflow toolkit OK
-Live install OK (15 files checked)
+Live install OK
 Codex doctor OK
 Codex runtime smoke OK
 Skill contract audit OK
 Context pack OK
 ```
 
-`verify_toolkit.py`、`verify_live_install.py`、`codex_doctor.py`、`codex_runtime_smoke.py`、`audit_skill_contracts.py` 和 `verify_context_pack.py` 都是只读验证：不联网、不安装外部工具、不启用 hooks、不启动 MCP、不写外部配置。`codex_doctor.py` 只汇总 live install drift 和活跃插件/native-host/plugin-cache 路径是否指向其他 macOS 用户目录。
+`verify_toolkit.py`、`verify_live_install.py`、`codex_doctor.py`、`codex_runtime_smoke.py`、`audit_skill_contracts.py` 和 `verify_context_pack.py` 都是只读验证：不联网、不安装外部工具、不启用 hooks、不启动 MCP、不写外部配置。`verify_live_install.py` 会额外检查 `~/.codex/skills/reverse-engineering/` 和 `~/.codex/reverse-skill/` 是否与包内 reverse 资产一致。`codex_doctor.py` 只汇总 live install drift 和活跃插件/native-host/plugin-cache 路径是否指向其他 macOS 用户目录。
 
 `codex_runtime_smoke.py` 汇总 live install、local doctor、Codex CLI 和手动 agent checklist 证据；默认不运行 `codex debug prompt-input`，需要验证模型可见 skill 时加 `--check-prompt-input`。
 
@@ -185,10 +187,11 @@ cd /path/to/repo
 完成第一次 repo 应用后，确认：
 
 - Codex 能看到 `repo-onboarding`、`spec-kit-xl`、`debug-loop`、`frontend-qa`、`decision-record`、`completion-review`、`security-review`、`dependency-upgrade-review`、`research-brief`、`skill-plugin-intake-review`、`release-readiness`。
-- `python3 scripts/verify_live_install.py` 能确认当前机器的全局 AGENTS、11 个 skill 入口和 packaged skill assets 与 output 包一致，并确认活跃 Codex/Chrome 插件、native host 和 plugin cache symlink 没有指向其他 macOS 用户目录。
+- `python3 scripts/verify_live_install.py` 能确认当前机器的全局 AGENTS、11 个 skill 入口、`~/.codex/skills/reverse-engineering/` router 和 `~/.codex/reverse-skill/` 能力树与 output 包一致，并确认活跃 Codex/Chrome 插件、native host 和 plugin cache symlink 没有指向其他 macOS 用户目录。
 - `python3 scripts/codex_doctor.py` 输出 `Codex doctor OK`。
 - `python3 scripts/codex_runtime_smoke.py` 输出 `Codex runtime smoke OK`；需要验证 prompt-input skill 可见性时可加 `--check-prompt-input`。
 - `python3 scripts/audit_skill_contracts.py` 输出 `Skill contract audit OK`，并确认 11/11 skills 通过契约审计。
+- Desktop 侧逆向/渗透类请求能经 `~/.codex/skills/reverse-engineering/` 路由到 `~/.codex/reverse-skill/skills/routing.md`。
 - 目标 repo 有 `AGENTS.md`、`docs/commands.md`、`docs/testing.md`、`docs/quality-gates.md`、`docs/codex-usage.md`。
 - 目标 repo 有 V3.1 试点文档：`docs/observability.md`、`docs/mcp-pilot.md`、`docs/codegraph-pilot.md`、`docs/memory-recall-pilot.md`，但没有默认安装外部工具、启用 hooks 或启动 MCP。
 - 目标 repo 的 `docs/subagents.md` 有 Handoff Envelope、Return Envelope、History/Input Filter、Command/Tool Risk Policy、Step Budget / Stop Condition、Lifecycle Ledger 和 No-Dispatch Decision。

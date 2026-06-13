@@ -1,6 +1,6 @@
 # Codex Workflow Kit
 
-这是一套用于增强个人 Codex 工作流的可迁移工具包，包含全局规则、repo context pack 模板、个人 skills、安装脚本、自检脚本和发布归档脚本。当前包是 V3.1 稳定口径：外部组件准入、code graph/memory pilot、hook discipline、subagent prompt cards 和自诊断收口都已打包，但不默认启用外部工具。
+这是一套用于增强个人 Codex 工作流的可迁移工具包，包含全局规则、repo context pack 模板、个人 skills、完整 `reverse-skill` 能力包、安装脚本、自检脚本和发布归档脚本。当前包是 v3.2 口径：在 V3.1 的外部组件准入、code graph/memory pilot、hook discipline、subagent prompt cards 和自诊断收口基础上，进一步把 Codex Desktop 侧逆向工程/安全分析能力并入可迁移包，但仍不默认启用外部工具或后台服务。
 
 ## 目录
 
@@ -90,6 +90,18 @@ skills/
   research-brief/
   skill-plugin-intake-review/
   release-readiness/
+
+reverse-skill/
+  README.md
+  PLATFORMS.md
+  skills/
+  CTF-Sandbox-Orchestrator/
+  burp-mcp-full/
+  ghidra-mcp/
+
+reverse-skill-router/
+  reverse-engineering/
+    SKILL.md
 ```
 
 ## 用法
@@ -105,6 +117,10 @@ skills/
 `docs/V2-ADOPTION-EVIDENCE.md` 是 V2 当前证据包，记录 baseline 验证、候选 repo dry-run、已晋升能力、拒绝默认化能力、外部 repo baseline 安装、repo-specific onboarding calibration、V2.1 tooling layer 和 V2.2 P0 specialist skills closeout。
 
 `docs/V3.1-ADOPTION-EVIDENCE.md` 是当前 V3.1 证据包，记录 `promote != install`、`pilot != enable`、`core != runtime/background`、11 skills verified、reject lines、新机器演练要求和 release checksum 证据。
+
+`reverse-skill/` 是当前打包的完整逆向工程/安全分析能力树，保留 routing、子技能、CTF orchestrator、Burp/Ghidra bridge、bootstrap 脚本、platform docs 和 field journal 结构。它默认安装到 `~/.codex/reverse-skill/`，避免破坏原有相对路径假设。
+
+`reverse-skill-router/reverse-engineering/SKILL.md` 是全局 router 入口，默认安装到 `~/.codex/skills/reverse-engineering/SKILL.md`，用于把 Codex Desktop 的逆向/渗透类请求路由到 `~/.codex/reverse-skill/`。
 
 `docs/V3.1-BENCHMARK.md` / `docs/V3.1-BENCHMARK.json` 是 V3.1 对比 V2.2 的量化 benchmark，覆盖 XS/S/M/L 任务、耗时、检查覆盖、风险发现和任务通过数。对应脚本是 `scripts/benchmark_v31_vs_v22.py`。
 
@@ -139,6 +155,7 @@ Workflow toolkit OK
 这个检查会确认：
 
 - 全局 `AGENTS.md`、repo 模板、11 个个人 Codex skills 都在包里。
+- `reverse-skill/` 完整能力树和 `reverse-skill-router/` 全局入口都在包里。
 - 外部组件准入文档、`scripts/audit_external_component.py`、`skill-plugin-intake-review` 都在包里。
 - `implementation-plan` 没有重新出现，避免和 Superpowers 计划职责冲突。
 - repo 模板自带的 `scripts/verify_context_pack.py` 可以通过。
@@ -157,10 +174,10 @@ python3 scripts/verify_live_install.py
 期望输出：
 
 ```text
-Live install OK (15 files checked)
+Live install OK
 ```
 
-这个检查只读比较 `~/.codex/AGENTS.md` 和 `~/.agents/skills/` 下的所有 packaged skill 文件，并检查活跃 Codex/Chrome 插件、native host 和 plugin cache symlink 路径没有指向其他 macOS 用户目录；发现本机配置与 output 包不一致或插件路径跑偏时会报告问题，不会自动覆盖。
+这个检查只读比较 `~/.codex/AGENTS.md`、`~/.codex/skills/reverse-engineering/`、`~/.codex/reverse-skill/` 和 `~/.agents/skills/` 下的 packaged 文件，并检查活跃 Codex/Chrome 插件、native host 和 plugin cache symlink 路径没有指向其他 macOS 用户目录；发现本机配置与 output 包不一致或插件路径跑偏时会报告问题，不会自动覆盖。
 
 如果想跑一条更完整但仍然只读的本机巡检命令：
 
@@ -223,7 +240,7 @@ shasum -a 256 -c codex-workflow-kit-<VERSION>.tar.gz.sha256
 ./install.sh --dry-run
 ```
 
-确认后安装全局 Codex 宪法和个人 skills：
+确认后安装全局 Codex 宪法、reverse router、reverse pack 和个人 skills：
 
 ```bash
 ./install.sh
@@ -255,6 +272,8 @@ shasum -a 256 -c codex-workflow-kit-<VERSION>.tar.gz.sha256
 
 ```text
 ~/.codex/AGENTS.md
+~/.codex/skills/reverse-engineering/
+~/.codex/reverse-skill/
 ```
 
 ### 5. Repo context pack 模板
