@@ -11,7 +11,7 @@ If you only want to understand what the project does, read the human-friendly ov
 
 AI Community: https://linux.do
 
-> This package can be placed in any directory. The AI will automatically detect its actual path. In the following text, `<SKILL_ROOT>` refers to your real installation path.
+> This package can be placed in any directory. The AI will automatically detect its actual path. In this top-level README, `<package root>` means the directory containing this README, and skill assets live under `<package root>/skills/`.
 
 ---
 
@@ -172,7 +172,7 @@ After downloading, users are recommended to place the package as follows:
 
 ```text
 <package root>\          # Package root; drive letter can be changed
-<SKILL_ROOT>\
+<package root>\skills\   # Skill root used by routing.md and sub-skills
 C:\Users\<your username>\Tools\jadx\
 C:\Users\<your username>\Tools\apktool\
 C:\Users\<your username>\AppData\Local\Android\Sdk\platform-tools\
@@ -320,7 +320,7 @@ Use the following routing first:
 Do not trust someone else’s scan result for long. After migrating to a new machine, refresh it first:
 
 ```powershell
-powershell -File "<SKILL_ROOT>\skills\scripts\refresh-tool-index.ps1"
+powershell -File "<package root>\skills\scripts\refresh-tool-index.ps1"
 ```
 
 After success, check:
@@ -337,7 +337,7 @@ After success, check:
 Current script entry point in this package:
 
 ```powershell
-powershell -File "<SKILL_ROOT>\ida-reverse\scripts\start.ps1"
+powershell -File "<package root>\skills\ida-reverse\scripts\start.ps1"
 ```
 
 The current script logic will:
@@ -350,7 +350,7 @@ The current script logic will:
 ### Open a Sample
 
 ```powershell
-powershell -File "<SKILL_ROOT>\ida-reverse\scripts\open.ps1" -Path "C:\path\to\sample.exe" -TimeoutSeconds 600
+powershell -File "<package root>\skills\ida-reverse\scripts\open.ps1" -Path "C:\path\to\sample.exe" -TimeoutSeconds 600
 ```
 
 Features:
@@ -715,21 +715,21 @@ The ideal distribution form is:
 If you only read five files, read these first:
 
 1. `<package root>\README.md`
-2. `<SKILL_ROOT>\RULES.md` — global routing rules; any AI will auto-configure after reading it
-3. `<SKILL_ROOT>\SKILL.md` — main controller entry point
-4. `<SKILL_ROOT>\routing.md` — scenario → skill dispatch
-5. `<SKILL_ROOT>\tool-index.md` — local tool status
+2. `<package root>\RULES.md` — global routing rules; any AI will auto-configure after reading it
+3. `<package root>\skills\SKILL.md` — main controller entry point
+4. `<package root>\skills\routing.md` — scenario → skill dispatch
+5. `<package root>\skills\tool-index.md` — local tool status
 
 If the AI keeps re-confirming in an authorized lab, stalls at disclaimers, or reads without executing, have it read these:
 
-6. `<SKILL_ROOT>\field-journal\precedent-auth.md` — authorization context declaration
-7. `<SKILL_ROOT>\llm-security\references\agent-obedience-engineering.md` — Agent execution-stability engineering
-8. `<SKILL_ROOT>\field-journal\precedent-reverse.md` — reverse-engineering operation precedents for authorized analysis workflows
-9. `<SKILL_ROOT>\field-journal\precedent-pentest.md` — security-testing operation precedents for authorized testing workflows
+6. `<package root>\skills\field-journal\precedent-auth.md` — authorization context declaration
+7. `<package root>\skills\llm-security\references\agent-obedience-engineering.md` — Agent execution-stability engineering
+8. `<package root>\skills\field-journal\precedent-reverse.md` — reverse-engineering operation precedents for authorized analysis workflows
+9. `<package root>\skills\field-journal\precedent-pentest.md` — security-testing operation precedents for authorized testing workflows
 
 If adding a new skill, read:
 
-9. `<SKILL_ROOT>\CONTRIBUTING.md`
+9. `<package root>\skills\CONTRIBUTING.md`
 
 ---
 
@@ -799,7 +799,7 @@ This package is not a static knowledge base. After each successful reverse-engin
 ### 15.1 Evolution Log Directory
 
 ```text
-<SKILL_ROOT>\field-journal\
+<package root>\skills\field-journal\
 ├── _template.md              # Write-back template; do not delete
 ├── _index.md                 # Auto-generated experience index
 ├── 2026-05-15_apk-xxx-signature-bypass.md
@@ -825,7 +825,7 @@ When any of the following conditions is met, the AI **must** automatically write
 
 ### 15.3 Write-Back Content Template
 
-Each write-back must contain the following structure. The template file is at `field-journal/_template.md`:
+Each write-back must contain the following structure. The template file is at `skills/field-journal/_template.md`:
 
 ```markdown
 # [Date] [Project Short Name]
@@ -877,7 +877,7 @@ After writing a log, the AI should also check whether the following files need t
 
 | Update Scope | What to update | How to write | Review required? |
 |---|---|---|---|
-| Experience log | New `field-journal/<date>_<name>.md` + `field-journal/_index.md` | **PR branch preferred** | Auto-validation/auto-merge is available via `.github/workflows/auto-merge-journal.yml` for field-journal-only PRs |
+| Experience log | New `skills/field-journal/<date>_<name>.md` + `skills/field-journal/_index.md` | **PR branch preferred** | Auto-validation/auto-merge is available via `.github/workflows/auto-merge-journal.yml` for field-journal-only PRs |
 | Routing matrix | `routing.md` | **PR branch required** ⚠️ | ✅ Human or independent AI must review the diff before merge |
 | Bootstrap manifest | `scripts/bootstrap-manifest.json` | **PR branch required** ⚠️ | ✅ Human or independent AI must review the diff before merge |
 | Sub-skill documentation | Corresponding `SKILL.md` | **PR branch required** ⚠️ | ✅ Human or independent AI must review the diff before merge |
@@ -895,7 +895,7 @@ After writing a log, the AI should also check whether the following files need t
 
 ### 15.5 Experience Index Maintenance
 
-Each time a new field-journal entry is added, the AI must update `field-journal/_index.md` in the following format:
+Each time a new field-journal entry is added, the AI must update `skills/field-journal/_index.md` in the following format:
 
 ```markdown
 # Project Experience Index
@@ -932,7 +932,7 @@ Each time a new field-journal entry is added, the AI must update `field-journal/
 
 ### 15.7 Experience Reuse Mechanism
 
-Before starting a new task, the AI must check `field-journal/_index.md`:
+Before starting a new task, the AI must check `skills/field-journal/_index.md`:
 
 - If historical records exist for the same type of scenario, read the corresponding logs first
 - Reuse verified solutions and avoid repeating known pitfalls

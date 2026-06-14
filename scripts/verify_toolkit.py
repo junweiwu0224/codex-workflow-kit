@@ -257,6 +257,25 @@ REQUIRED_REVERSE_PACK_TERMS = (
     "BurpSuite MCP",
     "Ghidra",
 )
+CANONICAL_REVERSE_PATHS = (
+    "reverse-skill/skills/field-journal/_index.md",
+    "reverse-skill/skills/field-journal/_template.md",
+    "reverse-skill/skills/field-journal/precedent-auth.md",
+    "reverse-skill/skills/field-journal/precedent-reverse.md",
+    "reverse-skill/skills/field-journal/precedent-pentest.md",
+)
+REVERSE_PATH_DOC_PATTERNS = (
+    "skills/field-journal/_index.md",
+    "skills/field-journal/_template.md",
+    "skills/field-journal/precedent-auth.md",
+    "skills/field-journal/precedent-reverse.md",
+    "skills/field-journal/precedent-pentest.md",
+)
+AMBIGUOUS_REVERSE_PATH_PATTERNS = (
+    re.compile(r"<SKILL_ROOT>[\\/](?:skills[\\/])?field-journal", re.IGNORECASE),
+    re.compile(r"<SKILL_ROOT>[\\/]llm-security", re.IGNORECASE),
+    re.compile(r"<SKILL_ROOT>[\\/]CONTRIBUTING\.md", re.IGNORECASE),
+)
 REQUIRED_V2_PLAN_TERMS = (
     "Workflow Kit V2 Adoption Implementation Plan",
     "Freeze V1 Baseline",
@@ -974,9 +993,10 @@ def check_toolkit(root: str | Path = ".") -> list[ToolkitIssue]:
             )
 
     reverse_readme = _read_text(root / "reverse-skill/README.md") if (root / "reverse-skill/README.md").exists() else ""
+    reverse_master = _read_text(root / "reverse-skill/skills/SKILL.md") if (root / "reverse-skill/skills/SKILL.md").exists() else ""
     reverse_routing = _read_text(root / "reverse-skill/skills/routing.md") if (root / "reverse-skill/skills/routing.md").exists() else ""
     reverse_router = _read_text(root / "reverse-skill-router/reverse-engineering/SKILL.md") if (root / "reverse-skill-router/reverse-engineering/SKILL.md").exists() else ""
-    reverse_aggregate = "\n".join((reverse_readme, reverse_routing, reverse_router))
+    reverse_aggregate = "\n".join((reverse_readme, reverse_master, reverse_routing, reverse_router))
     for term in REQUIRED_REVERSE_PACK_TERMS:
         if reverse_aggregate and term not in reverse_aggregate:
             issues.append(
@@ -987,6 +1007,50 @@ def check_toolkit(root: str | Path = ".") -> list[ToolkitIssue]:
                     message=f"Reverse pack packaging must preserve {term}.",
                 )
             )
+    for relative in CANONICAL_REVERSE_PATHS:
+        if not (root / relative).exists():
+            issues.append(
+                ToolkitIssue(
+                    severity="error",
+                    code="reverse-pack-missing-canonical-path",
+                    path=relative,
+                    message="Reverse pack canonical field-journal path is missing.",
+                )
+            )
+    for pattern in REVERSE_PATH_DOC_PATTERNS:
+        if reverse_aggregate and pattern not in reverse_aggregate:
+            issues.append(
+                ToolkitIssue(
+                    severity="error",
+                    code="reverse-pack-missing-path-doc",
+                    path="reverse-skill",
+                    message=f"Reverse pack docs must mention canonical path {pattern}.",
+                )
+            )
+    for relative in (
+        "reverse-skill/README.md",
+        "reverse-skill/README_zh.md",
+        "reverse-skill/RULES.md",
+        "reverse-skill/RULES_zh.md",
+    ):
+        path = root / relative
+        if not path.exists():
+            continue
+        text = _read_text(path)
+        for pattern in AMBIGUOUS_REVERSE_PATH_PATTERNS:
+            match = pattern.search(text)
+            if match:
+                issues.append(
+                    ToolkitIssue(
+                        severity="error",
+                        code="reverse-pack-ambiguous-skill-root-path",
+                        path=relative,
+                        message=(
+                            "Top-level reverse docs must use <package root>/skills/... paths; "
+                            f"ambiguous snippet found: {match.group(0)}"
+                        ),
+                    )
+                )
 
     v2_plan_path = root / "docs/superpowers/plans/2026-06-07-workflow-kit-v2-adoption.md"
     v2_plan = _read_text(v2_plan_path) if v2_plan_path.exists() else ""

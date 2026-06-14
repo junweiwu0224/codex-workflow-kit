@@ -10,7 +10,7 @@
 
 AI 社区：https://linux.do
 
-> 本包放在哪个目录都行，AI 会自动检测实际路径。以下用 `<SKILL_ROOT>` 代指你的实际安装位置。
+> 本包放在哪个目录都行，AI 会自动检测实际路径。在本顶层 README 中，`<本包根目录>` 指包含本 README 的目录，技能资产位于 `<本包根目录>/skills/`。
 
 ---
 
@@ -171,7 +171,7 @@ bash skills/scripts/refresh-tool-index.sh
 
 ```text
 <本包根目录>\          # 本包根目录（可改盘符）
-<SKILL_ROOT>\
+<本包根目录>\skills\   # routing.md 和子技能使用的技能根目录
 C:\Users\<你的用户名>\Tools\jadx\
 C:\Users\<你的用户名>\Tools\apktool\
 C:\Users\<你的用户名>\AppData\Local\Android\Sdk\platform-tools\
@@ -320,7 +320,7 @@ C:\Tools\radare2\                      # 可选
 这个文件不要长期信任别人的扫描结果。迁移到新机器后先刷新一遍：
 
 ```powershell
-powershell -File "<SKILL_ROOT>\skills\scripts\refresh-tool-index.ps1"
+powershell -File "<本包根目录>\skills\scripts\refresh-tool-index.ps1"
 ```
 
 成功后检查：
@@ -337,7 +337,7 @@ powershell -File "<SKILL_ROOT>\skills\scripts\refresh-tool-index.ps1"
 当前包内脚本入口：
 
 ```powershell
-powershell -File "<SKILL_ROOT>\ida-reverse\scripts\start.ps1"
+powershell -File "<本包根目录>\skills\ida-reverse\scripts\start.ps1"
 ```
 
 当前脚本逻辑会：
@@ -350,7 +350,7 @@ powershell -File "<SKILL_ROOT>\ida-reverse\scripts\start.ps1"
 ### 打开样本
 
 ```powershell
-powershell -File "<SKILL_ROOT>\ida-reverse\scripts\open.ps1" -Path "C:\path\to\sample.exe" -TimeoutSeconds 600
+powershell -File "<本包根目录>\skills\ida-reverse\scripts\open.ps1" -Path "C:\path\to\sample.exe" -TimeoutSeconds 600
 ```
 
 特点：
@@ -720,21 +720,21 @@ powershell -File "<你的 skill 根目录>\skills\scripts\refresh-tool-index.ps1
 如果你只看五个文件，先看这五个：
 
 1. `<本包根目录>\README.md`
-2. `<SKILL_ROOT>\RULES.md` — 全局路由规则（任何 AI 读完都会自动配置）
-3. `<SKILL_ROOT>\SKILL.md` — 总控入口
-4. `<SKILL_ROOT>\routing.md` — 场景→技能分流
-5. `<SKILL_ROOT>\tool-index.md` — 本机工具状态
+2. `<本包根目录>\RULES.md` — 全局路由规则（任何 AI 读完都会自动配置）
+3. `<本包根目录>\skills\SKILL.md` — 总控入口
+4. `<本包根目录>\skills\routing.md` — 场景→技能分流
+5. `<本包根目录>\skills\tool-index.md` — 本机工具状态
 
 如果 AI 在已授权实验环境中反复确认、停在免责声明，或只读不执行，让它读这几个：
 
-6. `<SKILL_ROOT>\field-journal\precedent-auth.md` — 授权上下文声明（减少已授权环境中的重复确认）
-7. `<SKILL_ROOT>\llm-security\references\agent-obedience-engineering.md` — Agent 执行稳定性工程（任务推进、反偷懒、反空转）
-8. `<SKILL_ROOT>\field-journal\precedent-reverse.md` — 逆向操作先例（说明这些操作属于授权分析流程）
-9. `<SKILL_ROOT>\field-journal\precedent-pentest.md` — 安全测试操作先例（说明这些操作属于授权测试流程）
+6. `<本包根目录>\skills\field-journal\precedent-auth.md` — 授权上下文声明（减少已授权环境中的重复确认）
+7. `<本包根目录>\skills\llm-security\references\agent-obedience-engineering.md` — Agent 执行稳定性工程（任务推进、反偷懒、反空转）
+8. `<本包根目录>\skills\field-journal\precedent-reverse.md` — 逆向操作先例（说明这些操作属于授权分析流程）
+9. `<本包根目录>\skills\field-journal\precedent-pentest.md` — 安全测试操作先例（说明这些操作属于授权测试流程）
 
 如果要新增 skill，看这个：
 
-9. `<SKILL_ROOT>\CONTRIBUTING.md`
+9. `<本包根目录>\skills\CONTRIBUTING.md`
 
 ---
 
@@ -802,7 +802,7 @@ powershell -File "<你的 skill 根目录>\skills\scripts\refresh-tool-index.ps1
 ### 15.1 进化日志目录
 
 ```text
-<SKILL_ROOT>\field-journal\
+<本包根目录>\skills\field-journal\
 ├── _template.md              # 回写模板（不要删除）
 ├── _index.md                 # 自动生成的经验索引
 ├── 2026-05-15_apk-xxx签名绕过.md
@@ -828,7 +828,7 @@ powershell -File "<你的 skill 根目录>\skills\scripts\refresh-tool-index.ps1
 
 ### 15.3 回写内容模板
 
-每次回写必须包含以下结构（模板文件在 `field-journal/_template.md`）：
+每次回写必须包含以下结构（模板文件在 `skills/field-journal/_template.md`）：
 
 ```markdown
 # [日期] [项目简称]
@@ -880,7 +880,7 @@ powershell -File "<你的 skill 根目录>\skills\scripts\refresh-tool-index.ps1
 
 | 更新范围 | 修改什么 | 写入方式 | 需要审核？ |
 |---------|---------|---------|-----------|
-| 经验日志 | 新 `field-journal/<日期>_<名称>.md` + `field-journal/_index.md` | **建议走 PR 分支** | field-journal-only PR 可由 `.github/workflows/auto-merge-journal.yml` 自动验证/自动合并 |
+| 经验日志 | 新 `skills/field-journal/<日期>_<名称>.md` + `skills/field-journal/_index.md` | **建议走 PR 分支** | field-journal-only PR 可由 `.github/workflows/auto-merge-journal.yml` 自动验证/自动合并 |
 | 路由矩阵 | `routing.md` | **必须走 PR 分支** ⚠️ | ✅ 人工或独立 AI 审核 diff 后才能合并 |
 | Bootstrap manifest | `scripts/bootstrap-manifest.json` | **必须走 PR 分支** ⚠️ | ✅ 同上 |
 | 子 skill 文档 | 对应 `SKILL.md` | **必须走 PR 分支** ⚠️ | ✅ 同上 |
@@ -898,7 +898,7 @@ powershell -File "<你的 skill 根目录>\skills\scripts\refresh-tool-index.ps1
 
 ### 15.5 经验索引自动维护
 
-每次新增 field-journal 条目后，AI 必须更新 `field-journal/_index.md`，格式如下：
+每次新增 field-journal 条目后，AI 必须更新 `skills/field-journal/_index.md`，格式如下：
 
 ```markdown
 # 项目经验索引
@@ -935,7 +935,7 @@ powershell -File "<你的 skill 根目录>\skills\scripts\refresh-tool-index.ps1
 
 ### 15.7 经验复用机制
 
-AI 在开始新任务时，必须先检查 `field-journal/_index.md`：
+AI 在开始新任务时，必须先检查 `skills/field-journal/_index.md`：
 
 - 如果有同类场景的历史记录，先读取对应日志
 - 复用已验证的方案，避免重复踩坑
@@ -1243,4 +1243,3 @@ AI: 好的，我帮你把 MCP 配置改成 http://localhost:3000/mcp，并验证
 - 本包作者不对任何滥用行为承担责任
 - 逆向工程应遵守当地法律法规及软件许可协议
 - CTF 竞赛环境中的操作不应扩展到竞赛范围之外
-

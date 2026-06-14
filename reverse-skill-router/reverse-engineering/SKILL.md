@@ -108,7 +108,7 @@ bash ~/.codex/reverse-skill/skills/scripts/refresh-tool-index.sh                
 
 - **NEVER** guess tool paths — read `tool-index.md` first
 - **NEVER** skip reading the matched sub-skill SKILL.md before executing
-- **NEVER** skip field journal lookup — check `field-journal/_index.md` for prior experience
+- **NEVER** skip field journal lookup — check `~/.codex/reverse-skill/skills/field-journal/_index.md` for prior experience
 - Missing tools: `brew install` or bootstrap, then refresh tool-index
 - Route not matched: web-search methodology, propose new skill, do NOT force-fit
 - Path blocked: switch (static↔dynamic, Java↔Native, IDA↔radare2, toolA↔toolB)
@@ -171,7 +171,7 @@ Pentest: browser-automation → auto-browse with Burp proxy
 □ 3. Did I produce actual side effects (tools run, files analyzed, results delivered)?
 □ 4. Did I generate a report (docs-generator + diagram-generator)?
 □ 5. Did I write a field-journal entry?
-□ 6. Did I update field-journal/_index.md?
+□ 6. Did I update ~/.codex/reverse-skill/skills/field-journal/_index.md?
 □ 7. If any above is "no" → task NOT complete. Go back to the missing step.
 ```
 

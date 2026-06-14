@@ -169,7 +169,7 @@
 - 跨模块任务按 `routing.md` 的"路径交叉"章节组合使用多个 skill
 
 ### 经验复用
-- 每次进入路由前**必须先查** `field-journal/_index.md`
+- 每次进入路由前**必须先查** `skills/field-journal/_index.md`
 - 有同类经验时先读取对应日志，复用已验证方案
 - 如果历史方案不适用，在新日志中说明原因
 - 检索时按三轴定位：场景类型 / 成功技术 / 目标实体（详见 `_index.md` 顶部说明）
@@ -235,7 +235,7 @@
      - 类型选择：渗透→攻击路径图 / 逆向→调用关系图 / JS→时序图 / CTF→解题流程
 
 □ 3. 回写 field-journal（已脱敏）
-     - 按 field-journal/_template.md 格式
+     - 按 skills/field-journal/_template.md 格式
      - 必须包含：踩坑记录、可复用模式、工具链发现、环境信息
      - 脱敏检查：无真实域名/IP/Token/用户名
 
@@ -251,7 +251,7 @@
      - 用户拒绝 → 跳过
 
 □ 6. 更新系统索引
-     - 更新 field-journal/_index.md（新增条目）
+     - 更新 skills/field-journal/_index.md（新增条目）
      - 检查是否需要更新：routing.md / bootstrap-manifest / tool-index
      - 如果发现新工具或新场景 → 执行对应更新
 ```
@@ -511,8 +511,8 @@ powershell -NoProfile -ExecutionPolicy Bypass -File "<本包根目录>/skills/sc
 ### 触发后执行（精简版 — 不要重新走首次配置！）
 
 ```
-0. NOW: 读 <SKILL_ROOT>/skills/field-journal/precedent-auth.md — 授权预声明（80行）
-1. NEXT: 读 <SKILL_ROOT>/skills/routing.md — 匹配用户意图 → 确定入口 skill
+0. NOW: 读 <本包根目录>/skills/field-journal/precedent-auth.md — 授权预声明（80行）
+1. NEXT: 读 <本包根目录>/skills/routing.md — 匹配用户意图 → 确定入口 skill
 2. ACT: 进入 skill，开始执行任务
 
 条件读取（不要预加载）:
