@@ -114,10 +114,12 @@ def test_check_toolkit_requires_v3_1_files(tmp_path):
         "scripts/audit_skill_contracts.py",
         "scripts/audit_external_component.py",
         "scripts/codex_runtime_smoke.py",
+        "scripts/verify_reverse_ready.py",
         "scripts/benchmark_skill_polish.py",
         "scripts/benchmark_agent_contract.py",
         "tests/test_audit_skill_contracts.py",
         "tests/test_codex_runtime_smoke.py",
+        "tests/test_verify_reverse_ready.py",
         "tests/test_benchmark_agent_contract.py",
         "tests/test_audit_external_component.py",
         "repo-template/docs/codegraph-pilot.md",
@@ -144,10 +146,12 @@ def test_check_toolkit_requires_v3_1_files(tmp_path):
     assert "scripts/audit_skill_contracts.py" in missing_paths
     assert "scripts/audit_external_component.py" in missing_paths
     assert "scripts/codex_runtime_smoke.py" in missing_paths
+    assert "scripts/verify_reverse_ready.py" in missing_paths
     assert "scripts/benchmark_skill_polish.py" in missing_paths
     assert "scripts/benchmark_agent_contract.py" in missing_paths
     assert "tests/test_audit_skill_contracts.py" in missing_paths
     assert "tests/test_codex_runtime_smoke.py" in missing_paths
+    assert "tests/test_verify_reverse_ready.py" in missing_paths
     assert "tests/test_benchmark_agent_contract.py" in missing_paths
     assert "tests/test_audit_external_component.py" in missing_paths
     assert "repo-template/docs/codegraph-pilot.md" in missing_paths

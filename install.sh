@@ -9,6 +9,11 @@ DRY_RUN=0
 BACKUP=0
 FORCE=0
 REPO_ONLY=0
+INSTALL_REVERSE_CORE=0
+START_REVERSE_SERVICES=0
+VERIFY_REVERSE_READY=0
+REVERSE_BOOTSTRAP_CAPABILITIES=""
+REVERSE_BOOTSTRAP_SCRIPT_REL="reverse-skill/skills/scripts/bootstrap-reverse.sh"
 
 usage() {
   cat <<'EOF'
@@ -22,6 +27,12 @@ Options:
   --agents-home PATH     Agents home for personal skills. Default: ~/.agents
   --repo PATH            Optional target repository for repo-template files.
   --repo-only            Install only repo-template files; skip global AGENTS.md and skills.
+  --with-reverse-core    After file install, bootstrap reverse core tools for new-machine readiness.
+  --start-reverse-services
+                         With --with-reverse-core, also start supported local MCP services.
+  --verify-reverse-ready Run reverse readiness verification after install/bootstrap.
+  --reverse-capabilities CSV
+                         Override reverse bootstrap capability list.
   --backup               Back up conflicting existing files before replacing.
   --force                Replace conflicting existing files without backups.
   -h, --help             Show this help.
@@ -41,6 +52,86 @@ run() {
   else
     "$@"
   fi
+}
+
+reverse_bootstrap_capabilities() {
+  if [[ -n "${REVERSE_BOOTSTRAP_CAPABILITIES}" ]]; then
+    printf '%s\n' "${REVERSE_BOOTSTRAP_CAPABILITIES}" | tr ',' '\n' | sed '/^$/d'
+    return 0
+  fi
+
+  cat <<'EOF'
+jadx
+apktool
+frida
+r2
+adb
+nmap
+sqlmap
+ffuf
+nuclei
+binwalk
+graphviz
+jshookmcp
+anything-analyzer
+ghidra-mcp
+EOF
+}
+
+run_reverse_bootstrap() {
+  local bootstrap_script="${KIT_ROOT}/${REVERSE_BOOTSTRAP_SCRIPT_REL}"
+  local installed_bootstrap_script="${CODEX_HOME}/reverse-skill/skills/scripts/bootstrap-reverse.sh"
+  if [[ "${DRY_RUN}" != "1" && -f "${installed_bootstrap_script}" ]]; then
+    bootstrap_script="${installed_bootstrap_script}"
+  fi
+  if [[ ! -f "${bootstrap_script}" ]]; then
+    log "reverse bootstrap script missing: ${bootstrap_script}"
+    return 1
+  fi
+
+  local args=()
+  while IFS= read -r capability; do
+    [[ -n "${capability}" ]] || continue
+    args+=("${capability}")
+  done < <(reverse_bootstrap_capabilities)
+
+  if [[ "${#args[@]}" -eq 0 ]]; then
+    log "reverse bootstrap capability list is empty"
+    return 1
+  fi
+
+  if [[ "${START_REVERSE_SERVICES}" == "1" ]]; then
+    args+=("--start-services")
+  fi
+
+  if [[ "${DRY_RUN}" == "1" ]]; then
+    printf '[dry-run] bash %s' "${bootstrap_script}"
+    local arg
+    for arg in "${args[@]}"; do
+      printf ' %s' "${arg}"
+    done
+    printf '\n'
+    return 0
+  fi
+
+  log "bootstrap reverse core tools"
+  CODEX_CONFIG_PATH="${CODEX_HOME}/config.toml" \
+  CLAUDE_MCP_CONFIG="${HOME}/.claude/mcp.json" \
+  bash "${bootstrap_script}" "${args[@]}"
+}
+
+run_reverse_ready_verifier() {
+  local verify_script="${KIT_ROOT}/scripts/verify_reverse_ready.py"
+  if [[ ! -f "${verify_script}" ]]; then
+    log "reverse readiness verifier missing: ${verify_script}"
+    return 1
+  fi
+  if [[ "${DRY_RUN}" == "1" ]]; then
+    printf '[dry-run] python3 %s --user-home %s --codex-config %s\n' \
+      "${verify_script}" "${HOME}" "${CODEX_HOME}/config.toml"
+    return 0
+  fi
+  python3 "${verify_script}" --user-home "${HOME}" --codex-config "${CODEX_HOME}/config.toml"
 }
 
 copy_file() {
@@ -232,6 +323,22 @@ while [[ "$#" -gt 0 ]]; do
       REPO_ONLY=1
       shift
       ;;
+    --with-reverse-core)
+      INSTALL_REVERSE_CORE=1
+      shift
+      ;;
+    --start-reverse-services)
+      START_REVERSE_SERVICES=1
+      shift
+      ;;
+    --verify-reverse-ready)
+      VERIFY_REVERSE_READY=1
+      shift
+      ;;
+    --reverse-capabilities)
+      REVERSE_BOOTSTRAP_CAPABILITIES="$2"
+      shift 2
+      ;;
     --backup)
       BACKUP=1
       shift
@@ -262,6 +369,11 @@ if [[ "${REPO_ONLY}" == "1" && -z "${TARGET_REPO}" ]]; then
   exit 2
 fi
 
+if [[ "${START_REVERSE_SERVICES}" == "1" && "${INSTALL_REVERSE_CORE}" != "1" ]]; then
+  log "--start-reverse-services requires --with-reverse-core"
+  exit 2
+fi
+
 if [[ "${REPO_ONLY}" != "1" ]]; then
   check_global_agents
   check_reverse_router_skill
@@ -277,6 +389,14 @@ if [[ "${REPO_ONLY}" != "1" ]]; then
   install_skills
 fi
 install_repo_template
+
+if [[ "${REPO_ONLY}" != "1" && "${INSTALL_REVERSE_CORE}" == "1" ]]; then
+  run_reverse_bootstrap
+fi
+
+if [[ "${REPO_ONLY}" != "1" && ( "${VERIFY_REVERSE_READY}" == "1" || "${INSTALL_REVERSE_CORE}" == "1" ) ]]; then
+  run_reverse_ready_verifier
+fi
 
 log "Install plan complete."
 if [[ "${DRY_RUN}" == "1" ]]; then

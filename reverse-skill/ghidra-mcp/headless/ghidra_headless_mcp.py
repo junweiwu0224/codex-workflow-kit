@@ -19,7 +19,9 @@ DEFAULT_TIMEOUT_SECONDS = 60
 DEFAULT_LIMIT = 100
 MAX_LIMIT = 1000
 SCRIPT_DIR = Path(__file__).resolve().parent
-DEFAULT_PROJECTS_DIR = Path("/Users/junwei/CodexGhidraProjects")
+# Ghidra project directories cannot live under dot-prefixed path components such as
+# ~/.codex, so default to a sibling under the user's home directory.
+DEFAULT_PROJECTS_DIR = Path.home() / "CodexGhidraProjects"
 
 
 TOOLS = [

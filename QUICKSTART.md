@@ -13,6 +13,8 @@ python3 scripts/verify_toolkit.py
 ./install.sh --dry-run
 ./install.sh
 python3 scripts/verify_live_install.py
+python3 scripts/verify_reverse_ready.py
+python3 scripts/verify_apk_decode_smoke.py --apk-fixture /path/to/app.apk
 python3 scripts/codex_doctor.py
 python3 scripts/codex_runtime_smoke.py
 python3 scripts/audit_skill_contracts.py
@@ -27,10 +29,51 @@ python3 scripts/verify_toolkit.py
 ./install.sh --dry-run
 ./install.sh
 python3 scripts/verify_live_install.py
+python3 scripts/verify_reverse_ready.py
+python3 scripts/verify_apk_decode_smoke.py --apk-fixture /path/to/app.apk
 python3 scripts/codex_doctor.py
 python3 scripts/codex_runtime_smoke.py
 python3 scripts/audit_skill_contracts.py
 python3 scripts/audit_external_component.py skills/skill-plugin-intake-review
+```
+
+Windows 新机器：
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\install.ps1 -DryRun
+powershell -ExecutionPolicy Bypass -File .\install.ps1
+powershell -ExecutionPolicy Bypass -File .\install.ps1 -WithReverseCore -VerifyReverseReady
+python scripts/verify_live_install.py
+python scripts/verify_reverse_ready.py
+python scripts/verify_apk_decode_smoke.py --apk-fixture C:\path\to\app.apk
+```
+
+如果这台新机器的重点是 reverse-ready，而不是只把文件装进去，直接使用：
+
+```bash
+./install.sh --with-reverse-core
+python3 scripts/verify_reverse_ready.py
+python3 scripts/verify_apk_decode_smoke.py --apk-fixture /path/to/app.apk
+```
+
+若要把支持自动启动的本地 MCP 服务也一并拉起：
+
+```bash
+./install.sh --with-reverse-core --start-reverse-services
+python3 scripts/verify_reverse_ready.py
+```
+
+如果希望把 readiness 校验直接绑定到安装流程：
+
+```bash
+./install.sh --with-reverse-core --verify-reverse-ready
+```
+
+如果只想补一部分 reverse core capability：
+
+```bash
+./install.sh --with-reverse-core --reverse-capabilities jadx,apktool,frida,r2,nmap
+python3 scripts/verify_reverse_ready.py
 ```
 
 如果机器上已有个人配置，先用备份模式安装：
@@ -55,6 +98,8 @@ python3 scripts/audit_external_component.py skills/skill-plugin-intake-review
 ```bash
 python3 scripts/verify_toolkit.py
 python3 scripts/verify_live_install.py
+python3 scripts/verify_reverse_ready.py
+python3 scripts/verify_apk_decode_smoke.py --apk-fixture /path/to/app.apk
 python3 scripts/codex_doctor.py
 python3 scripts/codex_runtime_smoke.py
 python3 scripts/audit_skill_contracts.py
@@ -95,13 +140,15 @@ python3 -m pytest tests/test_verify_context_pack.py -q
 ```text
 Workflow toolkit OK
 Live install OK
+Reverse ready OK
+APK decode smoke OK
 Codex doctor OK
 Codex runtime smoke OK
 Skill contract audit OK
 Context pack OK
 ```
 
-`verify_toolkit.py`、`verify_live_install.py`、`codex_doctor.py`、`codex_runtime_smoke.py`、`audit_skill_contracts.py` 和 `verify_context_pack.py` 都是只读验证：不联网、不安装外部工具、不启用 hooks、不启动 MCP、不写外部配置。`verify_live_install.py` 会额外检查 `~/.codex/skills/reverse-engineering/` 和 `~/.codex/reverse-skill/` 是否与包内 reverse 资产一致。`codex_doctor.py` 只汇总 live install drift 和活跃插件/native-host/plugin-cache 路径是否指向其他 macOS 用户目录。
+`verify_toolkit.py`、`verify_live_install.py`、`verify_reverse_ready.py`、`verify_apk_decode_smoke.py`、`codex_doctor.py`、`codex_runtime_smoke.py`、`audit_skill_contracts.py` 和 `verify_context_pack.py` 都是只读验证：不联网、不安装外部工具、不启用 hooks、不启动 MCP、不写外部配置。`verify_live_install.py` 会额外检查 `~/.codex/skills/reverse-engineering/` 和 `~/.codex/reverse-skill/` 是否与包内 reverse 资产一致。`verify_reverse_ready.py` 则专门确认 reverse-ready core 是否真的在当前机器可执行。`verify_apk_decode_smoke.py` 会真实调用已安装的 `decode.sh` 跑一遍 APK 解包主链，确认 fresh install 下 `apktool` 不是假成功。`codex_doctor.py` 只汇总 live install drift 和活跃插件/native-host/plugin-cache 路径是否指向其他 macOS 用户目录。
 
 `codex_runtime_smoke.py` 汇总 live install、local doctor、Codex CLI 和手动 agent checklist 证据；默认不运行 `codex debug prompt-input`，需要验证模型可见 skill 时加 `--check-prompt-input`。
 

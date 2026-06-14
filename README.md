@@ -32,6 +32,7 @@ global/
   AGENTS.md
 
 install.sh
+install.ps1
 
 scripts/
   audit_skill_contracts.py
@@ -44,6 +45,7 @@ scripts/
   codex_doctor.py
   codex_runtime_smoke.py
   render_usage_row.py
+  verify_apk_decode_smoke.py
   verify_live_install.py
   verify_toolkit.py
 
@@ -246,6 +248,42 @@ shasum -a 256 -c codex-workflow-kit-<VERSION>.tar.gz.sha256
 ./install.sh
 ```
 
+如果目标是“新机器装完后，逆向任务尽量接近开箱即用”，直接使用 reverse-ready 安装档：
+
+```bash
+./install.sh --with-reverse-core
+python3 scripts/verify_reverse_ready.py
+python3 scripts/verify_apk_decode_smoke.py --apk-fixture /path/to/app.apk
+```
+
+这条路径会在文件安装完成后，额外 bootstrap 一批高频 reverse core 工具和常用 MCP 入口，让 APK / Frida / free binary / low-risk pentest 这些已验证主链尽量一次到位。需要一并拉起支持自动启动的本地 MCP 服务时，再加：
+
+```bash
+./install.sh --with-reverse-core --start-reverse-services
+```
+
+如果是 Windows 新机器，使用顶层 PowerShell 安装入口：
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\install.ps1 -DryRun
+powershell -ExecutionPolicy Bypass -File .\install.ps1
+powershell -ExecutionPolicy Bypass -File .\install.ps1 -WithReverseCore -VerifyReverseReady
+python scripts/verify_reverse_ready.py
+python scripts/verify_apk_decode_smoke.py --apk-fixture C:\path\to\app.apk
+```
+
+如果你想把 reverse-ready 校验显式绑定到安装命令，也可以直接用：
+
+```bash
+./install.sh --with-reverse-core --verify-reverse-ready
+```
+
+如果只想补一部分能力，可以覆盖默认 capability 列表：
+
+```bash
+./install.sh --with-reverse-core --reverse-capabilities jadx,apktool,frida,r2,nmap
+```
+
 默认行为是非破坏式：如果目标位置已经有不同内容，脚本会停止并提示冲突。需要保留旧文件再替换时使用：
 
 ```bash
@@ -275,6 +313,10 @@ shasum -a 256 -c codex-workflow-kit-<VERSION>.tar.gz.sha256
 ~/.codex/skills/reverse-engineering/
 ~/.codex/reverse-skill/
 ```
+
+`scripts/verify_reverse_ready.py` 是机器级 readiness 检查：它会确认这台机器上 `jadx`、`apktool`、`frida`、`r2`、`nmap`、`sqlmap`、`ffuf`、`nuclei`、`binwalk`、`graphviz` 这些 reverse-ready core 是否真的可执行，并提示 `apksigner`、`zipalign`、`adb`、`plantuml` 等常用补充项是否仍缺失。它还会检查 `~/.codex/config.toml` 或 `~/.claude/mcp.json` 是否存在，避免出现“工具装了但 MCP 运行面还没接上”的半落地状态。
+
+`scripts/verify_apk_decode_smoke.py` 是真实 APK 解包 smoke：它调用已安装的 `~/.codex/reverse-skill/skills/apk-reverse/scripts/decode.sh`，要求 `apktool_exit_code=0`、`package` 非空、`smali_dirs > 0`，用来确认 fresh install 的 APK 主链不是“命令存在但不可用”。
 
 ### 5. Repo context pack 模板
 

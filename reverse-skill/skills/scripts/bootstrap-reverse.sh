@@ -26,7 +26,9 @@ if [[ -z "$TOOLS_ROOT" || "$TOOLS_ROOT" == "/" || "$TOOLS_ROOT" == "$HOME" ]]; t
   echo "Unsafe REVERSE_SKILL_TOOLS_DIR: $TOOLS_ROOT" >&2
   exit 2
 fi
-MCP_CONFIG_PATH="${CLAUDE_MCP_CONFIG:-$HOME/.claude/mcp.json}"
+CLAUDE_MCP_CONFIG_PATH="${CLAUDE_MCP_CONFIG:-$HOME/.claude/mcp.json}"
+CODEX_CONFIG_PATH="${CODEX_CONFIG_PATH:-$HOME/.codex/config.toml}"
+MCP_HOST_TARGET="${MCP_HOST_TARGET:-Both}"
 
 UNAME_S="$(uname -s 2>/dev/null || echo unknown)"
 case "$UNAME_S" in
@@ -127,7 +129,7 @@ Usage:
 Capabilities (parity with bootstrap-reverse.ps1):
   jadx apktool frida frida-ps idalib-mcp jshookmcp anything-analyzer idapro
   r2 rabin2 adb agent-browser ghidra-mcp seclists proxycat burpsuite-mcp
-  nmap pentestswarm
+  nmap sqlmap ffuf nuclei binwalk graphviz plantuml pentestswarm
 
 Examples:
   bash skills/scripts/bootstrap-reverse.sh jadx apktool frida
@@ -137,8 +139,8 @@ Examples:
 
 Notes:
   - This script supports Linux and macOS.
-  - It writes MCP config to ~/.claude/mcp.json by default.
-  - Override with CLAUDE_MCP_CONFIG=/path/to/mcp.json.
+  - It writes MCP config to both ~/.claude/mcp.json and ~/.codex/config.toml by default.
+  - Override with CLAUDE_MCP_CONFIG=/path/to/mcp.json and CODEX_CONFIG_PATH=/path/to/config.toml.
   - Override install root with REVERSE_SKILL_TOOLS_DIR=~/tools.
 EOF
 }
@@ -146,7 +148,7 @@ EOF
 ALL_CAPABILITIES=(
   jadx apktool frida frida-ps idalib-mcp jshookmcp anything-analyzer idapro
   r2 rabin2 adb agent-browser ghidra-mcp seclists proxycat burpsuite-mcp
-  nmap pentestswarm
+  nmap sqlmap ffuf nuclei binwalk graphviz plantuml pentestswarm
 )
 
 if $LIST_ONLY; then
@@ -250,6 +252,49 @@ raise SystemExit(f'no asset matched {pattern} for {repo}')
 PY
 }
 
+github_latest_release_api_url() {
+  local repo="$1"
+  printf 'https://api.github.com/repos/%s/releases/latest\n' "$repo"
+}
+
+latest_github_asset_url_curl() {
+  local repo="$1"
+  local regex="$2"
+  local api_url
+  api_url="$(github_latest_release_api_url "$repo")"
+  curl -fsSL -H 'User-Agent: reverse-skill-bootstrap' "$api_url" | python3 - "$regex" <<'PY'
+import json, re, sys
+pattern = sys.argv[1]
+data = json.load(sys.stdin)
+for asset in data.get('assets', []):
+    if re.search(pattern, asset.get('name', '')):
+        print(asset.get('browser_download_url'))
+        raise SystemExit(0)
+raise SystemExit(f'no asset matched {pattern}')
+PY
+}
+
+resolve_github_asset_url() {
+  local repo="$1"
+  local regex="$2"
+  local url=""
+  if url="$(latest_github_asset_url "$repo" "$regex" 2>/dev/null)"; then
+    if [[ -n "$url" ]]; then
+      printf '%s\n' "$url"
+      return 0
+    fi
+  fi
+  if has_cmd curl; then
+    if url="$(latest_github_asset_url_curl "$repo" "$regex" 2>/dev/null)"; then
+      if [[ -n "$url" ]]; then
+        printf '%s\n' "$url"
+        return 0
+      fi
+    fi
+  fi
+  return 1
+}
+
 extract_archive() {
   local archive="$1"
   local dest="$2"
@@ -285,21 +330,69 @@ install_github_release() {
   local dest="$3"
   local url file
   ensure_dir "$TOOLS_ROOT"
-  url=$(latest_github_asset_url "$repo" "$regex")
+  url=$(resolve_github_asset_url "$repo" "$regex")
   file="$(make_temp_file "$(basename "$url")")"
   log_info "download $url"
-  curl -L -o "$file" "$url"
+  curl -fL -o "$file" "$url"
   extract_archive "$file" "$dest"
   rm -rf "$(dirname "$file")"
   export PATH="$dest/bin:$dest:$PATH"
   log_ok "installed $repo to $dest"
 }
 
+download_file_checked() {
+  local url="$1"
+  local dest="$2"
+  local label="${3:-download}"
+  if [[ -z "$url" ]]; then
+    log_err "$label URL is empty"
+    return 1
+  fi
+  ensure_dir "$(dirname "$dest")"
+  log_info "download $url"
+  if ! curl -fL -o "$dest" "$url"; then
+    rm -f "$dest"
+    log_err "$label download failed: $url"
+    return 1
+  fi
+  if [[ ! -s "$dest" ]]; then
+    rm -f "$dest"
+    log_err "$label download produced an empty file: $dest"
+    return 1
+  fi
+}
+
 write_mcp_server() {
   local name="$1"
   local json_payload="$2"
-  ensure_dir "$(dirname "$MCP_CONFIG_PATH")"
-  python3 - "$MCP_CONFIG_PATH" "$name" "$json_payload" <<'PY'
+  local target
+  for target in $(mcp_host_targets); do
+    case "$target" in
+      Claude) write_claude_mcp_server "$name" "$json_payload" ;;
+      Codex) write_codex_mcp_server "$name" "$json_payload" ;;
+      *) log_err "Unknown MCP host target: $target"; return 1 ;;
+    esac
+  done
+}
+
+mcp_host_targets() {
+  case "$MCP_HOST_TARGET" in
+    Claude|Codex|Both) ;;
+    *) log_err "Unsupported MCP_HOST_TARGET=$MCP_HOST_TARGET"; return 1 ;;
+  esac
+
+  case "$MCP_HOST_TARGET" in
+    Claude) printf 'Claude\n' ;;
+    Codex) printf 'Codex\n' ;;
+    Both) printf 'Claude\nCodex\n' ;;
+  esac
+}
+
+write_claude_mcp_server() {
+  local name="$1"
+  local json_payload="$2"
+  ensure_dir "$(dirname "$CLAUDE_MCP_CONFIG_PATH")"
+  python3 - "$CLAUDE_MCP_CONFIG_PATH" "$name" "$json_payload" <<'PY'
 import json, pathlib, sys
 path = pathlib.Path(sys.argv[1])
 name = sys.argv[2]
@@ -315,7 +408,73 @@ data.setdefault('mcpServers', {})[name] = payload
 path.write_text(json.dumps(data, ensure_ascii=False, indent=2), encoding='utf-8')
 print(path)
 PY
-  log_ok "MCP server '$name' registered in $MCP_CONFIG_PATH"
+  log_ok "MCP server '$name' registered in $CLAUDE_MCP_CONFIG_PATH"
+}
+
+write_codex_mcp_server() {
+  local name="$1"
+  local json_payload="$2"
+  ensure_dir "$(dirname "$CODEX_CONFIG_PATH")"
+  python3 - "$CODEX_CONFIG_PATH" "$name" "$json_payload" <<'PY'
+import json
+import pathlib
+import sys
+
+path = pathlib.Path(sys.argv[1])
+name = sys.argv[2]
+payload = json.loads(sys.argv[3])
+
+def toml_literal(value):
+    if isinstance(value, bool):
+        return "true" if value else "false"
+    if isinstance(value, (int, float)):
+        return str(value)
+    if isinstance(value, list):
+        return "[{}]".format(", ".join(toml_literal(item) for item in value))
+    escaped = str(value).replace("\\", "\\\\").replace('"', '\\"')
+    return f'"{escaped}"'
+
+def filter_block(lines, header_prefix):
+    kept = []
+    skipping = False
+    for line in lines:
+        stripped = line.strip()
+        if stripped.startswith("[") and stripped.endswith("]"):
+            if stripped == f"[{header_prefix}]" or stripped == f"[{header_prefix}.env]":
+                skipping = True
+                continue
+            if skipping:
+                skipping = False
+        if not skipping:
+            kept.append(line)
+    while kept and not kept[-1].strip():
+        kept.pop()
+    return kept
+
+lines = path.read_text(encoding="utf-8").splitlines() if path.exists() else []
+header_prefix = f"mcp_servers.{name}"
+lines = filter_block(lines, header_prefix)
+if lines:
+    lines.append("")
+lines.append(f"[mcp_servers.{name}]")
+priority = ("type", "url", "command", "args", "bearer_token_env_var", "startup_timeout_sec")
+for key in priority:
+    if key in payload and key != "env":
+        lines.append(f"{key} = {toml_literal(payload[key])}")
+for key in sorted(k for k in payload.keys() if k not in set(priority) | {"env"}):
+    lines.append(f"{key} = {toml_literal(payload[key])}")
+
+env_map = payload.get("env")
+if isinstance(env_map, dict) and env_map:
+    lines.append("")
+    lines.append(f"[mcp_servers.{name}.env]")
+    for key in sorted(env_map):
+        lines.append(f"{key} = {toml_literal(env_map[key])}")
+
+path.write_text("\n".join(lines) + "\n", encoding="utf-8")
+print(path)
+PY
+  log_ok "MCP server '$name' registered in $CODEX_CONFIG_PATH"
 }
 
 test_tcp_port() {
@@ -362,23 +521,40 @@ ensure_jadx() {
 }
 
 ensure_apktool() {
-  if has_cmd apktool; then log_ok "apktool ready: $(cmd_path apktool)"; return 0; fi
+  if has_cmd apktool; then
+    local apktool_path=""
+    apktool_path="$(cmd_path apktool)"
+    if [[ "$apktool_path" == "$TOOLS_ROOT/apktool/apktool" ]] && [[ -f "$TOOLS_ROOT/apktool/apktool.jar" ]] && apktool --version >/dev/null 2>&1; then
+      log_ok "apktool ready: $apktool_path"
+      return 0
+    fi
+  fi
+  if has_cmd apktool; then
+    log_warn "apktool command exists but is not runnable in the current environment: $(cmd_path apktool)"
+  fi
   ensure_java_runtime
-  case "$PLATFORM" in
-    macos) install_brew apktool ;;
-    linux)
-      if install_apt apktool; then return 0; fi
-      ensure_dir "$TOOLS_ROOT/apktool"
-      local url jar wrapper
-      url=$(latest_github_asset_url iBotPeaches/Apktool '^apktool_.*\.jar$')
-      jar="$TOOLS_ROOT/apktool/apktool.jar"
-      curl -L -o "$jar" "$url"
-      wrapper="$TOOLS_ROOT/apktool/apktool"
-      printf '#!/usr/bin/env bash\njava -jar "%s" "$@"\n' "$jar" > "$wrapper"
-      chmod +x "$wrapper"
-      export PATH="$TOOLS_ROOT/apktool:$PATH"
-      ;;
-  esac
+  ensure_dir "$TOOLS_ROOT/apktool"
+  local url jar wrapper
+  url=$(resolve_github_asset_url iBotPeaches/Apktool '^apktool_.*\.jar$') || {
+    log_err "could not resolve apktool release asset"
+    return 1
+  }
+  jar="$TOOLS_ROOT/apktool/apktool.jar"
+  download_file_checked "$url" "$jar" "apktool jar" || return 1
+  wrapper="$TOOLS_ROOT/apktool/apktool"
+  cat > "$wrapper" <<'EOF'
+#!/usr/bin/env bash
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+exec java -jar "$SCRIPT_DIR/apktool.jar" "$@"
+EOF
+  chmod +x "$wrapper"
+  export PATH="$TOOLS_ROOT/apktool:$PATH"
+  if ! "$wrapper" --version >/dev/null 2>&1; then
+    rm -f "$wrapper" "$jar"
+    log_err "apktool wrapper failed smoke check after install"
+    return 1
+  fi
+  log_ok "apktool ready: $wrapper"
 }
 
 ensure_frida_tools() {
@@ -398,7 +574,7 @@ ensure_idalib_mcp() {
 
 ensure_jshookmcp() {
   ensure_node_runtime
-  write_mcp_server "jshook" '{"command":"npx","args":["-y","@jshookmcp/jshook@latest"],"env":{"JSHOOK_BASE_PROFILE":"search"}}'
+  write_mcp_server "jshook" '{"type":"stdio","command":"npx","args":["-y","@jshookmcp/jshook@latest"],"env":{"JSHOOK_BASE_PROFILE":"search"},"startup_timeout_sec":120}'
 }
 
 ensure_anything_analyzer() {
@@ -412,7 +588,7 @@ ensure_anything_analyzer() {
     rm -rf "$dir"
     git clone https://github.com/Mouseww/anything-analyzer "$dir"
   fi
-  write_mcp_server "anything-analyzer" '{"url":"http://localhost:23816/mcp"}'
+  write_mcp_server "anything-analyzer" '{"url":"http://localhost:23816/mcp","startup_timeout_sec":120}'
   if $START_SERVICES; then
     (cd "$dir" && pnpm install && nohup pnpm dev >/tmp/anything-analyzer.log 2>&1 &)
     wait_for_port 23816 120 || log_warn "anything-analyzer did not open port 23816; see /tmp/anything-analyzer.log"
@@ -421,7 +597,7 @@ ensure_anything_analyzer() {
 
 ensure_idapro() {
   ensure_idalib_mcp
-  write_mcp_server "idapro" '{"url":"http://127.0.0.1:13337/mcp"}'
+  write_mcp_server "idapro" '{"url":"http://127.0.0.1:13337/mcp","startup_timeout_sec":120}'
   if $START_SERVICES; then
     case "$PLATFORM" in
       linux)
@@ -478,7 +654,59 @@ ensure_ghidra_mcp() {
       fi
       ;;
   esac
-  log_warn "ghidra-mcp requires local Ghidra MCP plugin/server setup. See docs/platforms/$( [[ "$PLATFORM" == macos ]] && echo macos || echo linux ).md"
+  ensure_python_runtime
+  local ghidra_install_dir=""
+  if has_cmd brew; then
+    local brew_ghidra_prefix=""
+    brew_ghidra_prefix="$(brew --prefix ghidra 2>/dev/null || true)"
+    if [[ -n "$brew_ghidra_prefix" && -d "$brew_ghidra_prefix/libexec" ]]; then
+      ghidra_install_dir="$brew_ghidra_prefix/libexec"
+    fi
+  fi
+  if [[ -z "$ghidra_install_dir" ]]; then
+    local ghidra_run_path=""
+    ghidra_run_path="$(cmd_path ghidraRun)"
+    if [[ -n "$ghidra_run_path" ]]; then
+      ghidra_run_path="$(cd "$(dirname "$ghidra_run_path")" && pwd)/$(basename "$ghidra_run_path")"
+      if [[ "$(basename "$(dirname "$ghidra_run_path")")" == "bin" && -d "$(dirname "$(dirname "$ghidra_run_path")")/libexec" ]]; then
+        ghidra_install_dir="$(dirname "$(dirname "$ghidra_run_path")")/libexec"
+      elif [[ "$(basename "$(dirname "$ghidra_run_path")")" == "libexec" ]]; then
+        ghidra_install_dir="$(dirname "$ghidra_run_path")"
+      fi
+    fi
+  fi
+  if [[ -z "$ghidra_install_dir" || ! -d "$ghidra_install_dir" ]]; then
+    manual_required ghidra-mcp "Install Ghidra so GHIDRA_INSTALL_DIR can be resolved, then rerun bootstrap."
+    return 1
+  fi
+
+  local ghidra_venv="$REPO_ROOT/ghidra-mcp/headless/.venv"
+  if [[ ! -x "$ghidra_venv/bin/python" ]]; then
+    python3 -m venv "$ghidra_venv"
+  fi
+  "$ghidra_venv/bin/python" -m pip install --upgrade pip >/dev/null
+  "$ghidra_venv/bin/python" -m pip install --upgrade pyghidra >/dev/null
+
+  local ghidra_projects_dir="$HOME/CodexGhidraProjects"
+  mkdir -p "$ghidra_projects_dir"
+  write_mcp_server "ghidra" "$(python3 - "$ghidra_venv" "$REPO_ROOT/ghidra-mcp/headless/ghidra_headless_mcp.py" "$ghidra_install_dir" "$ghidra_projects_dir" <<'PY'
+import json
+import sys
+
+venv, script, install_dir, projects_dir = sys.argv[1:]
+print(json.dumps({
+    "command": f"{venv}/bin/python",
+    "args": [script],
+    "env": {
+        "GHIDRA_INSTALL_DIR": install_dir,
+        "GHIDRA_PROJECTS_DIR": projects_dir,
+        "PYTHONWARNINGS": "ignore::DeprecationWarning",
+    },
+    "startup_timeout_sec": 180,
+}))
+PY
+)"
+  log_ok "ghidra-mcp ready via headless stdio bridge"
 }
 
 ensure_seclists() {
@@ -498,7 +726,7 @@ ensure_burpsuite_mcp() {
   local bridge_json
   bridge_json=$(python3 - "$REPO_ROOT/burp-mcp-full/mcp-bridge.js" <<'PY'
 import json, sys
-print(json.dumps({"command":"node","args":[sys.argv[1]]}))
+print(json.dumps({"type":"stdio","command":"node","args":[sys.argv[1]],"startup_timeout_sec":120}))
 PY
 )
   write_mcp_server "burpsuite" "$bridge_json"
@@ -510,6 +738,68 @@ ensure_nmap() {
   case "$PLATFORM" in macos) install_brew nmap ;; linux) install_apt nmap ;; esac
 }
 
+ensure_sqlmap() {
+  ensure_python_runtime
+  if has_cmd sqlmap; then log_ok "sqlmap ready: $(cmd_path sqlmap)"; return 0; fi
+  pipx install sqlmap || pipx upgrade sqlmap
+  export PATH="$HOME/.local/bin:$PATH"
+}
+
+ensure_ffuf() {
+  if has_cmd ffuf; then log_ok "ffuf ready: $(cmd_path ffuf)"; return 0; fi
+  case "$PLATFORM" in
+    macos) install_brew ffuf ;;
+    linux) manual_required ffuf "Install ffuf from package manager or GitHub release, then ensure 'ffuf' is on PATH." ;;
+  esac
+}
+
+ensure_nuclei() {
+  if has_cmd nuclei; then log_ok "nuclei ready: $(cmd_path nuclei)"; return 0; fi
+  case "$PLATFORM" in
+    macos) install_brew nuclei ;;
+    linux)
+      if has_cmd go; then
+        go install github.com/projectdiscovery/nuclei/v3/cmd/nuclei@latest
+        export PATH="$HOME/go/bin:$PATH"
+      else
+        manual_required nuclei "Install Go then run: go install github.com/projectdiscovery/nuclei/v3/cmd/nuclei@latest"
+      fi
+      ;;
+  esac
+}
+
+ensure_binwalk() {
+  if has_cmd binwalk; then log_ok "binwalk ready: $(cmd_path binwalk)"; return 0; fi
+  case "$PLATFORM" in
+    macos)
+      install_brew binwalk || python3 -m pip install --user binwalk
+      export PATH="$HOME/.local/bin:$PATH"
+      ;;
+    linux)
+      install_apt binwalk || python3 -m pip install --user binwalk
+      export PATH="$HOME/.local/bin:$PATH"
+      ;;
+  esac
+}
+
+ensure_graphviz() {
+  if has_cmd dot; then log_ok "graphviz ready: $(cmd_path dot)"; return 0; fi
+  case "$PLATFORM" in
+    macos) install_brew graphviz ;;
+    linux) install_apt graphviz ;;
+  esac
+}
+
+ensure_plantuml() {
+  if has_cmd plantuml; then log_ok "plantuml ready: $(cmd_path plantuml)"; return 0; fi
+  case "$PLATFORM" in
+    macos) install_brew plantuml ;;
+    linux)
+      install_apt plantuml || manual_required plantuml "Install plantuml with package manager or provide plantuml.jar under \$HOME/tools/plantuml/"
+      ;;
+  esac
+}
+
 ensure_pentestswarm() {
   if has_cmd pentestswarm; then log_ok "pentestswarm ready"; return 0; fi
   if ! has_cmd go; then
@@ -517,7 +807,7 @@ ensure_pentestswarm() {
   fi
   if ! go install github.com/Armur-Ai/Pentest-Swarm-AI/cmd/pentestswarm@latest; then
     if has_cmd docker; then
-      write_mcp_server "pentestswarm" '{"command":"docker","args":["run","--rm","-i","ghcr.io/armur-ai/pentestswarm:latest","mcp","serve"]}'
+      write_mcp_server "pentestswarm" '{"type":"stdio","command":"docker","args":["run","--rm","-i","ghcr.io/armur-ai/pentestswarm:latest","mcp","serve"],"startup_timeout_sec":180}'
       log_warn "pentestswarm Go install failed; registered Docker fallback ghcr.io/armur-ai/pentestswarm:latest"
     else
       manual_required pentestswarm "Install Go 1.24+ or Docker, then install Pentest-Swarm-AI and ensure pentestswarm is on PATH."
@@ -578,6 +868,12 @@ ensure_capability() {
     proxycat) ensure_proxycat ;;
     burpsuite-mcp) ensure_burpsuite_mcp ;;
     nmap) ensure_nmap ;;
+    sqlmap) ensure_sqlmap ;;
+    ffuf) ensure_ffuf ;;
+    nuclei) ensure_nuclei ;;
+    binwalk) ensure_binwalk ;;
+    graphviz) ensure_graphviz ;;
+    plantuml) ensure_plantuml ;;
     pentestswarm) ensure_pentestswarm ;;
     *) log_err "No bootstrap definition for capability: $name"; return 1 ;;
   esac

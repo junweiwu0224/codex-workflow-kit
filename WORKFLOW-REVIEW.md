@@ -126,6 +126,8 @@ V3.1 verifier/tests/README/QUICKSTART/VERSION/MANIFEST/release 必须同步通�
 - 排除机器态和生成噪音：`.venv/`、`__pycache__/`、`.pyc`、生成的 `tool-index.md/json`、`.bak-*`、`.DS_Store`。
 - 安装器把 reverse pack 落到 `~/.codex/reverse-skill/`，把 router 落到 `~/.codex/skills/reverse-engineering/`，避免破坏原有路径假设。
 - live verifier 把 global AGENTS、11 个个人 skills、reverse router、reverse pack 和活跃插件路径一起校验，避免“仓库里有文件但 Desktop 里没接上”。
+- `install.sh --with-reverse-core` 提供新机器 `reverse-ready` 安装档：文件安装完成后，再 bootstrap 一批高频 reverse core 工具，并自动调用 `scripts/verify_reverse_ready.py` 做机器级只读检查。
+- `install.ps1` 提供 Windows 顶层安装入口，复用同一套 global AGENTS / skills / reverse pack / repo-template 安装语义，并可透传 `-WithReverseCore`、`-VerifyReverseReady` 到 Windows PowerShell bootstrap 路径。
 
 ## 真实验证
 
@@ -138,6 +140,8 @@ V3.1 verifier/tests/README/QUICKSTART/VERSION/MANIFEST/release 必须同步通�
 - repo-template tests：覆盖 context pack verifier。
 - 新机器演练：`2026.06.13.2` release checksum 通过；临时解包后 toolkit 自检通过；安装到临时 Codex/Agents/repo 成功；live install、doctor、runtime smoke、skill contract audit 和目标 repo context pack 均通过；旧版演练也覆盖过第二次安装跳过相同文件、冲突安装返回失败且不会提前写入 Codex/Agents home。
 - reverse merge drill：v3.2 安装路径新增 `~/.codex/skills/reverse-engineering/` 和 `~/.codex/reverse-skill/`，由 `verify_live_install.py` 逐文件比对，避免 reverse router 漂移或 reverse pack 缺文件。
+- reverse-ready drill：`install.sh --with-reverse-core` + `scripts/verify_reverse_ready.py` 把“文件已安装”推进到“高频逆向工具链已尽量补齐”；报告仍明确区分 core tools、optional tools 和 MCP 配置缺口，不把半自动状态伪装成全自动。
+- APK decode smoke：`scripts/verify_apk_decode_smoke.py --apk-fixture <apk>` 真实调用已安装 reverse pack 的 `decode.sh`，要求 `apktool_exit_code=0`、`package` 非空、`smali_dirs > 0`，补上 fresh install APK 主链的最终闭环。
 - Skill polish benchmark：`scripts/benchmark_skill_polish.py` 输出显式 contract points `17 -> 53`，增量 `+36`，`+211.76%`；其中 Output Shape `4 -> 11`，accessibility `0 -> 5`，release readiness `0 -> 6`，progressive disclosure `0 -> 3`。
 - Agent contract benchmark：`scripts/benchmark_agent_contract.py` 输出显式 agent contract points `5 -> 114`，增量 `+109`，`+2180.0%`；其中 20-repo research source coverage `0 -> 20`，prompt card contract coverage `0 -> 40`，verifier contract checks `0 -> 7`，usage pilot defaults `0 -> 3`。
 - Local Codex smoke：`docs/V3.1-LOCAL-CODEX-SMOKE-REPORT.md` 记录本机 `codex-cli 0.140.0-alpha.2`、live install、prompt-input skill 可见性、三个只读 subagent 的 return/close 证据，以及 `codex_doctor.py` bytecode 修复。结论是 V3.1 skills 和 subagents 可配合使用，但 runtime envelope enforcement 仍依赖主 agent prompt/review/close。
@@ -178,6 +182,15 @@ cd codex-workflow-kit
 python3 scripts/verify_toolkit.py
 ./install.sh --dry-run
 ./install.sh
+python3 scripts/verify_apk_decode_smoke.py --apk-fixture /path/to/app.apk
+```
+
+Windows:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\install.ps1 -DryRun
+powershell -ExecutionPolicy Bypass -File .\install.ps1 -WithReverseCore -VerifyReverseReady
+python scripts/verify_apk_decode_smoke.py --apk-fixture C:\path\to\app.apk
 ```
 
 给某个仓库安装 context pack：

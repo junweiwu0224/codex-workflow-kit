@@ -10,6 +10,7 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 KALI_BOOTSTRAP="$(cd "$SCRIPT_DIR/../../../kali/scripts" 2>/dev/null && pwd)/bootstrap-reverse.sh"
+TOOL_INDEX_JSON="$(cd "$SCRIPT_DIR/../../.." && pwd)/skills/tool-index.json"
 
 # ─── 参数解析 ──────────────────────────────────────────────────────────────────────
 
@@ -60,6 +61,51 @@ ensure_tool() {
     echo "INFO: $name 安装成功"
 }
 
+tool_path_from_index() {
+    local name="$1"
+    [[ -f "$TOOL_INDEX_JSON" ]] || return 1
+    python3 - "$TOOL_INDEX_JSON" "$name" <<'PY'
+import json
+import sys
+
+index_path, tool_name = sys.argv[1:]
+with open(index_path, 'r', encoding='utf-8') as handle:
+    data = json.load(handle)
+for item in data.get('tools', []):
+    if item.get('name') == tool_name and item.get('available') and item.get('path') not in (None, '', '—'):
+        print(item['path'])
+        raise SystemExit(0)
+raise SystemExit(1)
+PY
+}
+
+prefer_tool_from_index() {
+    local name="$1"
+    local resolved=""
+    resolved="$(tool_path_from_index "$name" 2>/dev/null || true)"
+    if [[ -n "$resolved" ]]; then
+        case "$resolved" in
+            */apktool.jar)
+                local wrapper_dir
+                wrapper_dir="$(dirname "$resolved")"
+                mkdir -p "$wrapper_dir"
+                cat > "$wrapper_dir/apktool" <<'EOF'
+#!/usr/bin/env bash
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+exec java -jar "$SCRIPT_DIR/apktool.jar" "$@"
+EOF
+                chmod +x "$wrapper_dir/apktool"
+                export PATH="$wrapper_dir:$PATH"
+                ;;
+            *)
+                export PATH="$(dirname "$resolved"):$PATH"
+                ;;
+        esac
+    fi
+}
+
+prefer_tool_from_index "jadx"
+prefer_tool_from_index "apktool"
 [[ "$SKIP_JADX" != "true" ]] && ensure_tool "jadx"
 [[ "$SKIP_APKTOOL" != "true" ]] && ensure_tool "apktool"
 
@@ -125,3 +171,7 @@ echo "  apktool_exit_code=$APKTOOL_EXIT"
 echo "  java_files=$JAVA_COUNT"
 echo "  smali_dirs=$SMALI_DIRS"
 echo "  so_files=$SO_COUNT"
+
+if [[ "$SKIP_APKTOOL" != "true" && "$APKTOOL_EXIT" -ne 0 ]]; then
+    exit "$APKTOOL_EXIT"
+fi
