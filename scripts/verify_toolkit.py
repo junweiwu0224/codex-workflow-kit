@@ -257,6 +257,33 @@ REQUIRED_REVERSE_PACK_TERMS = (
     "BurpSuite MCP",
     "Ghidra",
 )
+REVERSE_SKILL_DOCS = (
+    "reverse-skill/README.md",
+    "reverse-skill/README_zh.md",
+    "reverse-skill/OVERVIEW.md",
+    "reverse-skill/OVERVIEW_zh.md",
+)
+REVERSE_SKILL_DOC_SKILL_TERMS = (
+    "api-security",
+    "attack-chain",
+    "binary-diff",
+    "browser-automation",
+    "docs-generator",
+    "diagram-generator",
+    "edr-bypass-re",
+    "firmware-pentest",
+    "ida-reverse",
+    "js-reverse",
+    "llm-security",
+    "malware-analysis",
+    "mobile-reverse",
+    "patch-diff-exploit",
+    "pentest-tools",
+    "pwn-chain",
+    "radare2",
+    "reverse-engineering",
+    "supply-chain-security",
+)
 CANONICAL_REVERSE_PATHS = (
     "reverse-skill/skills/field-journal/_index.md",
     "reverse-skill/skills/field-journal/_template.md",
@@ -1034,6 +1061,21 @@ def check_toolkit(root: str | Path = ".") -> list[ToolkitIssue]:
                     message="Reverse pack canonical field-journal path is missing.",
                 )
             )
+    for relative in REVERSE_SKILL_DOCS:
+        doc_path = root / relative
+        if not doc_path.exists():
+            continue
+        doc_text = _read_text(doc_path)
+        for term in REVERSE_SKILL_DOC_SKILL_TERMS:
+            if term not in doc_text:
+                issues.append(
+                    ToolkitIssue(
+                        severity="error",
+                        code="reverse-skill-doc-missing-skill-term",
+                        path=relative,
+                        message=f"Reverse skill docs must mention {term}.",
+                    )
+                )
     for pattern in REVERSE_PATH_DOC_PATTERNS:
         if reverse_aggregate and pattern not in reverse_aggregate:
             issues.append(

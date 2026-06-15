@@ -269,6 +269,30 @@ def test_check_toolkit_rejects_reverse_routing_to_missing_target(tmp_path):
     assert any(issue.code == "reverse-routing-missing-target" for issue in issues)
 
 
+def test_check_toolkit_requires_reverse_skill_docs_to_list_supported_modules(tmp_path):
+    shadow = _clean_package_copy(tmp_path)
+    readme = shadow / "reverse-skill/README.md"
+    overview = shadow / "reverse-skill/OVERVIEW.md"
+    readme.write_text(readme.read_text(encoding="utf-8").replace("api-security", "api security"), encoding="utf-8")
+    overview.write_text(
+        overview.read_text(encoding="utf-8").replace("malware-analysis", "malware analysis"),
+        encoding="utf-8",
+    )
+
+    issues = check_toolkit(shadow)
+
+    assert any(
+        issue.code == "reverse-skill-doc-missing-skill-term"
+        and issue.path == "reverse-skill/README.md"
+        for issue in issues
+    )
+    assert any(
+        issue.code == "reverse-skill-doc-missing-skill-term"
+        and issue.path == "reverse-skill/OVERVIEW.md"
+        for issue in issues
+    )
+
+
 def test_check_toolkit_rejects_hardcoded_browser_plugin_paths(tmp_path):
     shadow = _clean_package_copy(tmp_path)
     frontend_qa = shadow / "skills/frontend-qa/SKILL.md"

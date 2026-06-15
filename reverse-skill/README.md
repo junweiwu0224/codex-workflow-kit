@@ -133,6 +133,7 @@ At present, it is recommended to understand the whole package as two layers:
     ├── scripts\                 # Tool-index refresh and shared scripts
     ├── field-journal\           # Auto-evolving experience logs
     ├── apk-reverse\             # APK reverse engineering
+    ├── api-security\            # REST / GraphQL / JWT / OAuth security testing
     ├── attack-chain\            # Multi-stage attack-chain orchestration
     ├── binary-diff\             # Cross-version symbol migration
     ├── browser-automation\      # Browser + desktop automation (Playwright + OpenReverse)
@@ -140,8 +141,11 @@ At present, it is recommended to understand the whole package as two layers:
     ├── docs-generator\          # Technical document/report generation
     ├── edr-bypass-re\           # EDR bypass reverse engineering (red-team delivery)
     ├── firmware-pentest\        # Firmware penetration-testing chain (OWASP FSTM)
+    ├── malware-analysis\        # Malware analysis, YARA, sandboxes, IOC extraction
     ├── ida-reverse\             # IDA Pro reverse engineering
     ├── js-reverse\              # Frontend JS / browser-chain reverse engineering
+    ├── mobile-reverse\          # Android + iOS reverse engineering
+    ├── supply-chain-security\   # SBOM / SCA / CI-CD security
     ├── patch-diff-exploit\      # N-day patch diff → exploitation
     ├── pentest-tools\           # Penetration-testing toolchain
     ├── pwn-chain\               # RE → usable exploit (stack / heap / kernel)
@@ -277,6 +281,7 @@ The following tables are grouped by “required / commonly used / optional enhan
 | Routing table | `routing.md` | Dispatch by target type, user intent, and toolchain |
 | Tool index | `tool-index.md` | Check whether local tools exist, where they are, and which scripts call them |
 | APK reverse engineering | `apk-reverse\` | Unpack, jadx, smali, repackaging, Frida, native dispatch |
+| API security | `api-security\` | REST / GraphQL / WebSocket / JWT / OAuth security testing |
 | IDA Pro | `ida-reverse\` | Deep binary RE and `idapro_*` workflows |
 | JS / Web | `js-reverse\` | Frontend signatures, request chains, environment simulation, SourceMap / AST / Hook |
 | radare2 | `radare2\` | CLI reconnaissance, strings, imports/exports, patching |
@@ -287,10 +292,13 @@ The following tables are grouped by “required / commonly used / optional enhan
 | RE → exploit chain | `pwn-chain\` | From reverse engineering to usable exploit: stack/heap/kernel pwn, pwntools, libc-database |
 | Firmware penetration chain | `firmware-pentest\` | OWASP FSTM full chain: extraction → EMBA → Firmadyne emulation → AFL++ fuzzing → real-device validation |
 | EDR bypass RE | `edr-bypass-re\` | Reverse EDR hook tables / ETW / AMSI → direct syscall / Hell’s Gate / call-stack spoofing |
+| Malware analysis | `malware-analysis\` | YARA / sandboxes / IOC extraction / anti-analysis |
+| Mobile reverse engineering | `mobile-reverse\` | Android + iOS reverse engineering, Frida/Objection, OWASP MASTG |
 | Penetration-testing toolchain | `pentest-tools\` | Nmap / Nuclei / SQLMap / FFUF / Hashcat and 20+ tool MCP workflows |
 | Diagram generation | `diagram-generator\` | Mermaid / Graphviz / PlantUML diagrams for attack paths, architecture, data flow |
 | Technical documents | `docs-generator\` | Automatically generate RE / pentest / CTF reports after a task |
 | LLM/AI security | `llm-security\` | OWASP LLM + ASI Top 10: prompt injection, agent security, **execution-stability engineering** |
+| Supply chain security | `supply-chain-security\` | SBOM / SCA / CI-CD security, dependency and build integrity |
 | Operational precedent library | `field-journal\precedent-*.md` | Authorized workflow records for RE and security testing; reduces repeated confirmation loops |
 
 ### 5.2 Recommended Entry Points
@@ -301,6 +309,9 @@ Use the following routing first:
 - exe / dll / so / elf → `ida-reverse\SKILL.md` or `radare2\SKILL.md`
 - Frontend signature / encrypted parameters → `js-reverse\SKILL.md`
 - HTTP capture / browser sampling / request replay → anything-analyzer + `js-reverse`
+- API security / GraphQL / JWT / OAuth → `api-security\SKILL.md`
+- Mobile reverse / IPA / Mach-O → `mobile-reverse\SKILL.md`
+- Malware / sample analysis → `malware-analysis\SKILL.md`
 - Penetration testing / port scanning / vulnerability scanning → `pentest-tools\SKILL.md`
 - Firmware / IoT / router pentesting → `firmware-pentest\SKILL.md`
 - N-day / patch diff / CVE PoC writing → `patch-diff-exploit\SKILL.md`
@@ -309,6 +320,7 @@ Use the following routing first:
 - Browser/desktop automation → `browser-automation\SKILL.md`
 - Symbol migration / cross-version comparison → `binary-diff\SKILL.md`
 - Diagrams / architecture diagrams / attack-path diagrams → `diagram-generator\SKILL.md`
+- Supply chain security / SBOM / CI-CD → `supply-chain-security\SKILL.md`
 - CTF challenge → dispatch first through the `CTF-Sandbox-Orchestrator` controller
 
 ---

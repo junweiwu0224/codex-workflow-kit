@@ -95,14 +95,22 @@ bash skills/scripts/refresh-tool-index.sh
 | 场景 | 主要入口 |
 |---|---|
 | APK / Android 分析 | `skills/apk-reverse/`、`skills/mobile-reverse/` |
+| API / REST / GraphQL 安全 | `skills/api-security/` |
 | 二进制逆向 | `skills/ida-reverse/`、`skills/radare2/`、`skills/reverse-engineering/` |
 | JS 参数 / 前端签名分析 | `skills/js-reverse/` |
 | HTTP 抓包 / 请求重放 | BurpSuite MCP、anything-analyzer、browser automation |
 | CTF / 安全竞赛 | `CTF-Sandbox-Orchestrator/` |
 | 固件 / IoT 分析 | `skills/firmware-pentest/` |
+| 攻击链规划 / 红队演练 | `skills/attack-chain/` |
+| 跨版本符号迁移 | `skills/binary-diff/` |
+| 浏览器 / 桌面自动化 | `skills/browser-automation/` |
 | 补丁差分 / N-day 分析 | `skills/patch-diff-exploit/` |
+| EDR 绕过 / 对抗分析 | `skills/edr-bypass-re/` |
+| 恶意软件 / 样本分析 | `skills/malware-analysis/` |
+| 利用开发 / pwn | `skills/pwn-chain/` |
 | 安全测试工具链 | `skills/pentest-tools/` |
 | LLM / Agent 安全 | `skills/llm-security/` |
+| 供应链 / SBOM / CI-CD | `skills/supply-chain-security/` |
 | 报告和图表 | `skills/docs-generator/`、`skills/diagram-generator/` |
 
 ## 示例工作流
@@ -138,10 +146,21 @@ bash skills/scripts/refresh-tool-index.sh
 │   ├── routing.md               # 路由矩阵
 │   ├── field-journal/           # 经验沉淀
 │   ├── apk-reverse/
+│   ├── api-security/
+│   ├── attack-chain/
+│   ├── binary-diff/
+│   ├── browser-automation/
+│   ├── edr-bypass-re/
 │   ├── js-reverse/
+│   ├── malware-analysis/
+│   ├── mobile-reverse/
+│   ├── patch-diff-exploit/
+│   ├── pentest-tools/
+│   ├── pwn-chain/
 │   ├── reverse-engineering/
 │   ├── ida-reverse/
 │   ├── radare2/
+│   ├── supply-chain-security/
 │   └── ...
 ├── CTF-Sandbox-Orchestrator/    # CTF 场景子技能库
 ├── burp-mcp-full/               # BurpSuite MCP 控制模块

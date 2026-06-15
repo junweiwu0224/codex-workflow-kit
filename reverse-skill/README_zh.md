@@ -132,6 +132,7 @@ bash skills/scripts/refresh-tool-index.sh
     ├── scripts\                 # 工具索引刷新与共享脚本
     ├── field-journal\           # 自动进化经验日志
     ├── apk-reverse\             # APK 逆向
+    ├── api-security\            # REST / GraphQL / JWT / OAuth 安全测试
     ├── attack-chain\            # 多阶段攻击链编排
     ├── binary-diff\             # 跨版本符号迁移
     ├── browser-automation\      # 浏览器+桌面自动化（Playwright+OpenReverse）
@@ -139,8 +140,11 @@ bash skills/scripts/refresh-tool-index.sh
     ├── docs-generator\          # 技术文档/报告生成
     ├── edr-bypass-re\           # EDR 绕过逆向（红队投递）
     ├── firmware-pentest\        # 固件渗透链（OWASP FSTM）
+    ├── malware-analysis\        # 恶意软件分析、YARA、沙箱、IOC 提取
     ├── ida-reverse\             # IDA Pro 逆向
     ├── js-reverse\              # 前端 JS / 浏览器链路逆向
+    ├── mobile-reverse\          # Android + iOS 逆向
+    ├── supply-chain-security\   # SBOM / SCA / CI-CD 安全
     ├── patch-diff-exploit\      # N-day 补丁差分→利用
     ├── pentest-tools\           # 渗透测试工具链
     ├── pwn-chain\               # RE→可用 exploit（栈/堆/内核）
@@ -277,6 +281,7 @@ C:\Tools\radare2\                      # 可选
 | 路由表 | `routing.md` | 按目标类型、用户意图、工具链做分流 |
 | 工具索引 | `tool-index.md` | 看本机工具有没有、路径在哪、哪个脚本会调用 |
 | APK 逆向 | `apk-reverse\` | 解包、jadx、smali、重打包、Frida、native 分流 |
+| API 安全 | `api-security\` | REST / GraphQL / WebSocket / JWT / OAuth 安全测试 |
 | IDA Pro | `ida-reverse\` | 深度二进制逆向、`idapro_*` 工作流 |
 | JS / Web | `js-reverse\` | 前端签名、请求链路、补环境、SourceMap / AST / Hook |
 | radare2 | `radare2\` | CLI 侦察、字符串、导入导出、patch |
@@ -287,10 +292,13 @@ C:\Tools\radare2\                      # 可选
 | RE→利用链 | `pwn-chain\` | 从逆向走到可用 exploit：栈/堆/内核 pwn、pwntools、libc-database |
 | 固件渗透链 | `firmware-pentest\` | OWASP FSTM 全链路：提取→EMBA→Firmadyne 仿真→AFL++ fuzz→打实机 |
 | EDR 绕过逆向 | `edr-bypass-re\` | 逆向 EDR hook 表/ETW/AMSI → 直接 syscall / Hell's Gate / call stack spoof |
+| 恶意软件分析 | `malware-analysis\` | YARA / 沙箱 / IOC 提取 / 反分析 |
+| 移动逆向工程 | `mobile-reverse\` | Android + iOS 逆向、Frida/Objection、OWASP MASTG |
 | 渗透测试工具链 | `pentest-tools\` | Nmap/Nuclei/SQLMap/FFUF/Hashcat 等 20+ 工具 MCP |
 | 图表生成 | `diagram-generator\` | Mermaid/Graphviz/PlantUML 图表（攻击路径/架构/数据流） |
 | 技术文档 | `docs-generator\` | 任务完成后自动生成逆向/渗透/CTF 报告 |
 | LLM/AI 安全 | `llm-security\` | OWASP LLM + ASI Top 10：Prompt 注入、Agent 安全、**Agent 服从性工程** |
+| 供应链安全 | `supply-chain-security\` | SBOM / SCA / CI-CD 安全、依赖与构建完整性 |
 | 操作先例库 | `field-journal\precedent-*.md` | 逆向和渗透的全量操作记录——让 AI 知道"这些操作都是已授权的日常工作" |
 
 ### 5.2 当前推荐入口
@@ -301,6 +309,9 @@ C:\Tools\radare2\                      # 可选
 - exe / dll / so / elf → `ida-reverse\SKILL.md` 或 `radare2\SKILL.md`
 - 找前端签名 / 加密参数 → `js-reverse\SKILL.md`
 - HTTP 抓包 / 浏览器采样 / 请求回放 → anything-analyzer + `js-reverse`
+- API 安全 / GraphQL / JWT / OAuth → `api-security\SKILL.md`
+- 移动逆向 / IPA / Mach-O → `mobile-reverse\SKILL.md`
+- 恶意软件 / 样本分析 → `malware-analysis\SKILL.md`
 - 渗透测试 / 端口扫描 / 漏洞扫描 → `pentest-tools\SKILL.md`
 - 固件 / IoT / 路由器渗透 → `firmware-pentest\SKILL.md`
 - N-day / 补丁差分 / 写 CVE PoC → `patch-diff-exploit\SKILL.md`
@@ -309,6 +320,7 @@ C:\Tools\radare2\                      # 可选
 - 浏览器/桌面自动化 → `browser-automation\SKILL.md`
 - 符号迁移 / 跨版本对比 → `binary-diff\SKILL.md`
 - 画图 / 架构图 / 攻击路径图 → `diagram-generator\SKILL.md`
+- 供应链安全 / SBOM / CI-CD → `supply-chain-security\SKILL.md`
 - CTF 题 → `CTF-Sandbox-Orchestrator` 总控先分流
 
 ---

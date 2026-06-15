@@ -95,14 +95,22 @@ The repository is not tied to one client. Its core assets are `RULES.md`, `skill
 | Scenario | Main entry |
 |---|---|
 | APK / Android analysis | `skills/apk-reverse/`, `skills/mobile-reverse/` |
+| API / REST / GraphQL security | `skills/api-security/` |
 | Binary reverse engineering | `skills/ida-reverse/`, `skills/radare2/`, `skills/reverse-engineering/` |
 | Frontend JS signing / parameter analysis | `skills/js-reverse/` |
 | HTTP traffic / request replay | BurpSuite MCP, anything-analyzer, browser automation |
 | CTF / security competitions | `CTF-Sandbox-Orchestrator/` |
 | Firmware / IoT analysis | `skills/firmware-pentest/` |
+| Attack-chain planning / red-team exercises | `skills/attack-chain/` |
+| Cross-version symbol migration | `skills/binary-diff/` |
+| Browser / desktop automation | `skills/browser-automation/` |
 | Patch diff / N-day analysis | `skills/patch-diff-exploit/` |
+| EDR bypass / evasion analysis | `skills/edr-bypass-re/` |
+| Malware / sample analysis | `skills/malware-analysis/` |
+| Exploit development / pwn | `skills/pwn-chain/` |
 | Security-testing toolchain | `skills/pentest-tools/` |
 | LLM / Agent security | `skills/llm-security/` |
+| Supply chain / SBOM / CI-CD | `skills/supply-chain-security/` |
 | Reports and diagrams | `skills/docs-generator/`, `skills/diagram-generator/` |
 
 ## Example workflow
@@ -138,10 +146,21 @@ Expected Agent behavior:
 │   ├── routing.md               # Routing matrix
 │   ├── field-journal/           # Experience journal
 │   ├── apk-reverse/
+│   ├── api-security/
+│   ├── attack-chain/
+│   ├── binary-diff/
+│   ├── browser-automation/
+│   ├── edr-bypass-re/
 │   ├── js-reverse/
+│   ├── malware-analysis/
+│   ├── mobile-reverse/
+│   ├── patch-diff-exploit/
+│   ├── pentest-tools/
+│   ├── pwn-chain/
 │   ├── reverse-engineering/
 │   ├── ida-reverse/
 │   ├── radare2/
+│   ├── supply-chain-security/
 │   └── ...
 ├── CTF-Sandbox-Orchestrator/    # CTF scenario sub-skills
 ├── burp-mcp-full/               # BurpSuite MCP control module
