@@ -252,6 +252,23 @@ def test_check_toolkit_requires_frontend_browser_routing_guidance(tmp_path):
     assert any(issue.code == "global-agents-missing-browser-routing" for issue in issues)
 
 
+def test_check_toolkit_rejects_reverse_routing_to_missing_target(tmp_path):
+    shadow = _clean_package_copy(tmp_path)
+    routing = shadow / "reverse-skill/skills/routing.md"
+    routing.write_text(
+        routing.read_text(encoding="utf-8").replace(
+            "`apk-reverse/SKILL.md`",
+            "`game-security/SKILL.md`",
+            1,
+        ),
+        encoding="utf-8",
+    )
+
+    issues = check_toolkit(shadow)
+
+    assert any(issue.code == "reverse-routing-missing-target" for issue in issues)
+
+
 def test_check_toolkit_rejects_hardcoded_browser_plugin_paths(tmp_path):
     shadow = _clean_package_copy(tmp_path)
     frontend_qa = shadow / "skills/frontend-qa/SKILL.md"

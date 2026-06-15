@@ -21,7 +21,7 @@ Route tasks to the most appropriate skill module by target type, user intent, an
 | Firmware / IoT | `reverse-engineering/platforms.md` — binwalk/ARM/MIPS | `reverse-engineering/tools.md` — Ghidra headless |
 | WASM / Python bytecode / .NET | `reverse-engineering/languages.md` | Check specific language section |
 | macOS / iOS | `reverse-engineering/platforms.md` — Mach-O/ObjC/Swift | `mobile-reverse/` for iOS-specific |
-| Game (Unity/Unreal) | `game-security/` — engine reverse, anti-cheat, IL2CPP/Mono | `ida-reverse/` deep analysis |
+| Game (Unity/Unreal) | `apk-reverse/` + `ida-reverse/` + `reverse-engineering/tools-dynamic.md` — IL2CPP/Mono/native game chain | `mobile-reverse/` (mobile runtime) or `reverse-engineering/anti-analysis.md` |
 | Memory dump / PCAP | `reverse-engineering/platforms.md` | `reverse-engineering/patterns*.md` |
 | Malware / virus sample | `reverse-engineering/` — YARA/sandbox/behavior analysis | `ida-reverse/` deep analysis |
 | Cryptography / encryption algorithms | `reverse-engineering/patterns*.md` — crypto patterns | `js-reverse/` (if frontend crypto) |
@@ -64,10 +64,10 @@ Route tasks to the most appropriate skill module by target type, user intent, an
 | "open webpage / browser automation / fill form" | `browser-automation/SKILL.md` — Playwright |
 | "crawl page / screenshot / auto login" | `browser-automation/SKILL.md` |
 | "desktop automation / Windows automation" | `browser-automation/SKILL.md` — OpenReverse |
-| "game reverse / anti-cheat / hack analysis" | `game-security/SKILL.md` |
-| "Unity / IL2CPP / Mono" | `game-security/SKILL.md` — Unity game reverse |
-| "Unreal Engine / UE reverse" | `game-security/SKILL.md` — UE game reverse |
-| "Cheat Engine / memory scan" | `game-security/SKILL.md` — memory analysis |
+| "game reverse / anti-cheat / hack analysis" | `apk-reverse/SKILL.md` + `ida-reverse/SKILL.md` + `reverse-engineering/anti-analysis.md` |
+| "Unity / IL2CPP / Mono" | `apk-reverse/SKILL.md` + `ida-reverse/SKILL.md` + `field-journal/seed-014_unity-il2cpp-reverse.md` |
+| "Unreal Engine / UE reverse" | `ida-reverse/SKILL.md` + `reverse-engineering/tools-dynamic.md` — UE game reverse |
+| "Cheat Engine / memory scan" | `reverse-engineering/tools-dynamic.md` — memory analysis |
 | "symbol migration / cross-version compare" | `binary-diff/SKILL.md` — LLM batch migration |
 | "missing PDB / old version symbols" | `binary-diff/SKILL.md` — cross-version symbol migration |
 | "bindiff / function offset migration" | `binary-diff/SKILL.md` — binary diff |
@@ -78,7 +78,7 @@ Route tasks to the most appropriate skill module by target type, user intent, an
 | "password cracking / Hashcat" | `pentest-tools/SKILL.md` — password cracking |
 | "penetration testing / active scan" | `pentest-tools/SKILL.md` — pentest toolchain |
 | "SRC hunting / Bug Bounty" | `pentest-tools/src-hunter/SKILL.md` — 19 playbooks + H1 cases |
-| "WAF bypass" | `pentest-tools/src-hunter/references/payloader/` — 263 bypass steps |
+| "WAF bypass" | `pentest-tools/src-hunter/references/payloader/index.md` — 263 bypass steps |
 | "draw diagram / flowchart / architecture" | `diagram-generator/SKILL.md` |
 | "attack path diagram / sequence diagram" | `diagram-generator/SKILL.md` — Mermaid/Graphviz/PlantUML |
 | "malware / virus analysis / sample analysis" | `reverse-engineering/SKILL.md` + YARA/sandbox |
@@ -87,7 +87,7 @@ Route tasks to the most appropriate skill module by target type, user intent, an
 | "protocol reverse / Protobuf / custom protocol" | `reverse-engineering/platforms.md` |
 | "cloud security / container escape / K8s" | `../CTF-Sandbox-Orchestrator/competition-agent-cloud/SKILL.md` |
 | "Prompt injection / AI security" | `llm-security/SKILL.md` — OWASP LLM + ASI Top 10 |
-| "internal network / lateral movement" | `pentest-tools/SKILL.md` + `references/network-attack-defense.md` |
+| "internal network / lateral movement" | `pentest-tools/SKILL.md` + `pentest-tools/references/network-attack-defense.md` |
 | "privilege escalation" | `pentest-tools/references/network-attack-defense.md` — escalation section |
 | "Mimikatz / credential extraction / PtH" | `pentest-tools/references/network-attack-defense.md` |
 | "Kerberos / domain pentest / AD" | `pentest-tools/references/network-attack-defense.md` |
@@ -114,7 +114,7 @@ Route tasks to the most appropriate skill module by target type, user intent, an
 | "from external to domain controller" | `attack-chain/SKILL.md` — cross-phase path orchestration |
 | "attack surface assessment / path planning" | `attack-chain/SKILL.md` — path planning decision tree |
 | "got shell, what next / post-exploitation" | `attack-chain/SKILL.md` — plan from current foothold |
-| "BurpSuite / Burp proxy / intercept" | `pentest-tools/SKILL.md` + `references/burpsuite-mcp-guide.md` |
+| "BurpSuite / Burp proxy / intercept" | `pentest-tools/SKILL.md` + `pentest-tools/references/burpsuite-mcp-guide.md` |
 | "Burp MCP / proxy history analysis" | `pentest-tools/references/burpsuite-mcp-guide.md` — 63 tools |
 | "Intruder brute force / Repeater replay" | `pentest-tools/references/burpsuite-mcp-guide.md` |
 | "Collaborator / OOB testing" | `pentest-tools/references/burpsuite-mcp-guide.md` |
@@ -150,8 +150,8 @@ Route tasks to the most appropriate skill module by target type, user intent, an
 | jshookmcp | `js-reverse/` enhancement MCP for browser/CDP/Hook/Network/SourceMap/AST |
 | agent-browser / Playwright | `browser-automation/` — browser automation |
 | OpenReverse (UIA/CUA) | `browser-automation/` — Windows desktop automation |
-| Cheat Engine / x64dbg / ReClass | `game-security/` — game memory analysis |
-| IL2CPP Dumper / dnSpy | `game-security/` — Unity/Mono game reverse |
+| Cheat Engine / x64dbg / ReClass | `reverse-engineering/tools-dynamic.md` — memory analysis / runtime validation |
+| IL2CPP Dumper / dnSpy | `apk-reverse/` + `ida-reverse/` + `field-journal/seed-014_unity-il2cpp-reverse.md` |
 | LLM symbol migration / BinDiff alternative | `binary-diff/` — cross-version batch migration |
 | Nmap / Masscan | `pentest-tools/` — port scan, service identification |
 | Nuclei / ZAP / Nikto | `pentest-tools/` — vulnerability scanning |
@@ -161,7 +161,7 @@ Route tasks to the most appropriate skill module by target type, user intent, an
 | Hashcat / John / Hydra | `pentest-tools/` — password cracking |
 | Metasploit / Impacket | `pentest-tools/` — exploitation framework |
 | BurpSuite | `pentest-tools/` — web proxy, interception, vulnerability scanning |
-| BurpSuite MCP | `pentest-tools/` — 63-tool AI full control, see `references/burpsuite-mcp-guide.md` |
+| BurpSuite MCP | `pentest-tools/` — 63-tool AI full control, see `pentest-tools/references/burpsuite-mcp-guide.md` |
 | ProxyCat | `pentest-tools/` — proxy pool management & IP rotation |
 | Cobalt Strike / Sliver / Havoc | `attack-chain/` — C2 framework |
 | pentestMCP (Docker) | `pentest-tools/` — 20+ tools one-click MCP |
@@ -215,6 +215,15 @@ Binary Reverse Path:
   ida-reverse/ → IDA decompile
   ↓ Dynamic verification
   reverse-engineering/tools-dynamic.md → Frida/GDB
+
+Game Reverse Path:
+  apk-reverse/ → unpack APK / confirm libil2cpp.so or managed assemblies
+  ↓ Unity IL2CPP / Mono
+  ida-reverse/ → native or managed entry analysis
+  ↓ Need runtime validation or anti-cheat bypass
+  reverse-engineering/tools-dynamic.md / anti-analysis.md
+  ↓ Reuse precedent
+  field-journal/seed-014_unity-il2cpp-reverse.md
 
 CTF Competition Path (via CTF-Sandbox-Orchestrator):
   ctf-sandbox-orchestrator/SKILL.md → build sandbox model

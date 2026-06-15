@@ -690,6 +690,7 @@ SKILL_BOUNDARY_TERMS = (
     "不替代",
     "不默认",
 )
+REVERSE_ROUTING_FILE_REF_RE = re.compile(r"`((?:\.\./)?[A-Za-z0-9_.-]+(?:/[A-Za-z0-9_.-]+)+(?:/\*\.md|\.md|/))`")
 
 
 @dataclass(frozen=True, order=True)
@@ -814,6 +815,22 @@ def _parse_skill_frontmatter(text: str) -> dict[str, str]:
         key, value = line.split(":", 1)
         frontmatter[key.strip()] = value.strip().strip('"').strip("'")
     return frontmatter
+
+
+def _normalize_reverse_routing_ref(ref: str) -> str | None:
+    if ref.endswith("*.md"):
+        return None
+    if ref.startswith("../CTF-Sandbox-Orchestrator/"):
+        return f"reverse-skill/{ref[3:]}"
+    if ref.startswith("../"):
+        return f"reverse-skill/skills/{ref[3:]}"
+    if ref.startswith("field-journal/"):
+        return f"reverse-skill/skills/{ref}"
+    if ref.endswith("/"):
+        return None
+    if "/" in ref:
+        return f"reverse-skill/skills/{ref}"
+    return None
 
 
 def check_toolkit(root: str | Path = ".") -> list[ToolkitIssue]:
@@ -1025,6 +1042,19 @@ def check_toolkit(root: str | Path = ".") -> list[ToolkitIssue]:
                     code="reverse-pack-missing-path-doc",
                     path="reverse-skill",
                     message=f"Reverse pack docs must mention canonical path {pattern}.",
+                    )
+                )
+    for ref in sorted(set(REVERSE_ROUTING_FILE_REF_RE.findall(reverse_routing))):
+        normalized = _normalize_reverse_routing_ref(ref)
+        if not normalized:
+            continue
+        if not (root / normalized).exists():
+            issues.append(
+                ToolkitIssue(
+                    severity="error",
+                    code="reverse-routing-missing-target",
+                    path="reverse-skill/skills/routing.md",
+                    message=f"Reverse routing references missing target: {ref} -> {normalized}",
                 )
             )
     for relative in (
