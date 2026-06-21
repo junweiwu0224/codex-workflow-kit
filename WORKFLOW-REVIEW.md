@@ -64,7 +64,7 @@
 
 - hooks：默认不启用阻断型 hooks。只有 A 级、短耗时、稳定、无外部依赖、无业务数据写入、无隐藏产物的命令才考虑前移。
 - MCP/代码图谱/memory：先用 repo context pack、`rg`、语言工具和测试建立临时上下文；只有重复收益明确、边界清楚、可回退时再增加长期服务。
-- subagents：L/XL、已有实施计划、跨模块、多独立失败源、多文件审查和可并行调查必须先做 suitability check；存在 2 个以上互不重叠的独立子任务时主动使用 subagents，不使用时说明原因。共享入口、schema/storage、应用生命周期、交易/生产路径由主 agent 串行控制。
+- subagents：L/XL、已有实施计划、跨模块、多独立失败源、多文件审查和可并行调查必须先做 suitability check；只有当前运行时或工具权限允许主动派发，且存在 2 个以上互不重叠的独立子任务时，才主动使用 subagents。当前工具要求本轮显式授权 subagents/并行/委派时，记录 No-Dispatch Decision: tool permission constraint，除非用户本轮明确授权。共享入口、schema/storage、应用生命周期、交易/生产路径由主 agent 串行控制。
 - subagent lifecycle：主 agent 记录本轮派出的 agent id；收到结果、决定不采纳或不再需要时必须 `close_agent`，最终回复前检查是否还有未关闭 agent。只读 explorer / reviewer / 竞品观察也必须收口。
 - observability：本地 usage、菜单栏状态、长任务监控、通知或 HUD 工具仅作为候选；必须确认本地日志读取范围、网络/后台行为和关闭方式后试用。
 - `spec-kit-xl`：只用于 XL、正式规格、长期验收标准或用户明确要求规格文档的任务。
@@ -249,7 +249,7 @@ Evidence source:
 - Fifth calibrated-repo task: `ai-workflows` 已完成 “Make raw workflow downloads fail fast”，用 Python 静态测试锁住 README raw workflow 下载命令必须使用 fail-fast curl flags。
 - First Adoption Review: 基于 3 条 calibrated repo M 级任务，晋升 narrow static docs/content-contract tests 为 repo-specific gate candidates；继续拒绝 blocking hooks、MCP/code graph/memory、无边界 subagents 默认启用和 `go test` default hooks。
 - Second Adoption Review: 基于 5 条 calibrated repo M 级任务，将 static docs/content-contract tests 明确晋升为 repo-specific gate candidates，并更新 repo-template 质量门禁/测试模板；仍不默认启用 blocking hooks、MCP/code graph/memory、无边界 subagents、full Markdown lint 或 link checker。
-- Post-V2 subagent refinement: live global AGENTS 和 portable toolkit 已加入 proactive subagent suitability check；大型或可并行任务必须主动评估，存在 2 个以上独立非重叠子任务时主动 dispatch，不使用时说明原因，最终集成和 diff review 仍由主 agent 负责。
+- Post-V2 subagent refinement: live global AGENTS 和 portable toolkit 已加入 proactive subagent suitability check；大型或可并行任务必须主动评估，dispatch 受当前运行时或工具权限门禁约束。存在 2 个以上独立非重叠子任务且工具允许主动派发时才主动 dispatch，不使用时说明原因，最终集成和 diff review 仍由主 agent 负责。
 - Final V2 Completion Audit: 对 V2 plan 10 个阶段逐项审计，确认当前完成的是证据驱动、可迁移、可验证的 V2 package，而不是扩大默认自动化。
 - Post-V2 Practical Calibration: 3 个大型只读校准样本覆盖 `ai-quant-trading` LocalMCP/前端动作链、`ai-workflows` workflow/docs 阶段复盘、`dify-plugin-daemon` serverless runtime 跨模块图谱；结论是 subagents 对 L 级边界发现有收益，frontend QA 只对真实前端风险强制，MCP/code graph 不默认启用。
 - Post-V2.2 subagent lifecycle fix: 真实检查发现只读观察 agent 完成或不再需要后可能停留 running；live/toolkit 规则已补充派出 id 记录、结果集成后 `close_agent`、最终回复前 lifecycle check。
@@ -267,7 +267,7 @@ Rejections:
 
 - 不把 hooks 默认启用；当前证据支持候选集和 side-effect audit，不支持阻断型自动启用。
 - 不把 MCP/code graph/memory 默认启用；当前证据显示多数问题可先用 repo docs、`rg`、语言工具和 targeted tests 解决。
-- 不把 subagents 设为无条件默认实现路径；但 L/XL、已有实施计划、跨模块或多独立失败源任务必须主动评估，边界清晰且存在 2 个以上独立子任务时主动使用。
+- 不把 subagents 设为无条件默认实现路径；但 L/XL、已有实施计划、跨模块或多独立失败源任务必须主动评估，边界清晰、存在 2 个以上独立子任务且当前运行时或工具权限允许主动派发时才主动使用。
 
 Remaining candidates:
 

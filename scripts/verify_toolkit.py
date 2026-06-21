@@ -634,8 +634,9 @@ REQUIRED_RELEASE_READINESS_TERMS = (
     "不要",
 )
 REQUIRED_PROACTIVE_SUBAGENT_TERMS = (
-    "长期授权",
     "subagent suitability check",
+    "当前运行时或工具权限允许",
+    "显式授权",
     "L/XL",
     "已有实施计划",
     "跨模块",
@@ -648,6 +649,12 @@ REQUIRED_PROACTIVE_SUBAGENT_TERMS = (
     "diff review",
     "垂直切片",
     "只读 explorer",
+    "tool permission constraint",
+)
+FORBIDDEN_UNCONDITIONAL_SUBAGENT_DISPATCH_PHRASES = (
+    "不要因为当前对话没有再次说“使用子代理/并行”就跳过 suitability check 或 dispatch",
+    "不要因为当前对话没有再次要求并行就跳过 suitability check 或安全 dispatch",
+    "不要因为当前对话没有再次说“使用子代理/并行”就跳过 suitability check 或安全 dispatch",
 )
 REQUIRED_SUBAGENT_PROMPT_CARDS = (
     "read-only code mapper",
@@ -752,6 +759,10 @@ MANIFEST_EXCLUDED_SUFFIXES = {
 MANIFEST_EXCLUDED_FILES = {
     ".DS_Store",
 }
+MANIFEST_EXCLUDED_PREFIXES = (
+    "reverse-skill/burp-mcp-full/build/libs/",
+    "reverse-skill/reports/",
+)
 
 SECRET_RE = re.compile(
     r"sk-[A-Za-z0-9]{20,}|BEGIN (?:RSA|OPENSSH|PRIVATE) KEY|"
@@ -841,6 +852,8 @@ def _iter_manifest_files(root: Path) -> list[Path]:
                 continue
             path = current / file_name
             relative = _relative(root, path)
+            if any(relative.startswith(prefix) for prefix in MANIFEST_EXCLUDED_PREFIXES):
+                continue
             if relative == MANIFEST_PATH:
                 continue
             if any(relative.endswith(suffix) for suffix in MANIFEST_EXCLUDED_SUFFIXES):
@@ -1502,8 +1515,24 @@ def check_toolkit(root: str | Path = ".") -> list[ToolkitIssue]:
                     code="subagents-missing-proactive-guidance",
                     path=relative,
                     message=(
-                        "Subagent guidance must require proactive suitability checks, active dispatch for "
-                        "2+ independent subtasks, and main-agent integration review."
+                        "Subagent guidance must require proactive suitability checks, runtime/tool-permission "
+                        "gating before dispatch, explicit-authorization fallback, and main-agent integration review."
+                    ),
+                )
+            )
+        forbidden_phrase = next(
+            (phrase for phrase in FORBIDDEN_UNCONDITIONAL_SUBAGENT_DISPATCH_PHRASES if phrase in text),
+            None,
+        )
+        if forbidden_phrase:
+            issues.append(
+                ToolkitIssue(
+                    severity="error",
+                    code="subagents-unconditional-dispatch-guidance",
+                    path=relative,
+                    message=(
+                        "Subagent guidance must not treat long-term suitability-check authorization as permission "
+                        f"to bypass current runtime/tool dispatch gates: {forbidden_phrase}"
                     ),
                 )
             )
@@ -1868,6 +1897,8 @@ def check_toolkit(root: str | Path = ".") -> list[ToolkitIssue]:
                 continue
             path = current / file_name
             relative = _relative(root, path)
+            if any(relative.startswith(prefix) for prefix in MANIFEST_EXCLUDED_PREFIXES):
+                continue
             if path.suffix == ".pyc":
                 issues.append(
                     ToolkitIssue(

@@ -28,6 +28,10 @@ EXCLUDE_SUFFIXES = {
 EXCLUDE_FILES = {
     ".DS_Store",
 }
+EXCLUDE_PREFIXES = (
+    "reverse-skill/burp-mcp-full/build/libs/",
+    "reverse-skill/reports/",
+)
 MANIFEST_PATH = "MANIFEST.sha256"
 
 
@@ -69,6 +73,8 @@ def _iter_package_files(root: Path) -> list[Path]:
                 continue
             path = current / file_name
             relative = path.relative_to(root).as_posix()
+            if any(relative.startswith(prefix) for prefix in EXCLUDE_PREFIXES):
+                continue
             if any(relative.endswith(suffix) for suffix in EXCLUDE_SUFFIXES):
                 continue
             if ".bak-" in relative:

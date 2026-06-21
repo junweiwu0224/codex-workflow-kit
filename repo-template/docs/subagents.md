@@ -12,10 +12,12 @@
 
 先做 subagent suitability check：
 
-- 本协议视为当前仓库对主动使用 subagents 的长期授权；不要因为当前对话没有再次说“使用子代理/并行”就跳过 suitability check 或安全 dispatch。
+- 本协议视为当前仓库对主动执行 subagent suitability check 的长期授权，不等于绕过当前运行时或工具权限的 dispatch 授权。
 - L/XL 任务、已有实施计划、跨模块任务、多个独立失败源、多文件审查或预计可并行的调查，都要先判断是否能拆给 subagents。
-- 如果存在 2 个以上互不重叠、可独立推进、不会共享写入状态的子任务，应主动使用 subagents。
-- 不使用时要简短说明原因，例如强耦合、下一步阻塞依赖、文件 ownership 冲突、风险集中在共享状态或涉及高风险外部操作。
+- 如果当前运行时或工具权限允许主动派发，且存在 2 个以上互不重叠、可独立推进、不会共享写入状态的子任务，应主动使用 subagents。
+- 如果当前工具要求用户在本轮显式授权 subagents/并行/委派，则只能记录 suitability check 和 No-Dispatch Decision: tool permission constraint，除非用户本轮明确授权。
+- 用户可以通过在当前任务中写“本轮授权按需使用 subagents/并行代理/委派”来解除当前工具层的显式授权约束。
+- 不使用时要简短说明原因，例如强耦合、下一步阻塞依赖、文件 ownership 冲突、风险集中在共享状态、涉及高风险外部操作或 tool permission constraint。
 - 主 agent 保留需求澄清、架构判断、共享文件、外部/生产风险、最终集成、diff review 和验证；把独立调查、独立模块实现、只读审查或互不重叠的 worker 任务交给 subagents。
 - 长期 L/XL 产品落地如果采用垂直切片集中写入，可以不强行派实现 subagent；但每 2-3 个切片后，应优先派只读 explorer 做方案覆盖率、风险和验收缺口审查，除非当前没有明确评审目标或会阻塞关键路径。
 

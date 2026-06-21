@@ -73,11 +73,21 @@ REQUIRED_MCP_PERMISSION_TERMS = (
 )
 REQUIRED_SUBAGENT_CONTRACT_TERMS = (
     "V3.1 Prompt Contract",
+    "subagent suitability check",
+    "当前运行时或工具权限允许",
+    "显式授权",
+    "No-Dispatch Decision",
+    "tool permission constraint",
     "allowed write set",
     "off-limits",
     "lifecycle close",
     "implementation worker",
     "batch worker",
+)
+FORBIDDEN_UNCONDITIONAL_SUBAGENT_DISPATCH_PHRASES = (
+    "不要因为当前对话没有再次说“使用子代理/并行”就跳过 suitability check 或 dispatch",
+    "不要因为当前对话没有再次要求并行就跳过 suitability check 或安全 dispatch",
+    "不要因为当前对话没有再次说“使用子代理/并行”就跳过 suitability check 或安全 dispatch",
 )
 REQUIRED_CODEGRAPH_TERMS = (
     "Code Graph Pilot",
@@ -218,6 +228,29 @@ def check_context_pack(root: str | Path = ".") -> list[ContextPackIssue]:
     _require_terms(issues, root, "docs/quality-gates.md", REQUIRED_QUALITY_GATE_TERMS, "missing-v3-1-hook-guidance")
     _require_terms(issues, root, "docs/mcp-pilot.md", REQUIRED_MCP_PERMISSION_TERMS, "missing-v3-1-mcp-permission-guidance")
     _require_terms(issues, root, "docs/subagents.md", REQUIRED_SUBAGENT_CONTRACT_TERMS, "missing-v3-1-subagent-contract")
+    subagents_path = root / "docs/subagents.md"
+    if subagents_path.exists():
+        subagents_text = _read_text(subagents_path)
+        forbidden_phrase = next(
+            (
+                phrase
+                for phrase in FORBIDDEN_UNCONDITIONAL_SUBAGENT_DISPATCH_PHRASES
+                if phrase in subagents_text
+            ),
+            None,
+        )
+        if forbidden_phrase:
+            issues.append(
+                ContextPackIssue(
+                    severity="error",
+                    code="subagents-unconditional-dispatch-guidance",
+                    path="docs/subagents.md",
+                    message=(
+                        "docs/subagents.md must not treat long-term suitability-check authorization as permission "
+                        f"to bypass current runtime/tool dispatch gates: {forbidden_phrase}"
+                    ),
+                )
+            )
     _require_terms(issues, root, "docs/codegraph-pilot.md", REQUIRED_CODEGRAPH_TERMS, "missing-codegraph-pilot-guidance")
     _require_terms(issues, root, "docs/memory-recall-pilot.md", REQUIRED_MEMORY_RECALL_TERMS, "missing-memory-recall-guidance")
 

@@ -524,7 +524,7 @@ python3 scripts/verify_context_pack.py
 
 ## 试跑和效果评估
 
-给新仓库安装 context pack 后，不要立刻启用整套 hooks、MCP 或 memory。subagents 按全局协议主动评估：L/XL、已有实施计划、跨模块、多独立失败源、多文件审查和可并行调查要先做 suitability check；存在 2 个以上独立非重叠子任务时主动使用，不使用时说明原因。推荐先做 3-5 个真实 M/L/XL 任务，把结果写入：
+给新仓库安装 context pack 后，不要立刻启用整套 hooks、MCP 或 memory。subagents 按全局协议主动评估：L/XL、已有实施计划、跨模块、多独立失败源、多文件审查和可并行调查要先做 suitability check；只有当前运行时或工具权限允许主动派发，且存在 2 个以上独立非重叠子任务时，才主动使用 subagents。若当前工具要求本轮显式授权 subagents/并行/委派，则记录 No-Dispatch Decision: tool permission constraint，除非用户本轮明确授权。推荐先做 3-5 个真实 M/L/XL 任务，把结果写入：
 
 ```text
 docs/codex-usage.md
@@ -536,7 +536,7 @@ docs/codex-usage.md
 
 - 保留连续带来收益的规则或验证路径。
 - 把一次性经验留在记录中观察，不晋升为全局规则。
-- hooks、MCP、memory 和新脚本先作为文档化候选，只有在重复证明有收益、边界清晰、可回退后再启用；subagents 保持边界驱动，不做共享状态无条件并行。
+- hooks、MCP、memory 和新脚本先作为文档化候选，只有在重复证明有收益、边界清晰、可回退后再启用；subagents 保持边界驱动和 runtime/tool-permission gated，不做共享状态无条件并行。
 - subagents 必须做 lifecycle check：记录本轮 agent id，结果集成后调用 `close_agent`；只读检查、竞品观察和 reviewer 不再需要时也要关闭。
 - 如果流程只是弥补文档缺失，优先更新 `AGENTS.md`、`docs/testing.md`、`docs/quality-gates.md` 或 `docs/codex-playbook.md`。
 

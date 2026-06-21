@@ -55,6 +55,11 @@ def _minimal_context_pack(root: Path) -> None:
         "\n".join(
             [
                 "## V3.1 Prompt Contract",
+                "subagent suitability check",
+                "当前运行时或工具权限允许",
+                "显式授权",
+                "No-Dispatch Decision",
+                "tool permission constraint",
                 "allowed write set",
                 "off-limits",
                 "lifecycle close",
@@ -185,6 +190,33 @@ def test_check_context_pack_requires_v3_1_terms(tmp_path):
     assert any(issue.code == "missing-v3-1-mcp-permission-guidance" for issue in issues)
     assert any(issue.code == "missing-v3-1-subagent-contract" for issue in issues)
     assert any(issue.code == "missing-v3-1-hook-guidance" for issue in issues)
+
+
+def test_check_context_pack_rejects_unconditional_subagent_dispatch(tmp_path):
+    _minimal_context_pack(tmp_path)
+    _write(
+        tmp_path / "docs/subagents.md",
+        "\n".join(
+            [
+                "## V3.1 Prompt Contract",
+                "subagent suitability check",
+                "当前运行时或工具权限允许",
+                "显式授权",
+                "No-Dispatch Decision",
+                "tool permission constraint",
+                "allowed write set",
+                "off-limits",
+                "lifecycle close",
+                "implementation worker",
+                "batch worker",
+                "不要因为当前对话没有再次说“使用子代理/并行”就跳过 suitability check 或安全 dispatch",
+            ]
+        ),
+    )
+
+    issues = check_context_pack(tmp_path)
+
+    assert any(issue.code == "subagents-unconditional-dispatch-guidance" for issue in issues)
 
 
 def test_check_context_pack_flags_architecture_reference_mismatch(tmp_path):

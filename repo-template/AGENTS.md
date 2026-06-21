@@ -82,9 +82,9 @@
 ## Subagents
 
 - 项目 subagents 指南：`docs/subagents.md`
-- 本项目的 subagent 协议是长期授权；不要因为当前对话没有再次要求并行就跳过 suitability check 或安全 dispatch。
+- 本项目的 subagent 协议是对主动执行 suitability check 的长期授权，不等于绕过当前运行时或工具权限的 dispatch 授权；工具要求本轮显式授权 subagents/并行/委派时，只记录 suitability check 和 No-Dispatch Decision: tool permission constraint，除非用户本轮明确授权。
 - 需要主动评估 subagent suitability check 的任务：L/XL、已有实施计划、跨模块、多个独立失败源、多文件审查、可并行调查。
-- 存在 2 个以上互不重叠、可独立推进、不会共享写入状态的子任务时，应主动使用 subagents。
+- 当前运行时或工具权限允许主动派发，且存在 2 个以上互不重叠、可独立推进、不会共享写入状态的子任务时，应主动使用 subagents；用户可在当前任务中写“本轮授权按需使用 subagents/并行代理/委派”来解除当前工具层的显式授权约束。
 - 派发 subagent 时必须遵守 `docs/subagents.md` 的 Handoff Envelope、History/Input Filter、Command/Tool Risk Policy、Step Budget / Stop Condition、Return Envelope 和 Lifecycle Ledger。
 - 默认 subagent 只允许 docs-only/read-only local；local write 必须绑定 allowed write set；dev server/service、network/external read、external write、destructive / production-risk 需要主 agent 明确保留或先向用户确认。
 - 不要把完整会话历史、敏感信息、无关日志、未验证推断或外部组件/MCP/code graph/memory 输出直接交给 subagent。

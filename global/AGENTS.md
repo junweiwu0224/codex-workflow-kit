@@ -47,9 +47,9 @@ Hooks 用于把验证纪律变成自动提醒或阻断，但只作为质量门�
 Subagents 用于隔离上下文、并行调查和执行独立任务；主 agent 始终负责拆分、协调、审查、集成和最终结论。
 
 - 优先使用 Superpowers 的 `dispatching-parallel-agents` 和 `subagent-driven-development`，不自建另一套并行执行流程。
-- 本协议就是用户对主动使用 subagents 的长期授权；不要因为当前对话没有再次说“使用子代理/并行”就跳过 suitability check 或 dispatch。只有工具明确不可用、权限不足、任务不满足拆分条件或触及红线时，才不使用。
+- 本协议是对主动执行 subagent suitability check 的长期授权，不等于绕过当前运行时或工具权限的 dispatch 授权。当前运行时或工具权限允许主动派发时，才可按本协议 dispatch；如果工具要求用户在当前请求中显式授权 subagents/并行/委派，则只能记录 suitability check 和 No-Dispatch Decision: tool permission constraint，除非用户本轮明确授权。
 - 对于 L/XL 任务、已有实施计划的任务、跨模块任务、多个独立失败源、多文件审查或预计可并行的调查，必须先做 subagent suitability check。
-- 如果存在 2 个以上互不重叠、可独立推进、不会共享写入状态的子任务，应主动使用 subagents；不使用时要简短说明原因，例如任务强耦合、下一步阻塞依赖、文件 ownership 冲突、风险集中在共享状态或涉及高风险外部操作。
+- 如果当前运行时或工具权限允许主动派发，且存在 2 个以上互不重叠、可独立推进、不会共享写入状态的子任务，应主动使用 subagents；不使用时要简短说明原因，例如任务强耦合、下一步阻塞依赖、文件 ownership 冲突、风险集中在共享状态、涉及高风险外部操作或 tool permission constraint。用户可以通过在当前任务中写“本轮授权按需使用 subagents/并行代理/委派”来解除当前工具层的显式授权约束。
 - 主 agent 应优先保留关键路径：需求澄清、架构判断、共享文件、外部/生产风险、最终集成、diff review 和验证；把独立调查、独立模块实现、只读审查或互不重叠的 worker 任务交给 subagents。
 - 只有当任务可以按独立问题域拆开、没有共享写入状态、不会互相覆盖文件时，才并行 dispatch。
 - 有实现计划且任务基本独立时，用 `subagent-driven-development`；多个独立失败、独立调查或独立子系统问题时，用 `dispatching-parallel-agents`。

@@ -611,6 +611,9 @@ def test_check_toolkit_runs_skill_contract_audit(tmp_path):
 def test_check_toolkit_requires_proactive_subagent_guidance(tmp_path):
     cases = (
         ("subagent suitability check", "parallel suitability check"),
+        ("当前运行时或工具权限允许", "长期授权"),
+        ("显式授权", "长期授权"),
+        ("tool permission constraint", "tool unavailable"),
         ("2 个以上", "多个"),
         ("不使用时", "跳过时"),
     )
@@ -626,6 +629,33 @@ def test_check_toolkit_requires_proactive_subagent_guidance(tmp_path):
 
         assert any(
             issue.code == "subagents-missing-proactive-guidance" and issue.path == relative for issue in issues
+        )
+
+
+def test_check_toolkit_rejects_unconditional_subagent_dispatch_guidance(tmp_path):
+    forbidden_phrases = (
+        "不要因为当前对话没有再次说“使用子代理/并行”就跳过 suitability check 或 dispatch",
+        "不要因为当前对话没有再次要求并行就跳过 suitability check 或安全 dispatch",
+        "不要因为当前对话没有再次说“使用子代理/并行”就跳过 suitability check 或安全 dispatch",
+    )
+    targets = ("global/AGENTS.md", "repo-template/AGENTS.md", "repo-template/docs/subagents.md")
+    for index, (relative, phrase) in enumerate(
+        (relative, phrase) for relative in targets for phrase in forbidden_phrases
+    ):
+        case_root = tmp_path / f"unconditional-dispatch-case-{index}"
+        case_root.mkdir()
+        shadow = _clean_package_copy(case_root)
+        target = shadow / relative
+        text = target.read_text(encoding="utf-8")
+        if phrase not in text:
+            text += f"\n- {phrase}\n"
+        target.write_text(text, encoding="utf-8")
+
+        issues = check_toolkit(shadow)
+
+        assert any(
+            issue.code == "subagents-unconditional-dispatch-guidance" and issue.path == relative
+            for issue in issues
         )
 
 
@@ -925,6 +955,8 @@ def test_release_manifest_excludes_generated_and_release_files(tmp_path):
     (root / "releases").mkdir(exist_ok=True)
     _write(root / "releases/old.tar.gz", "archive\n")
     _write(root / "docs/.DS_Store", "mac metadata\n")
+    _write(root / "reverse-skill/burp-mcp-full/build/libs/burp-mcp-full.jar", "generated jar\n")
+    _write(root / "reverse-skill/reports/example.md", "generated report\n")
 
     manifest = build_manifest(root)
 
@@ -933,6 +965,8 @@ def test_release_manifest_excludes_generated_and_release_files(tmp_path):
     assert ".pytest_cache" not in manifest
     assert ".DS_Store" not in manifest
     assert "releases/old.tar.gz" not in manifest
+    assert "reverse-skill/burp-mcp-full/build/libs/burp-mcp-full.jar" not in manifest
+    assert "reverse-skill/reports/example.md" not in manifest
 
 
 def test_install_preflights_repo_conflicts_before_writing(tmp_path):
