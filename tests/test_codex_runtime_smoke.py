@@ -3,7 +3,7 @@ from pathlib import Path
 import subprocess
 
 from scripts import codex_runtime_smoke
-from scripts.codex_runtime_smoke import CUSTOM_SKILLS, build_report, main
+from scripts.codex_runtime_smoke import CUSTOM_SKILLS, PROMPT_VISIBLE_SKILLS, SUPERPOWERS_SKILLS, build_report, main
 from tests.test_verify_live_install import _install_matching, _make_kit
 
 
@@ -43,7 +43,7 @@ def test_build_report_skips_prompt_input_by_default(tmp_path, monkeypatch):
 
 def test_build_report_checks_prompt_input_when_requested(tmp_path, monkeypatch):
     kit, user_home, codex_home, agents_home = _matching_runtime(tmp_path)
-    prompt_input = "\n".join(CUSTOM_SKILLS)
+    prompt_input = "\n".join(PROMPT_VISIBLE_SKILLS)
 
     def fake_run(command, cwd, timeout=30):
         stdout = prompt_input if command[:3] == ["codex", "debug", "prompt-input"] else "codex-cli test"
@@ -56,13 +56,13 @@ def test_build_report_checks_prompt_input_when_requested(tmp_path, monkeypatch):
 
     assert report["ok"] is True
     assert report["checks"]["prompt_input"]["skipped"] is False
-    assert report["checks"]["prompt_input"]["skills"]["visible"] == list(CUSTOM_SKILLS)
+    assert report["checks"]["prompt_input"]["skills"]["visible"] == list(PROMPT_VISIBLE_SKILLS)
     assert report["checks"]["prompt_input"]["skills"]["missing"] == []
 
 
 def test_build_report_reports_missing_prompt_skill(tmp_path, monkeypatch):
     kit, user_home, codex_home, agents_home = _matching_runtime(tmp_path)
-    prompt_input = "\n".join(CUSTOM_SKILLS[:-1])
+    prompt_input = "\n".join(PROMPT_VISIBLE_SKILLS).replace(f"\n{CUSTOM_SKILLS[-1]}", "")
 
     def fake_run(command, cwd, timeout=30):
         stdout = prompt_input if command[:3] == ["codex", "debug", "prompt-input"] else "codex-cli test"
@@ -75,6 +75,23 @@ def test_build_report_reports_missing_prompt_skill(tmp_path, monkeypatch):
 
     assert report["ok"] is False
     assert report["checks"]["prompt_input"]["skills"]["missing"] == [CUSTOM_SKILLS[-1]]
+
+
+def test_build_report_reports_missing_superpowers_prompt_skill(tmp_path, monkeypatch):
+    kit, user_home, codex_home, agents_home = _matching_runtime(tmp_path)
+    prompt_input = "\n".join(PROMPT_VISIBLE_SKILLS).replace(f"\n{SUPERPOWERS_SKILLS[-1]}", "")
+
+    def fake_run(command, cwd, timeout=30):
+        stdout = prompt_input if command[:3] == ["codex", "debug", "prompt-input"] else "codex-cli test"
+        return {"ok": True, "command": command, "returncode": 0, "stdout": stdout, "stderr": ""}
+
+    monkeypatch.setattr(codex_runtime_smoke.shutil, "which", lambda command: "/usr/local/bin/codex")
+    monkeypatch.setattr(codex_runtime_smoke, "_run", fake_run)
+
+    report = build_report(kit, codex_home, agents_home, user_home, check_prompt_input=True)
+
+    assert report["ok"] is False
+    assert report["checks"]["prompt_input"]["skills"]["missing"] == [SUPERPOWERS_SKILLS[-1]]
 
 
 def test_main_prints_json_report(tmp_path, monkeypatch, capsys):

@@ -36,6 +36,25 @@ CUSTOM_SKILLS = (
     "spec-kit-xl",
 )
 
+SUPERPOWERS_SKILLS = (
+    "superpowers:brainstorming",
+    "superpowers:dispatching-parallel-agents",
+    "superpowers:executing-plans",
+    "superpowers:finishing-a-development-branch",
+    "superpowers:receiving-code-review",
+    "superpowers:requesting-code-review",
+    "superpowers:subagent-driven-development",
+    "superpowers:systematic-debugging",
+    "superpowers:test-driven-development",
+    "superpowers:using-git-worktrees",
+    "superpowers:using-superpowers",
+    "superpowers:verification-before-completion",
+    "superpowers:writing-plans",
+    "superpowers:writing-skills",
+)
+
+PROMPT_VISIBLE_SKILLS = CUSTOM_SKILLS + SUPERPOWERS_SKILLS
+
 
 def _run(command: list[str], cwd: Path, timeout: int = 30) -> dict[str, object]:
     try:
@@ -58,8 +77,8 @@ def _run(command: list[str], cwd: Path, timeout: int = 30) -> dict[str, object]:
 
 
 def _skill_visibility(prompt_input: str) -> dict[str, object]:
-    visible = [skill for skill in CUSTOM_SKILLS if skill in prompt_input]
-    missing = [skill for skill in CUSTOM_SKILLS if skill not in prompt_input]
+    visible = [skill for skill in PROMPT_VISIBLE_SKILLS if skill in prompt_input]
+    missing = [skill for skill in PROMPT_VISIBLE_SKILLS if skill not in prompt_input]
     return {
         "checked": bool(prompt_input),
         "visible": visible,

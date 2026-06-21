@@ -6,9 +6,9 @@
 
 ## 统计
 
-- 真实项目数：7
+- 真实项目数：16
 - 种子参考数：17
-- 总条目数：24
+- 总条目数：33
 
 ## 按场景分类
 
@@ -19,6 +19,14 @@
 
 ### 二进制 / 固件 / CTF
 - [2026-06-14_reverse-skill-full-verification](./2026-06-14_reverse-skill-full-verification.md)
+- [2026-06-15_claude-v32-plugin-radare2-verification](./2026-06-15_claude-v32-plugin-radare2-verification.md)
+- [2026-06-15_openaiworld-loader-license-trace](./2026-06-15_openaiworld-loader-license-trace.md)
+- [2026-06-16_guyun-manifesthub-source-recovery](./2026-06-16_guyun-manifesthub-source-recovery.md)
+- [2026-06-16_openaiworld-melonloader-ui-close-init-hang](./2026-06-16_openaiworld-melonloader-ui-close-init-hang.md)
+- [2026-06-16_openaiworld-partial-unlock-90107](./2026-06-16_openaiworld-partial-unlock-90107.md)
+- [2026-06-16_openaiworld_f2_modifier_menu_bridge](./2026-06-16_openaiworld_f2_modifier_menu_bridge.md)
+- [2026-06-16_openaiworld-base-feature-gate-90110](./2026-06-16_openaiworld-base-feature-gate-90110.md)
+- [2026-06-16_openaiworld-feature-settings-gate-90111](./2026-06-16_openaiworld-feature-settings-gate-90111.md)
 
 - [2026-05-15_lumine-go-reverse](./2026-05-15_lumine-go-reverse.md)
 - [2026-06-13_ghidra-bin-cat-headless-mcp-verification](./2026-06-13_ghidra-bin-cat-headless-mcp-verification.md)
@@ -35,6 +43,7 @@
 - [2026-05-17_pentest-vue-spa-actuator-leak](./2026-05-17_pentest-vue-spa-actuator-leak.md)
 - [2026-05-25_pentest-cf-access-sibling-subdomain-cookie-poisoning](./2026-05-25_pentest-cf-access-sibling-subdomain-cookie-poisoning.md)
 - [2026-05-26_pentest-newapi-rate-limit-bypass](./2026-05-26_pentest-newapi-rate-limit-bypass.md)
+- [2026-06-19_codex-referral-repos-static-analysis](./2026-06-19_codex-referral-repos-static-analysis.md)
 - [[种子] seed-003_web-api-auth-bypass](./seed-003_web-api-auth-bypass.md)
 - [[种子] seed-004_js-sign-webpack](./seed-004_js-sign-webpack.md)
 - [[种子] seed-006_ssrf-cloud-metadata](./seed-006_ssrf-cloud-metadata.md)
