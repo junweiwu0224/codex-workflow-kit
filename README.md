@@ -1,6 +1,6 @@
 # Codex Workflow Kit
 
-这是一套用于增强个人 Codex 工作流的可迁移工具包，包含全局规则、repo context pack 模板、个人 skills、完整 `reverse-skill` 能力包、安装脚本、自检脚本和发布归档脚本。当前包是 v3.2 口径：在 V3.1 的外部组件准入、code graph/memory pilot、hook discipline、subagent prompt cards 和自诊断收口基础上，进一步把 Codex Desktop 侧逆向工程/安全分析能力并入可迁移包，但仍不默认启用外部工具或后台服务。
+这是一套用于增强个人 Codex 工作流的可迁移工具包，包含全局规则、repo context pack 模板、个人 skills、完整 `reverse-skill` 能力包、安装脚本、自检脚本和发布归档脚本。当前包是 v3.2 口径：在 V3.1 的外部组件准入、code graph/memory pilot、hook discipline、subagent prompt cards 和自诊断收口基础上，并入 Codex Desktop 侧逆向工程/安全分析能力，以及 Junwei 个人前端设计、浏览器自动化和产品 demo 视频 workflow。它仍不默认启用外部工具、MCP server、云服务或后台服务。
 
 ## 目录
 
@@ -20,6 +20,7 @@ docs/
   V3.1-AGENT-CONTRACT-BENCHMARK.md
   V3.1-AGENT-CONTRACT-BENCHMARK.json
   V3.1-LOCAL-CODEX-SMOKE-REPORT.md
+  V3.2-FRONTEND-BROWSER-VIDEO-WORKFLOW.md
   agent-collaboration-smoke.md
   codex-usage.md
   external-component-intake.md
@@ -92,6 +93,9 @@ skills/
   research-brief/
   skill-plugin-intake-review/
   release-readiness/
+  junwei-frontend-design/
+  junwei-browser-automation/
+  junwei-product-demo-video/
 
 reverse-skill/
   README.md
@@ -134,6 +138,8 @@ reverse-skill-router/
 
 `docs/V3.1-LOCAL-CODEX-SMOKE-REPORT.md` 是本机 Codex 配合实测报告，记录 live skills、Codex CLI、prompt-input skill 可见性、真实 subagent spawn/return/close、doctor bytecode 修复、验证结果和后续优化方向。
 
+`docs/V3.2-FRONTEND-BROWSER-VIDEO-WORKFLOW.md` 是 Junwei 个人前端/浏览器/demo 视频 workflow 证据包，记录 `microsoft/playwright-mcp`、`digitalsamba/claude-code-video-toolkit` 和前端设计 skill 的吸收方式：吸收精华，不照搬；保留 Playwright MCP 和视频 toolkit 为 pilot/repo-local 路径，不默认安装或启用。
+
 `docs/agent-collaboration-smoke.md` 是 V3.1 subagent runtime 的手动/HITL smoke checklist，覆盖 read-only dual explorer、No-Dispatch、local-write boundary、visibility policy、skill coupling 和 lifecycle ledger。
 
 `docs/codex-usage.md` 是本 toolkit 仓库自己的 V3.1 真实试跑记录，当前包含第一阶段 4 个 M/L 样本、closeout 4 个 M/L 样本和阶段复盘，用于判断哪些规则真的省时间、哪些仍增加摩擦。它不同于 `repo-template/docs/codex-usage.md`，后者是复制到目标仓库的模板。
@@ -156,7 +162,7 @@ Workflow toolkit OK
 
 这个检查会确认：
 
-- 全局 `AGENTS.md`、repo 模板、11 个个人 Codex skills 都在包里。
+- 全局 `AGENTS.md`、repo 模板、14 个个人 Codex skills 都在包里。
 - `reverse-skill/` 完整能力树和 `reverse-skill-router/` 全局入口都在包里。
 - 外部组件准入文档、`scripts/audit_external_component.py`、`skill-plugin-intake-review` 都在包里。
 - `implementation-plan` 没有重新出现，避免和 Superpowers 计划职责冲突。
@@ -409,7 +415,7 @@ python3 scripts/audit_skill_contracts.py --json
 python3 scripts/audit_skill_contracts.py --markdown
 ```
 
-它会检查 11 个个人 Codex skills 的 metadata、trigger、Output Shape、边界、验证条件、progressive disclosure 和 Superpowers overlap 信号；这是包内契约审计，不安装、不启用外部能力。
+它会检查 14 个个人 Codex skills 的 metadata、trigger、Output Shape、边界、验证条件、progressive disclosure 和 Superpowers overlap 信号；这是包内契约审计，不安装、不启用外部能力。
 
 需要汇总本机 Codex runtime 证据时运行：
 
@@ -419,7 +425,7 @@ python3 scripts/codex_runtime_smoke.py --check-prompt-input
 python3 scripts/codex_runtime_smoke.py --markdown
 ```
 
-它会汇总 live install、local doctor、Codex CLI 和 `docs/agent-collaboration-smoke.md` 手动 checklist。默认不跑 `codex debug prompt-input`；只有加 `--check-prompt-input` 时才验证模型可见的 11 个 custom skills。
+它会汇总 live install、local doctor、Codex CLI 和 `docs/agent-collaboration-smoke.md` 手动 checklist。默认不跑 `codex debug prompt-input`；只有加 `--check-prompt-input` 时才验证模型可见的 14 个 custom skills。
 
 需要重新生成 V3.1/V2.2 量化对比时运行：
 
@@ -441,7 +447,7 @@ python3 scripts/benchmark_skill_polish.py
 
 ### 6. 个人 skills
 
-`skills/` 包含 11 个个人 Codex skills：
+`skills/` 包含 14 个个人 Codex skills：
 
 - `repo-onboarding`：为仓库建立 context pack。
 - `spec-kit-xl`：为 XL/正式规格任务沉淀需求、非目标、验收标准和风险边界。
@@ -454,8 +460,11 @@ python3 scripts/benchmark_skill_polish.py
 - `research-brief`：评估 GitHub 仓库、skills、MCP、hooks、subagents、模型/API 或工具选型时形成证据化 promote/hold/reject 结论。
 - `skill-plugin-intake-review`：吸收外部 skill、plugin、MCP、hook、subagent prompt、workflow pack 前做 promote/pilot/repo-local/hold/reject 准入审查。
 - `release-readiness`：准备可复用 artifact、portable toolkit、release archive、checksum bundle 或迁移包时做发布前证据门禁；当前为 pilot。
+- `junwei-frontend-design`：Junwei 个人高审美前端设计 skill，吸收 Anthropic `frontend-design` 和 Leonxlnx `taste-skill` 的优点，用于 UI/视觉/产品界面方向、反 AI 模板化和设计验收。
+- `junwei-browser-automation`：吸收 `microsoft/playwright-mcp` 的结构化浏览器检查价值，但保留为浏览器自动化路由 skill；默认先用测试、in-app Browser 或 Playwright CLI，只有证据需要时才 pilot Playwright MCP。
+- `junwei-product-demo-video`：吸收 `digitalsamba/claude-code-video-toolkit` 的产品视频生产流程，用于 demo 脚本、浏览器录制输入、Remotion/FFmpeg 风格组合和渲染 QA；不默认全局安装视频 toolkit、云 GPU、API、voice cloning 或 publish 流程。
 
-这些 skills 设计为补充 Superpowers：`spec-kit-xl` 只做 XL/正式规格，`security-review`、`dependency-upgrade-review`、`research-brief`、`skill-plugin-intake-review`、`release-readiness` 只做专项审查/研究/准入/发布证据门禁，计划、TDD、阶段推进和执行仍交给 Superpowers。
+这些 skills 设计为补充 Superpowers：`spec-kit-xl` 只做 XL/正式规格，`security-review`、`dependency-upgrade-review`、`research-brief`、`skill-plugin-intake-review`、`release-readiness` 只做专项审查/研究/准入/发布证据门禁，`junwei-frontend-design` 管 taste/interface，`junwei-browser-automation` 管浏览器证据和 Playwright/MCP 路由，`junwei-product-demo-video` 管 demo 视频生产流程；计划、TDD、阶段推进和执行仍交给 Superpowers。
 
 安装位置：
 
@@ -477,6 +486,9 @@ dependency-upgrade-review
 research-brief
 skill-plugin-intake-review
 release-readiness
+junwei-frontend-design
+junwei-browser-automation
+junwei-product-demo-video
 ```
 
 ## 新机器落地顺序
@@ -540,7 +552,7 @@ docs/codex-usage.md
 - `python3 scripts/verify_live_install.py` 能确认安装内容没有 drift。
 - `python3 scripts/codex_doctor.py` 能确认 live install 和 active plugin paths 正常。
 - 新仓库已复制 `repo-template/AGENTS.md`、`repo-template/docs/`、`repo-template/scripts/`，以及可选的 `repo-template/tests/`；其中包含 `docs/codegraph-pilot.md` 和 `docs/memory-recall-pilot.md`。
-- Codex 可发现 11 个个人 Codex skills。
+- Codex 可发现 14 个个人 Codex skills。
 - repo `AGENTS.md` 没有重复全局宪法，只保留项目事实和边界。
 - repo `docs/subagents.md` 包含 lifecycle 收口规则：本轮派出的 agent id 必须在不再需要时 `close_agent`。
 - 已检查目标仓库是否有同类文档或大小写等价文件，避免重复创建或覆盖人工文档。
@@ -557,7 +569,7 @@ docs/codex-usage.md
 - 个人 Codex 宪法和任务分级协议。
 - repo context pack 模板。
 - Superpowers/spec-kit 总控协议。
-- 11 个自定义核心/专项 skills。
+- 14 个自定义核心/专项 skills。
 - V3.1 外部组件准入协议和只读审查脚本。
 - Code graph、memory/recall、plugin/MCP trust、agent config lint 和 domain skill 的 repo-local pilot 边界。
 - MCP、代码图谱和 memory 的使用边界协议。

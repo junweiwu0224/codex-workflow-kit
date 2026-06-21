@@ -39,11 +39,11 @@ def test_build_report_accepts_current_skill_package():
     report = build_report(root)
 
     assert report["ok"] is True
-    assert report["totals"]["skills"] == 11
-    assert report["totals"]["ok"] == 11
-    assert report["totals"]["with_output_shape"] == 11
-    assert report["totals"]["with_boundaries"] == 11
-    assert report["totals"]["with_validation"] == 11
+    assert report["totals"]["skills"] == 14
+    assert report["totals"]["ok"] == 14
+    assert report["totals"]["with_output_shape"] == 14
+    assert report["totals"]["with_boundaries"] == 14
+    assert report["totals"]["with_validation"] == 14
 
 
 def test_build_report_flags_missing_contract_parts(tmp_path):

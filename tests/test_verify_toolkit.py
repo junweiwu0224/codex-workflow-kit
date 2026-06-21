@@ -252,6 +252,44 @@ def test_check_toolkit_requires_frontend_browser_routing_guidance(tmp_path):
     assert any(issue.code == "global-agents-missing-browser-routing" for issue in issues)
 
 
+def test_check_toolkit_requires_junwei_frontend_browser_video_contracts(tmp_path):
+    shadow = _clean_package_copy(tmp_path)
+    frontend = shadow / "skills/junwei-frontend-design/SKILL.md"
+    browser = shadow / "skills/junwei-browser-automation/SKILL.md"
+    video = shadow / "skills/junwei-product-demo-video/SKILL.md"
+    evidence = shadow / "docs/V3.2-FRONTEND-BROWSER-VIDEO-WORKFLOW.md"
+    global_agents = shadow / "global/AGENTS.md"
+
+    frontend.write_text(
+        frontend.read_text(encoding="utf-8").replace("Avoid generic AI fingerprints", "Avoid generic output"),
+        encoding="utf-8",
+    )
+    browser.write_text(
+        browser.read_text(encoding="utf-8").replace("not a default install", "not default"),
+        encoding="utf-8",
+    )
+    video.write_text(
+        video.read_text(encoding="utf-8").replace("not a default global install", "not default"),
+        encoding="utf-8",
+    )
+    evidence.write_text(
+        evidence.read_text(encoding="utf-8").replace("No-Conflict Matrix", "Conflict Notes"),
+        encoding="utf-8",
+    )
+    global_agents.write_text(
+        global_agents.read_text(encoding="utf-8").replace("DigitalSamba toolkit", "video toolkit"),
+        encoding="utf-8",
+    )
+
+    codes = {issue.code for issue in check_toolkit(shadow)}
+
+    assert "junwei-frontend-design-missing-contract" in codes
+    assert "junwei-browser-automation-missing-contract" in codes
+    assert "junwei-product-demo-video-missing-contract" in codes
+    assert "v3-2-frontend-workflow-missing-term" in codes
+    assert "global-agents-missing-junwei-workflow-route" in codes
+
+
 def test_check_toolkit_rejects_reverse_routing_to_missing_target(tmp_path):
     shadow = _clean_package_copy(tmp_path)
     routing = shadow / "reverse-skill/skills/routing.md"

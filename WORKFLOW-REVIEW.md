@@ -27,14 +27,14 @@
 - `reverse-skill/`：完整逆向工程/安全分析能力树，保留 routing、子技能、CTF orchestrator、Burp/Ghidra bridge、bootstrap 脚本、platform docs 和 field journal 结构。
 - `reverse-skill-router/reverse-engineering/SKILL.md`：全局 reverse router 入口，安装到 `~/.codex/skills/reverse-engineering/`，把 Desktop 侧逆向/渗透类请求稳定路由到 `~/.codex/reverse-skill/`。
 - `repo-template/`：项目级 `AGENTS.md`、commands/testing/quality-gates/subagents/observability/mcp-pilot/usage/playbook/ADR/specs/glossary 模板。
-- `skills/`：`repo-onboarding`、`spec-kit-xl`、`debug-loop`、`frontend-qa`、`decision-record`、`completion-review`、`security-review`、`dependency-upgrade-review`、`research-brief`、`skill-plugin-intake-review`、`release-readiness`。
+- `skills/`：`repo-onboarding`、`spec-kit-xl`、`debug-loop`、`frontend-qa`、`decision-record`、`completion-review`、`security-review`、`dependency-upgrade-review`、`research-brief`、`skill-plugin-intake-review`、`release-readiness`、`junwei-frontend-design`、`junwei-browser-automation`、`junwei-product-demo-video`。
 - `install.sh`：非破坏式安装器，支持 dry-run、自定义 Codex/Agents home、repo 模板安装、backup/force。
-- `scripts/verify_toolkit.py`：包级自检，覆盖必需文件、manifest、11 个 skills、Superpowers 边界、外部组件准入、release-readiness pilot、质量门禁模板、usage/observability/MCP/codegraph/memory pilot 复盘机制、生成缓存、私有路径和敏感模式。
+- `scripts/verify_toolkit.py`：包级自检，覆盖必需文件、manifest、14 个 skills、Superpowers 边界、外部组件准入、Junwei 前端/浏览器/demo 视频 workflow、release-readiness pilot、质量门禁模板、usage/observability/MCP/codegraph/memory pilot 复盘机制、生成缓存、私有路径和敏感模式。
 - `scripts/audit_external_component.py`：只读外部组件准入扫描，用于 skill/plugin/MCP/hook/subagent prompt/workflow pack 的 promote/pilot/repo-local/hold/reject 判断。
 - `scripts/benchmark_skill_polish.py`：对比 pre-polish `2026.06.12` release 和当前 post-polish tree，量化 skill count、Output Shape、accessibility、release readiness 和 progressive disclosure。
 - `scripts/verify_live_install.py`：只读比较当前机器 `~/.codex/AGENTS.md` 和 `~/.agents/skills/` 是否与 output 包一致，用于发现 live install drift。
 - `scripts/codex_runtime_smoke.py`：只读汇总本机 live install、local doctor、Codex CLI、可选 prompt-input skill 可见性和 `docs/agent-collaboration-smoke.md` 手动 agent smoke 证据。
-- `scripts/audit_skill_contracts.py`：只读审计 11 个 packaged skills 的 metadata、trigger、Output Shape、边界、验证条件、progressive disclosure 和 Superpowers overlap 信号。
+- `scripts/audit_skill_contracts.py`：只读审计 14 个 packaged skills 的 metadata、trigger、Output Shape、边界、验证条件、progressive disclosure 和 Superpowers overlap 信号。
 - `docs/agent-collaboration-smoke.md`：V3.1 subagent runtime 手动/HITL smoke checklist，覆盖 read-only dual explorer、No-Dispatch、local-write boundary、visibility policy、skill coupling 和 Lifecycle Ledger。
 - `scripts/build_release.py`：刷新 `MANIFEST.sha256`，构建 release tarball 和 checksum。
 
@@ -56,6 +56,7 @@
 - V2.2 P0 专项 skills：`security-review`、`dependency-upgrade-review`、`research-brief` 补齐安全审查、依赖升级审查和生态研究选型缺口；它们不替代 Superpowers 计划/TDD/debug，不默认安装外部工具、不启用 hooks、不启动 MCP。
 - install/release 流程：可在新机器解包、验证、dry-run、安装、live install drift 检查、重复安装和冲突保护。
 - reverse-skill 迁移：通过保留独立子树和原相对路径，跨机器复用 reverse routing、bootstrap、MCP bridge 和 CTF 子技能，而不把能力摊平成噪音式平铺目录。
+- Junwei 前端/浏览器/demo 视频 workflow：`junwei-frontend-design` 负责 taste/interface 和反模板化方向，`junwei-browser-automation` 负责浏览器证据、Playwright CLI/MCP 路由和安全边界，`junwei-product-demo-video` 负责产品 demo 视频脚本、录制输入、组合和渲染 QA。三者吸收精华，不照搬外部仓库，也不默认安装 Playwright MCP、DigitalSamba toolkit、云 GPU、API、voice cloning 或 publish 流程。
 
 ## 候选边界
 
@@ -68,6 +69,8 @@
 - observability：本地 usage、菜单栏状态、长任务监控、通知或 HUD 工具仅作为候选；必须确认本地日志读取范围、网络/后台行为和关闭方式后试用。
 - `spec-kit-xl`：只用于 XL、正式规格、长期验收标准或用户明确要求规格文档的任务。
 - browser/frontend QA：前端布局、CSS、交互、资源加载、跨 viewport 或用户可见风险较高时触发；纯 JS 契约或小 empty-state 改动可先用 targeted tests。
+- Playwright MCP：仅作为 `junwei-browser-automation` 的 pilot 路径。默认先用 repo 测试、in-app Browser 或 Playwright CLI；只有持久浏览器状态、结构化 accessibility snapshots 或多步探索明显值得额外上下文/权限成本时才评估 MCP。
+- 产品 demo 视频工具链：仅作为 `junwei-product-demo-video` 的 repo-local pilot。默认先做脚本、场景、capture plan 和本地 QA；安装 Remotion/FFmpeg wrapper、配置 API、cloud GPU、voice cloning、upload 或 publish 都必须另行确认。
 - 大型 skill/subagent/security/SaaS 包：只作为研究素材或 repo-local 候选，不全局安装；优先把确定性检查放脚本/hooks 候选，把外部能力放 MCP pilot，把角色分工放 subagent prompt cards。
 
 ## V3.1 Delivery Review
@@ -129,12 +132,34 @@ V3.1 verifier/tests/README/QUICKSTART/VERSION/MANIFEST/release 必须同步通�
 - `install.sh --with-reverse-core` 提供新机器 `reverse-ready` 安装档：文件安装完成后，再 bootstrap 一批高频 reverse core 工具，并自动调用 `scripts/verify_reverse_ready.py` 做机器级只读检查。
 - `install.ps1` 提供 Windows 顶层安装入口，复用同一套 global AGENTS / skills / reverse pack / repo-template 安装语义，并可透传 `-WithReverseCore`、`-VerifyReverseReady` 到 Windows PowerShell bootstrap 路径。
 
+## V3.2 Frontend Browser Video Workflow
+
+本轮 v3.2 同时把高星/流行前端和 demo 生产素材吸收到 Junwei 个人 workflow，但吸收方式是“吸收精华，不照搬”：
+
+- `junwei-frontend-design`：吸收 Anthropic `frontend-design` 和 Leonxlnx `taste-skill` 的强项，形成个人高审美前端设计层，覆盖模式路由、反 AI 模板化、设计方向、review rubric 和固定验证案例。
+- `junwei-browser-automation`：吸收 `microsoft/playwright-mcp` 的结构化页面检查、accessibility snapshot 和持久浏览器状态价值，但不默认添加 MCP config；它是浏览器工具路由层，优先 tests / in-app Browser / Playwright CLI，再按证据决定 Playwright MCP pilot。
+- `junwei-product-demo-video`：吸收 `digitalsamba/claude-code-video-toolkit` 的视频生产生命周期、Playwright recording、Remotion/FFmpeg、scene review、brand/audio/render QA 思路，但不 vendor 外部 toolkit，不默认全局安装，不触发 cloud GPU、paid API、voice cloning 或 publish。
+
+Role Separation:
+
+- Design direction: `junwei-frontend-design`.
+- Browser evidence and recordings: `junwei-browser-automation`.
+- Demo narrative, scenes, render QA: `junwei-product-demo-video`.
+- Final browser/UI verification: `frontend-qa` or project tests, with `completion-review` before delivery.
+
+No-Conflict Matrix:
+
+- UI task without video: use `junwei-frontend-design`, then `frontend-qa` or tests.
+- Browser smoke/automation without design change: use `junwei-browser-automation`, not the design skill.
+- Demo video from product UI: use `junwei-product-demo-video`; call `junwei-browser-automation` only for capture inputs.
+- External tool absorption: use `research-brief` + `skill-plugin-intake-review`; security-sensitive MCP/video boundaries require `security-review`; release/package work requires `release-readiness`.
+
 ## 真实验证
 
 已完成的验证层：
 
 - toolkit 自检：`scripts/verify_toolkit.py` 输出 `Workflow toolkit OK`。
-- live install 自检：`scripts/verify_live_install.py` 输出 `Live install OK (15 files checked)`，确认全局 AGENTS、11 个 skill 入口和 packaged skill assets 与 output 包一致。
+- live install 自检：`scripts/verify_live_install.py` 输出 `Live install OK`，确认全局 AGENTS、14 个 skill 入口、reverse router、reverse pack 和 packaged skill assets 与 output 包一致。
 - repo-template 自检：`repo-template/scripts/verify_context_pack.py repo-template` 输出 `Context pack OK`。
 - toolkit tests：覆盖 toolkit 自检、manifest/release、安装器 preflight、质量门禁模板和 workflow review。
 - repo-template tests：覆盖 context pack verifier。
@@ -145,7 +170,7 @@ V3.1 verifier/tests/README/QUICKSTART/VERSION/MANIFEST/release 必须同步通�
 - Skill polish benchmark：`scripts/benchmark_skill_polish.py` 输出显式 contract points `17 -> 53`，增量 `+36`，`+211.76%`；其中 Output Shape `4 -> 11`，accessibility `0 -> 5`，release readiness `0 -> 6`，progressive disclosure `0 -> 3`。
 - Agent contract benchmark：`scripts/benchmark_agent_contract.py` 输出显式 agent contract points `5 -> 114`，增量 `+109`，`+2180.0%`；其中 20-repo research source coverage `0 -> 20`，prompt card contract coverage `0 -> 40`，verifier contract checks `0 -> 7`，usage pilot defaults `0 -> 3`。
 - Local Codex smoke：`docs/V3.1-LOCAL-CODEX-SMOKE-REPORT.md` 记录本机 `codex-cli 0.140.0-alpha.2`、live install、prompt-input skill 可见性、三个只读 subagent 的 return/close 证据，以及 `codex_doctor.py` bytecode 修复。结论是 V3.1 skills 和 subagents 可配合使用，但 runtime envelope enforcement 仍依赖主 agent prompt/review/close。
-- Runtime evidence split：`scripts/codex_runtime_smoke.py` 将 package integrity 之外的 live install、doctor、Codex CLI、prompt-input 和手动 agent smoke 分层记录；`scripts/audit_skill_contracts.py` 输出 11/11 skill contract audit OK，避免后续 skill polish 只靠人工 `rg`。
+- Runtime evidence split：`scripts/codex_runtime_smoke.py` 将 package integrity 之外的 live install、doctor、Codex CLI、prompt-input 和手动 agent smoke 分层记录；`scripts/audit_skill_contracts.py` 输出 14/14 skill contract audit OK，避免后续 skill polish 只靠人工 `rg`。
 - V3.1 real usage calibration：`docs/codex-usage.md` 记录第一阶段 4 个 M/L 实战样本和 closeout 4 个 M/L 实战样本。结论是保留 package verifier、runtime smoke、skill audit、release-readiness 和 render-only `render_usage_row.py trial --preset`；继续把 No-Dispatch、Local-Write Boundary、Visibility Policy 留在 HITL checklist，不做伪自动化，不给 usage row 增加自动追加写入。
 
 已校准的副作用判断：
@@ -166,6 +191,9 @@ V3.1 verifier/tests/README/QUICKSTART/VERSION/MANIFEST/release 必须同步通�
 - XL/正式需求：先用 `spec-kit-xl` 写规格，规格确认后再交给 Superpowers 写计划和执行。
 - 测试、构建、启动、E2E 或运行失败：进入 `debug-loop`。
 - 前端用户可见风险：使用 `frontend-qa`，必要时浏览器截图或多 viewport 验证。
+- 创建、重做或打磨 UI/视觉/页面/app/tool/game 前端设计：使用 `junwei-frontend-design` 先定模式、审美方向、反模板化风险和验收重点；验证阶段仍使用 `frontend-qa` 或项目测试。
+- 浏览器自动化、Playwright、MCP-vs-CLI、localhost UI inspection、可重复 walkthrough 或 demo capture 输入：使用 `junwei-browser-automation`，默认不启用 Playwright MCP。
+- 产品 demo、demo video、walkthrough recording、Remotion render、launch/sprint review 视频或 video QA：使用 `junwei-product-demo-video`，默认不安装 DigitalSamba toolkit、不发布、不配置云 GPU/API/voice cloning。
 - 安全敏感代码、配置、依赖、hooks、MCP/plugin、CI、认证、权限、密钥、用户数据、支付、生产配置、外部写入或信任边界变化：使用 `security-review`。
 - 新增、删除、升级、固定或审计依赖、lockfile、Docker base image、GitHub Actions、vendored code、CVE/advisory、license 或供应链风险：使用 `dependency-upgrade-review`。
 - 评估 GitHub 仓库、skills、MCP、hooks、subagents、模型/API、工具或生态现状，并需要 promote/hold/reject 判断：使用 `research-brief`。

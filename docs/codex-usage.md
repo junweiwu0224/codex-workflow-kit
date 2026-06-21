@@ -12,6 +12,7 @@ Goal: after 3-5 representative M/L/XL tasks, decide which workflow rules truly r
 | 2026-06-13 | Runtime smoke and skill audit evidence layer | L | codex_runtime_smoke, audit_skill_contracts, release-readiness | `codex_runtime_smoke.py --check-prompt-input` and `audit_skill_contracts.py` -> OK | Caught live install drift and proved 11/11 skill contracts before release | Runtime smoke still leaves manual agent cases as checklist evidence | Keep package/runtime split; do not fake automation for HITL subagent cases |
 | 2026-06-13 | Package verifier coverage for real usage evidence | M | verify_toolkit, content contract tests | `python3 scripts/verify_toolkit.py` -> Workflow toolkit OK | Required-file and term gates caught stale README/evidence/manifest drift quickly | Every new durable doc or CLI mode must be named in verifier constants | Keep strict package verifier; avoid expanding it into runtime enforcement |
 | 2026-06-13 | Release-readiness drill after workflow changes | L | release-readiness, build_release, checksum, unpack/install drill | archive `2026.06.13.1` checksum OK; unpack/install/context-pack drill OK | Release checklist prevented claiming success before archive and live install were aligned | Rebuilding after small docs edits is repetitive but prevented stale manifest claims | Keep release-readiness for portable toolkit changes; batch doc edits before final build |
+| 2026-06-22 | V3.2 Frontend Browser Video Workflow | L | research-brief, skill-plugin-intake-review, security-review, release-readiness, skill-creator | `verify_toolkit.py`, `audit_skill_contracts.py`, targeted pytest, live install drill, release archive checksum planned before push | 正向效果: 吸收精华，不照搬; frontend taste, browser automation, and demo video are separated so each skill has a clear job | Three new skills increase trigger surface and docs/verifier maintenance cost | Promote frontend design as active; keep Playwright MCP and video toolkit as pilot/repo-local, not default install |
 
 ## Closeout Trial Records
 
@@ -72,3 +73,26 @@ Do not advance:
 - Do not add automatic doc append/write behavior to `render_usage_row.py`.
 - Do not add background release watchers, default hooks, MCP servers, memory writers, or agent orchestration to solve version-copy friction.
 - Do not automate HITL subagent visibility and local-write boundary checks beyond the existing manual checklist until runtime tooling can prove them directly.
+
+## V3.2 Frontend Browser Video Review
+
+Conclusion based on the 2026-06-22 L workflow upgrade: external popularity is useful as a signal, but direct installation is not the right default for a personal workflow kit. The positive signal is role separation: `junwei-frontend-design` improves taste and interface direction, `junwei-browser-automation` controls proof and browser tooling, and `junwei-product-demo-video` controls narrative/capture/render QA.
+
+Keep:
+
+- `junwei-frontend-design` as an active personal skill for frontend design and redesign work.
+- `junwei-browser-automation` as a pilot routing skill for tests, in-app Browser, Playwright CLI, and Playwright MCP evaluation.
+- `junwei-product-demo-video` as a pilot workflow skill for product demo scripts, capture inputs, scene plans, and render QA.
+- `research-brief` plus `skill-plugin-intake-review` before absorbing future popular skills, MCP servers, plugins, hooks, or workflow packs.
+
+Tighten next:
+
+- Watch for trigger overlap between `frontend-qa` and `junwei-frontend-design`; design direction comes before or during implementation, real browser verification remains `frontend-qa`.
+- Watch for overuse of Playwright MCP when a repo test, in-app Browser, or Playwright CLI would prove the claim with less context.
+- Watch for video tasks that require dependencies, cloud services, API keys, or publishing; route them through `dependency-upgrade-review` and `security-review`.
+
+Do not advance:
+
+- Do not default-install Playwright MCP.
+- Do not globally install DigitalSamba or run `/setup` by default.
+- Do not configure cloud GPU, paid APIs, voice cloning, upload, or publish flows without explicit confirmation.

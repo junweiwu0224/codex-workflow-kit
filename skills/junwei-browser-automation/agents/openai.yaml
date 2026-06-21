@@ -1,0 +1,4 @@
+interface:
+  display_name: "Junwei Browser Automation"
+  short_description: "Browser automation and UI verification routing"
+  default_prompt: "Use $junwei-browser-automation to inspect, automate, or verify this browser workflow with the smallest safe tool surface."

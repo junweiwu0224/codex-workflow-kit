@@ -130,6 +130,9 @@ Subagents 用于隔离上下文、并行调查和执行独立任务；主 agent 
 - `research-brief`：评估 GitHub 仓库、skills、MCP、hooks、subagents、模型/API、工具或生态现状，并需要 promote/hold/reject 判断时使用；不直接安装或启用外部工具。
 - `skill-plugin-intake-review`：决定是否吸收外部 skill、plugin、MCP server、hook、subagent prompt、workflow pack 或组件时使用；只给 promote/pilot/repo-local/hold/reject 结论，不直接安装或启用外部工具。
 - `release-readiness`：准备可复用 artifact、portable toolkit、release archive、checksum bundle、安装包或迁移包时使用；当前为 pilot，只做 manifest、archive、checksum、install drill、rollback 和 evidence 检查，不替代 deploy。
+- `junwei-frontend-design`：创建、重做或打磨前端 UI/视觉/页面/app/tool/game 时使用，负责 taste/interface、模式路由、反 AI 模板化和设计验收；验证仍交给 `frontend-qa` 或项目测试。
+- `junwei-browser-automation`：浏览器自动化、Playwright、MCP-vs-CLI、localhost UI inspection、可重复 walkthrough 或 demo capture 输入时使用；默认不启用 Playwright MCP，先比较测试、in-app Browser、Playwright CLI 和 MCP pilot 的证据成本。
+- `junwei-product-demo-video`：产品 demo、walkthrough recording、Remotion render、launch/sprint review 视频或 video QA 时使用；默认不安装 DigitalSamba toolkit、不配置 cloud GPU/API/voice cloning、不 publish，涉及外部服务或敏感录制时先走 `security-review`。
 - `decision-record`：出现长期技术取舍时使用。
 - `completion-review`：实现和验证之后、最终回复之前使用。
 

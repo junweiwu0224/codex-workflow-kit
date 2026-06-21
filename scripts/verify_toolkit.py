@@ -25,6 +25,9 @@ EXPECTED_SKILLS = (
     "research-brief",
     "skill-plugin-intake-review",
     "release-readiness",
+    "junwei-frontend-design",
+    "junwei-browser-automation",
+    "junwei-product-demo-video",
 )
 
 REQUIRED_FILES = (
@@ -45,6 +48,7 @@ REQUIRED_FILES = (
     "docs/V3.1-AGENT-CONTRACT-BENCHMARK.json",
     "docs/V3.1-AGENT-CONTRACT-BENCHMARK.md",
     "docs/V3.1-LOCAL-CODEX-SMOKE-REPORT.md",
+    "docs/V3.2-FRONTEND-BROWSER-VIDEO-WORKFLOW.md",
     "docs/agent-collaboration-smoke.md",
     "docs/codex-usage.md",
     "docs/external-component-intake.md",
@@ -102,6 +106,13 @@ REQUIRED_FILES = (
     "repo-template/docs/specs/README.md",
     "scripts/verify_toolkit.py",
     "skills/spec-kit-xl/references/spec-template.md",
+    "skills/junwei-frontend-design/references/mode-playbook.md",
+    "skills/junwei-frontend-design/references/review-rubric.md",
+    "skills/junwei-frontend-design/references/validation-cases.md",
+    "skills/junwei-browser-automation/references/tool-routing.md",
+    "skills/junwei-browser-automation/references/validation-cases.md",
+    "skills/junwei-product-demo-video/references/demo-workflow.md",
+    "skills/junwei-product-demo-video/references/validation-cases.md",
     "tests/test_audit_skill_contracts.py",
     "tests/test_audit_external_component.py",
     "tests/test_benchmark_skill_polish.py",
@@ -162,7 +173,11 @@ REQUIRED_README_TERMS = (
     "~/.agents/skills/",
     "~/.codex/reverse-skill/",
     "~/.codex/skills/reverse-engineering/",
-    "11 个个人 Codex skills",
+    "14 个个人 Codex skills",
+    "junwei-frontend-design",
+    "junwei-browser-automation",
+    "junwei-product-demo-video",
+    "docs/V3.2-FRONTEND-BROWSER-VIDEO-WORKFLOW.md",
     "release-readiness",
     "reverse-skill",
     "v3.2",
@@ -177,6 +192,9 @@ REQUIRED_CODEX_USAGE_TERMS = (
     "Runtime smoke and skill audit evidence layer",
     "Package verifier coverage for real usage evidence",
     "Release-readiness drill after workflow changes",
+    "V3.2 Frontend Browser Video Workflow",
+    "吸收精华，不照搬",
+    "正向效果",
     "Release evidence version alignment",
     "Trial row preset helper",
     "Package and docs contract alignment",
@@ -207,6 +225,9 @@ REQUIRED_WORKFLOW_REVIEW_TERMS = (
     "promote != install",
     "pilot != enable",
     "core != runtime/background",
+    "junwei-frontend-design",
+    "junwei-browser-automation",
+    "junwei-product-demo-video",
     "reverse-skill",
     "reverse-ready",
 )
@@ -241,7 +262,10 @@ REQUIRED_QUICKSTART_TERMS = (
     "python3 scripts/verify_context_pack.py",
     "reverse-ready",
     "docs/codex-usage.md",
-    "11 个个人 Codex skills",
+    "14 个个人 Codex skills",
+    "junwei-frontend-design",
+    "junwei-browser-automation",
+    "junwei-product-demo-video",
     "release-readiness",
     "V3.1",
     "~/.codex/reverse-skill/",
@@ -658,6 +682,56 @@ REQUIRED_FRONTEND_BROWSER_ROUTING_TERMS = (
     "现有 Chrome 登录态",
     "不要硬编码 Browser 插件缓存路径",
     "scripts/browser-client.mjs",
+)
+REQUIRED_JUNWEI_FRONTEND_TERMS = (
+    "Anthropic `frontend-design`",
+    "Leonxlnx `taste-skill`",
+    "one memorable design bet",
+    "Avoid generic AI fingerprints",
+    "junwei-browser-automation",
+    "frontend-qa",
+    "mode-playbook.md",
+    "review-rubric.md",
+    "validation-cases.md",
+    "Output Shape",
+)
+REQUIRED_JUNWEI_BROWSER_TERMS = (
+    "microsoft/playwright-mcp",
+    "not a default install",
+    "CLI+SKILLS",
+    "in-app Browser",
+    "Playwright CLI",
+    "Playwright MCP only when",
+    "Do not add `codex mcp add playwright",
+    "rollback",
+    "tool-routing.md",
+    "Output Shape",
+)
+REQUIRED_JUNWEI_VIDEO_TERMS = (
+    "digitalsamba/claude-code-video-toolkit",
+    "not a default global install",
+    "Remotion",
+    "FFmpeg",
+    "Playwright recording",
+    "cloud GPU",
+    "voice cloning",
+    "publish",
+    "dependency-upgrade-review",
+    "security-review",
+    "Output Shape",
+)
+REQUIRED_V3_2_FRONTEND_WORKFLOW_TERMS = (
+    "V3.2 Frontend Browser Video Workflow",
+    "microsoft/playwright-mcp",
+    "digitalsamba/claude-code-video-toolkit",
+    "junwei-frontend-design",
+    "junwei-browser-automation",
+    "junwei-product-demo-video",
+    "吸收精华，不照搬",
+    "Role Separation",
+    "No-Conflict Matrix",
+    "Security review",
+    "Release readiness",
 )
 GENERATED_PATTERNS = (
     "__pycache__",
@@ -1314,6 +1388,23 @@ def check_toolkit(root: str | Path = ".") -> list[ToolkitIssue]:
                     message=f"Global AGENTS.md must route the P0 specialist skill: {term}.",
                 )
             )
+    for term in (
+        "junwei-frontend-design",
+        "junwei-browser-automation",
+        "junwei-product-demo-video",
+        "Playwright MCP",
+        "DigitalSamba toolkit",
+        "cloud GPU/API/voice cloning",
+    ):
+        if global_agents and term not in global_agents:
+            issues.append(
+                ToolkitIssue(
+                    severity="error",
+                    code="global-agents-missing-junwei-workflow-route",
+                    path="global/AGENTS.md",
+                    message=f"Global AGENTS.md must route Junwei frontend/browser/video workflow term: {term}.",
+                )
+            )
     if global_agents and not all(term in global_agents for term in ("in-app Browser", "不要静默降级到 Chrome", "用户明确要求 Chrome")):
         issues.append(
             ToolkitIssue(
@@ -1564,6 +1655,52 @@ def check_toolkit(root: str | Path = ".") -> list[ToolkitIssue]:
                     message=f"frontend-qa must preserve accessibility polish term: {term}.",
                 )
             )
+
+    v3_2_frontend_workflow = (
+        _read_text(root / "docs/V3.2-FRONTEND-BROWSER-VIDEO-WORKFLOW.md")
+        if (root / "docs/V3.2-FRONTEND-BROWSER-VIDEO-WORKFLOW.md").exists()
+        else ""
+    )
+    for term in REQUIRED_V3_2_FRONTEND_WORKFLOW_TERMS:
+        if v3_2_frontend_workflow and term not in v3_2_frontend_workflow:
+            issues.append(
+                ToolkitIssue(
+                    severity="error",
+                    code="v3-2-frontend-workflow-missing-term",
+                    path="docs/V3.2-FRONTEND-BROWSER-VIDEO-WORKFLOW.md",
+                    message=f"V3.2 frontend/browser/video evidence must document {term}.",
+                )
+            )
+
+    junwei_skill_checks = (
+        (
+            "skills/junwei-frontend-design/SKILL.md",
+            REQUIRED_JUNWEI_FRONTEND_TERMS,
+            "junwei-frontend-design-missing-contract",
+        ),
+        (
+            "skills/junwei-browser-automation/SKILL.md",
+            REQUIRED_JUNWEI_BROWSER_TERMS,
+            "junwei-browser-automation-missing-contract",
+        ),
+        (
+            "skills/junwei-product-demo-video/SKILL.md",
+            REQUIRED_JUNWEI_VIDEO_TERMS,
+            "junwei-product-demo-video-missing-contract",
+        ),
+    )
+    for relative, required_terms, code in junwei_skill_checks:
+        text = _read_text(root / relative) if (root / relative).exists() else ""
+        for term in required_terms:
+            if text and term not in text:
+                issues.append(
+                    ToolkitIssue(
+                        severity="error",
+                        code=code,
+                        path=relative,
+                        message=f"{relative} must preserve Junwei workflow term: {term}.",
+                    )
+                )
 
     skill_polish_checks = (
         (
