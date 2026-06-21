@@ -64,7 +64,7 @@
 
 - hooks：默认不启用阻断型 hooks。只有 A 级、短耗时、稳定、无外部依赖、无业务数据写入、无隐藏产物的命令才考虑前移。
 - MCP/代码图谱/memory：先用 repo context pack、`rg`、语言工具和测试建立临时上下文；只有重复收益明确、边界清楚、可回退时再增加长期服务。
-- subagents：L/XL、已有实施计划、跨模块、多独立失败源、多文件审查和可并行调查必须先做 suitability check；只有当前运行时或工具权限允许主动派发，且存在 2 个以上互不重叠的独立子任务时，才主动使用 subagents。当前工具要求本轮显式授权 subagents/并行/委派时，记录 No-Dispatch Decision: tool permission constraint，除非用户本轮明确授权。共享入口、schema/storage、应用生命周期、交易/生产路径由主 agent 串行控制。
+- subagents：L/XL、已有实施计划、跨模块、多独立失败源、多文件审查和可并行调查必须先做 suitability check；AGENTS/AGENTS.override 中的长期授权即视为显式授权，本轮重复授权不是必要条件。只有 subagent 工具实际可用且未被平台权限阻止，并且存在 2 个以上互不重叠的独立子任务时，才主动使用 subagents；若当前会话没有加载到这类长期授权且本轮也未明确授权，记录 No-Dispatch Decision: tool permission constraint；这不包括已加载长期授权后缺少本轮重复授权。共享入口、schema/storage、应用生命周期、交易/生产路径由主 agent 串行控制。
 - subagent lifecycle：主 agent 记录本轮派出的 agent id；收到结果、决定不采纳或不再需要时必须 `close_agent`，最终回复前检查是否还有未关闭 agent。只读 explorer / reviewer / 竞品观察也必须收口。
 - observability：本地 usage、菜单栏状态、长任务监控、通知或 HUD 工具仅作为候选；必须确认本地日志读取范围、网络/后台行为和关闭方式后试用。
 - `spec-kit-xl`：只用于 XL、正式规格、长期验收标准或用户明确要求规格文档的任务。
@@ -267,7 +267,7 @@ Rejections:
 
 - 不把 hooks 默认启用；当前证据支持候选集和 side-effect audit，不支持阻断型自动启用。
 - 不把 MCP/code graph/memory 默认启用；当前证据显示多数问题可先用 repo docs、`rg`、语言工具和 targeted tests 解决。
-- 不把 subagents 设为无条件默认实现路径；但 L/XL、已有实施计划、跨模块或多独立失败源任务必须主动评估，边界清晰、存在 2 个以上独立子任务且当前运行时或工具权限允许主动派发时才主动使用。
+- 不把 subagents 设为无条件默认实现路径；但 L/XL、已有实施计划、跨模块或多独立失败源任务必须主动评估，边界清晰、存在 2 个以上独立子任务且 subagent 工具实际可用、未被平台权限阻止时才主动使用。
 
 Remaining candidates:
 

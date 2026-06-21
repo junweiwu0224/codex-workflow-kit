@@ -47,9 +47,9 @@ Hooks 用于把验证纪律变成自动提醒或阻断，但只作为质量门�
 Subagents 用于隔离上下文、并行调查和执行独立任务；主 agent 始终负责拆分、协调、审查、集成和最终结论。
 
 - 优先使用 Superpowers 的 `dispatching-parallel-agents` 和 `subagent-driven-development`，不自建另一套并行执行流程。
-- 本协议是对主动执行 subagent suitability check 的长期授权，不等于绕过当前运行时或工具权限的 dispatch 授权。当前运行时或工具权限允许主动派发时，才可按本协议 dispatch；如果工具要求用户在当前请求中显式授权 subagents/并行/委派，则只能记录 suitability check 和 No-Dispatch Decision: tool permission constraint，除非用户本轮明确授权。
+- 本协议是用户写入 AGENTS/AGENTS.override 的长期授权即视为显式授权 Codex 在满足条件时使用 subagents；它授权主动执行 subagent suitability check，也授权在 subagent 工具实际可用且未被平台权限阻止时按本协议 dispatch。已加载这类长期授权时，本轮重复授权不是必要条件，不得因当前对话没有再次说“subagents/并行/委派”而记录 tool permission constraint。
 - 对于 L/XL 任务、已有实施计划的任务、跨模块任务、多个独立失败源、多文件审查或预计可并行的调查，必须先做 subagent suitability check。
-- 如果当前运行时或工具权限允许主动派发，且存在 2 个以上互不重叠、可独立推进、不会共享写入状态的子任务，应主动使用 subagents；不使用时要简短说明原因，例如任务强耦合、下一步阻塞依赖、文件 ownership 冲突、风险集中在共享状态、涉及高风险外部操作或 tool permission constraint。用户可以通过在当前任务中写“本轮授权按需使用 subagents/并行代理/委派”来解除当前工具层的显式授权约束。
+- 如果 subagent 工具实际可用且未被平台权限阻止，且存在 2 个以上互不重叠、可独立推进、不会共享写入状态的子任务，应主动使用 subagents；不使用时要简短说明原因，例如任务强耦合、下一步阻塞依赖、文件 ownership 冲突、风险集中在共享状态、涉及高风险外部操作或 tool permission constraint。只有当前会话没有加载长期授权时，用户才需要通过在当前任务中写“本轮授权按需使用 subagents/并行代理/委派”补充一次性显式授权。
 - 主 agent 应优先保留关键路径：需求澄清、架构判断、共享文件、外部/生产风险、最终集成、diff review 和验证；把独立调查、独立模块实现、只读审查或互不重叠的 worker 任务交给 subagents。
 - 只有当任务可以按独立问题域拆开、没有共享写入状态、不会互相覆盖文件时，才并行 dispatch。
 - 有实现计划且任务基本独立时，用 `subagent-driven-development`；多个独立失败、独立调查或独立子系统问题时，用 `dispatching-parallel-agents`。
@@ -65,7 +65,7 @@ Subagents 用于隔离上下文、并行调查和执行独立任务；主 agent 
 - subagent 返回后，主 agent 必须 review 摘要和改动，检查冲突，运行集成验证；不能把 subagent 成功当作最终完成。
 - 主 agent 必须记录本轮派出的 subagent id。收到 `subagent_notification`、`wait_agent` 返回 completed、决定丢弃结果，或判断该 agent 已不再需要时，必须调用 `close_agent` 收口；只读 explorer / reviewer 也一样。
 - 主 agent 维护轻量 Lifecycle Ledger：记录 agent id、role/card、read/write、target、status、`close_agent` 的 previous_status、evidence 和 integrated/discarded 结论。
-- 不派 subagent 时记录 No-Dispatch Decision：strong coupling、shared writes、blocked dependency、safety boundary、unclear task、no independent subtask 或 tool permission constraint。
+- 不派 subagent 时记录 No-Dispatch Decision：strong coupling、shared writes、blocked dependency、safety boundary、unclear task、no independent subtask 或 tool permission constraint；其中 tool permission constraint 只表示 subagent 工具不可用、未暴露、调用被平台/权限拒绝，或当前会话既未加载长期授权也没有本轮明确授权，不包括已加载长期授权后缺少本轮重复授权。
 - 最终回复前做 subagent lifecycle check：确认本轮不再需要的 agent 已 close；如果工具不可用、agent 仍需继续运行或关闭失败，要在最终回复中说明原因和剩余风险。
 - subagent 发现需要长期沉淀的项目知识时，由主 agent 决定写入 repo docs、ADR、全局 AGENTS、skill 或 memory。
 - 不要为了执行这些协议而引入新的 orchestrator、planner、dispatcher、queue、agent swarm 或后台 runtime；Superpowers 仍然负责计划、TDD 和阶段推进。

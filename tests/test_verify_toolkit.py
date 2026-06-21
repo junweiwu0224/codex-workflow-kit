@@ -290,6 +290,22 @@ def test_check_toolkit_requires_junwei_frontend_browser_video_contracts(tmp_path
     assert "global-agents-missing-junwei-workflow-route" in codes
 
 
+def test_check_toolkit_requires_v3_2_functional_validation_evidence(tmp_path):
+    shadow = _clean_package_copy(tmp_path)
+    validation = shadow / "docs/V3.2-FUNCTIONAL-VALIDATION.md"
+    validation.write_text(
+        validation.read_text(encoding="utf-8")
+        .replace("11/11", "10/11")
+        .replace("No-Conflict violations: `0`", "No-Conflict violations: `1`")
+        .replace("cloud-gpu-voice-clone-stop", "cloud-video-case"),
+        encoding="utf-8",
+    )
+
+    issues = check_toolkit(shadow)
+
+    assert any(issue.code == "v3-2-functional-validation-missing-term" for issue in issues)
+
+
 def test_check_toolkit_rejects_reverse_routing_to_missing_target(tmp_path):
     shadow = _clean_package_copy(tmp_path)
     routing = shadow / "reverse-skill/skills/routing.md"
@@ -611,8 +627,11 @@ def test_check_toolkit_runs_skill_contract_audit(tmp_path):
 def test_check_toolkit_requires_proactive_subagent_guidance(tmp_path):
     cases = (
         ("subagent suitability check", "parallel suitability check"),
-        ("当前运行时或工具权限允许", "长期授权"),
-        ("显式授权", "长期授权"),
+        ("subagent 工具实际可用且未被平台权限阻止", "subagent 工具可用"),
+        ("AGENTS.override", "AGENTS override"),
+        ("长期授权即视为显式授权", "长期授权需要本轮确认"),
+        ("本轮重复授权不是必要条件", "本轮重复授权仍是必要条件"),
+        ("不包括已加载长期授权后缺少本轮重复授权", "包括已加载长期授权后缺少本轮重复授权"),
         ("tool permission constraint", "tool unavailable"),
         ("2 个以上", "多个"),
         ("不使用时", "跳过时"),
@@ -629,6 +648,27 @@ def test_check_toolkit_requires_proactive_subagent_guidance(tmp_path):
 
         assert any(
             issue.code == "subagents-missing-proactive-guidance" and issue.path == relative for issue in issues
+        )
+
+
+def test_check_toolkit_rejects_repeated_subagent_authorization_regression(tmp_path):
+    targets = ("global/AGENTS.md", "repo-template/AGENTS.md", "repo-template/docs/subagents.md")
+    for index, relative in enumerate(targets):
+        case_root = tmp_path / f"case-{index}"
+        case_root.mkdir()
+        shadow = _clean_package_copy(case_root)
+        target = shadow / relative
+        target.write_text(
+            target.read_text(encoding="utf-8")
+            + "\n当前工具层仍要求本轮显式授权，所以记录 No-Dispatch: tool permission constraint。\n",
+            encoding="utf-8",
+        )
+
+        issues = check_toolkit(shadow)
+
+        assert any(
+            issue.code == "subagents-repeat-authorization-regression" and issue.path == relative
+            for issue in issues
         )
 
 

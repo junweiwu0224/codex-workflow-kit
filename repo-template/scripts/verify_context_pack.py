@@ -74,8 +74,11 @@ REQUIRED_MCP_PERMISSION_TERMS = (
 REQUIRED_SUBAGENT_CONTRACT_TERMS = (
     "V3.1 Prompt Contract",
     "subagent suitability check",
-    "当前运行时或工具权限允许",
-    "显式授权",
+    "subagent 工具实际可用且未被平台权限阻止",
+    "AGENTS.override",
+    "长期授权即视为显式授权",
+    "本轮重复授权不是必要条件",
+    "不包括已加载长期授权后缺少本轮重复授权",
     "No-Dispatch Decision",
     "tool permission constraint",
     "allowed write set",
@@ -88,6 +91,13 @@ FORBIDDEN_UNCONDITIONAL_SUBAGENT_DISPATCH_PHRASES = (
     "不要因为当前对话没有再次说“使用子代理/并行”就跳过 suitability check 或 dispatch",
     "不要因为当前对话没有再次要求并行就跳过 suitability check 或安全 dispatch",
     "不要因为当前对话没有再次说“使用子代理/并行”就跳过 suitability check 或安全 dispatch",
+)
+FORBIDDEN_REPEAT_AUTH_SUBAGENT_PHRASES = (
+    "当前工具层仍要求本轮显式授权",
+    "当前工具要求本轮显式授权",
+    "工具要求本轮显式授权",
+    "长期授权需要本轮确认",
+    "已加载长期授权但仍记录 No-Dispatch: tool permission constraint",
 )
 REQUIRED_CODEGRAPH_TERMS = (
     "Code Graph Pilot",
@@ -248,6 +258,26 @@ def check_context_pack(root: str | Path = ".") -> list[ContextPackIssue]:
                     message=(
                         "docs/subagents.md must not treat long-term suitability-check authorization as permission "
                         f"to bypass current runtime/tool dispatch gates: {forbidden_phrase}"
+                    ),
+                )
+            )
+        repeat_auth_phrase = next(
+            (
+                phrase
+                for phrase in FORBIDDEN_REPEAT_AUTH_SUBAGENT_PHRASES
+                if phrase in subagents_text
+            ),
+            None,
+        )
+        if repeat_auth_phrase:
+            issues.append(
+                ContextPackIssue(
+                    severity="error",
+                    code="subagents-repeat-authorization-regression",
+                    path="docs/subagents.md",
+                    message=(
+                        "docs/subagents.md must not require current-turn repeated authorization once loaded "
+                        f"AGENTS/AGENTS.override long-term authorization is present: {repeat_auth_phrase}"
                     ),
                 )
             )

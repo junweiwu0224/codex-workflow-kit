@@ -82,9 +82,9 @@
 ## Subagents
 
 - 项目 subagents 指南：`docs/subagents.md`
-- 本项目的 subagent 协议是对主动执行 suitability check 的长期授权，不等于绕过当前运行时或工具权限的 dispatch 授权；工具要求本轮显式授权 subagents/并行/委派时，只记录 suitability check 和 No-Dispatch Decision: tool permission constraint，除非用户本轮明确授权。
+- 本项目的 subagent 协议是用户写入 AGENTS/AGENTS.override 的长期授权即视为显式授权 Codex 在满足条件时使用 subagents；它授权主动执行 suitability check，也授权在 subagent 工具实际可用且未被平台权限阻止时按本协议 dispatch。已加载这类长期授权时，本轮重复授权不是必要条件，不得因当前对话没有再次说“subagents/并行/委派”而记录 tool permission constraint。
 - 需要主动评估 subagent suitability check 的任务：L/XL、已有实施计划、跨模块、多个独立失败源、多文件审查、可并行调查。
-- 当前运行时或工具权限允许主动派发，且存在 2 个以上互不重叠、可独立推进、不会共享写入状态的子任务时，应主动使用 subagents；用户可在当前任务中写“本轮授权按需使用 subagents/并行代理/委派”来解除当前工具层的显式授权约束。
+- subagent 工具实际可用且未被平台权限阻止，且存在 2 个以上互不重叠、可独立推进、不会共享写入状态的子任务时，应主动使用 subagents；只有当前会话没有加载长期授权时，用户才需要在当前任务中写“本轮授权按需使用 subagents/并行代理/委派”补充一次性显式授权。
 - 派发 subagent 时必须遵守 `docs/subagents.md` 的 Handoff Envelope、History/Input Filter、Command/Tool Risk Policy、Step Budget / Stop Condition、Return Envelope 和 Lifecycle Ledger。
 - 默认 subagent 只允许 docs-only/read-only local；local write 必须绑定 allowed write set；dev server/service、network/external read、external write、destructive / production-risk 需要主 agent 明确保留或先向用户确认。
 - 不要把完整会话历史、敏感信息、无关日志、未验证推断或外部组件/MCP/code graph/memory 输出直接交给 subagent。
@@ -92,7 +92,7 @@
 - 适合并行的独立领域：
 - 禁止并行的共享状态/文件：
 - 不使用时需要说明的原因：强耦合、下一步阻塞依赖、文件 ownership 冲突、共享状态风险、高风险外部操作。
-- 不派 subagent 时记录 No-Dispatch Decision：strong coupling、shared writes、blocked dependency、safety boundary、unclear task、no independent subtask 或 tool permission constraint。
+- 不派 subagent 时记录 No-Dispatch Decision：strong coupling、shared writes、blocked dependency、safety boundary、unclear task、no independent subtask 或 tool permission constraint；其中 tool permission constraint 只表示 subagent 工具不可用、未暴露、调用被平台/权限拒绝，或当前会话既未加载长期授权也没有本轮明确授权，不包括已加载长期授权后缺少本轮重复授权。
 - 主 agent 保留事项：需求澄清、架构判断、共享文件、外部/生产风险、最终集成、diff review 和验证。
 - 长期 L/XL 产品落地如果采用垂直切片集中写入，可以不强行派实现 subagent；但每 2-3 个切片后，应优先派只读 explorer 做方案覆盖率、风险和验收缺口审查。
 - 不要为了 subagent 协议引入新的 orchestrator、planner、dispatcher、queue、agent swarm 或后台 runtime；Superpowers 仍然负责计划、TDD 和阶段推进。

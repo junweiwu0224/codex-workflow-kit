@@ -49,6 +49,8 @@ REQUIRED_FILES = (
     "docs/V3.1-AGENT-CONTRACT-BENCHMARK.md",
     "docs/V3.1-LOCAL-CODEX-SMOKE-REPORT.md",
     "docs/V3.2-FRONTEND-BROWSER-VIDEO-WORKFLOW.md",
+    "docs/V3.2-FUNCTIONAL-VALIDATION.json",
+    "docs/V3.2-FUNCTIONAL-VALIDATION.md",
     "docs/agent-collaboration-smoke.md",
     "docs/codex-usage.md",
     "docs/external-component-intake.md",
@@ -85,6 +87,7 @@ REQUIRED_FILES = (
     "scripts/codex_runtime_smoke.py",
     "scripts/verify_apk_decode_smoke.py",
     "scripts/render_usage_row.py",
+    "scripts/validate_v32_workflow_cases.py",
     "scripts/verify_live_install.py",
     "scripts/verify_reverse_ready.py",
     "repo-template/AGENTS.md",
@@ -117,6 +120,7 @@ REQUIRED_FILES = (
     "tests/test_audit_external_component.py",
     "tests/test_benchmark_skill_polish.py",
     "tests/test_benchmark_agent_contract.py",
+    "tests/test_validate_v32_workflow_cases.py",
     "tests/test_codex_runtime_smoke.py",
     "tests/test_verify_apk_decode_smoke.py",
     "tests/test_verify_reverse_ready.py",
@@ -166,6 +170,7 @@ REQUIRED_README_TERMS = (
     "scripts/benchmark_v31_vs_v22.py",
     "scripts/benchmark_skill_polish.py",
     "scripts/benchmark_agent_contract.py",
+    "scripts/validate_v32_workflow_cases.py",
     "scripts/codex_runtime_smoke.py",
     "scripts/render_usage_row.py trial",
     "scripts/render_usage_row.py trial --preset",
@@ -178,6 +183,7 @@ REQUIRED_README_TERMS = (
     "junwei-browser-automation",
     "junwei-product-demo-video",
     "docs/V3.2-FRONTEND-BROWSER-VIDEO-WORKFLOW.md",
+    "docs/V3.2-FUNCTIONAL-VALIDATION.md",
     "release-readiness",
     "reverse-skill",
     "v3.2",
@@ -635,8 +641,11 @@ REQUIRED_RELEASE_READINESS_TERMS = (
 )
 REQUIRED_PROACTIVE_SUBAGENT_TERMS = (
     "subagent suitability check",
-    "当前运行时或工具权限允许",
-    "显式授权",
+    "subagent 工具实际可用且未被平台权限阻止",
+    "AGENTS.override",
+    "长期授权即视为显式授权",
+    "本轮重复授权不是必要条件",
+    "不包括已加载长期授权后缺少本轮重复授权",
     "L/XL",
     "已有实施计划",
     "跨模块",
@@ -655,6 +664,13 @@ FORBIDDEN_UNCONDITIONAL_SUBAGENT_DISPATCH_PHRASES = (
     "不要因为当前对话没有再次说“使用子代理/并行”就跳过 suitability check 或 dispatch",
     "不要因为当前对话没有再次要求并行就跳过 suitability check 或安全 dispatch",
     "不要因为当前对话没有再次说“使用子代理/并行”就跳过 suitability check 或安全 dispatch",
+)
+FORBIDDEN_REPEAT_AUTH_SUBAGENT_PHRASES = (
+    "当前工具层仍要求本轮显式授权",
+    "当前工具要求本轮显式授权",
+    "工具要求本轮显式授权",
+    "长期授权需要本轮确认",
+    "已加载长期授权但仍记录 No-Dispatch: tool permission constraint",
 )
 REQUIRED_SUBAGENT_PROMPT_CARDS = (
     "read-only code mapper",
@@ -739,6 +755,24 @@ REQUIRED_V3_2_FRONTEND_WORKFLOW_TERMS = (
     "No-Conflict Matrix",
     "Security review",
     "Release readiness",
+)
+REQUIRED_V3_2_FUNCTIONAL_VALIDATION_TERMS = (
+    "V3.2 Functional Validation",
+    "12/12",
+    "No-Conflict violations: `0`",
+    "Safety stops exercised: `2`",
+    "Coverage points: `9` -> `90`",
+    "+81",
+    "900.0%",
+    "Positive Effect",
+    "csv-cleaning-tool-ui",
+    "localhost-dashboard-smoke",
+    "cloud-gpu-voice-clone-stop",
+    "backend-tax-no-overtrigger",
+    "combined-redesign-demo-recording",
+    "loaded-subagent-longterm-authorization",
+    "Product demo video remains primary",
+    "Loaded AGENTS/AGENTS.override long-term subagent authorization does not require current-turn repeat authorization",
 )
 GENERATED_PATTERNS = (
     "__pycache__",
@@ -1515,8 +1549,9 @@ def check_toolkit(root: str | Path = ".") -> list[ToolkitIssue]:
                     code="subagents-missing-proactive-guidance",
                     path=relative,
                     message=(
-                        "Subagent guidance must require proactive suitability checks, runtime/tool-permission "
-                        "gating before dispatch, explicit-authorization fallback, and main-agent integration review."
+                        "Subagent guidance must require proactive suitability checks, loaded AGENTS/AGENTS.override "
+                        "long-term authorization, real subagent tool availability gating, no repeat-authorization "
+                        "requirement after long-term authorization is loaded, and main-agent integration review."
                     ),
                 )
             )
@@ -1533,6 +1568,22 @@ def check_toolkit(root: str | Path = ".") -> list[ToolkitIssue]:
                     message=(
                         "Subagent guidance must not treat long-term suitability-check authorization as permission "
                         f"to bypass current runtime/tool dispatch gates: {forbidden_phrase}"
+                    ),
+                )
+            )
+        repeat_auth_phrase = next(
+            (phrase for phrase in FORBIDDEN_REPEAT_AUTH_SUBAGENT_PHRASES if phrase in text),
+            None,
+        )
+        if repeat_auth_phrase:
+            issues.append(
+                ToolkitIssue(
+                    severity="error",
+                    code="subagents-repeat-authorization-regression",
+                    path=relative,
+                    message=(
+                        "Subagent guidance must not require a current-turn repeated authorization once loaded "
+                        f"AGENTS/AGENTS.override long-term authorization is present: {repeat_auth_phrase}"
                     ),
                 )
             )
@@ -1698,6 +1749,21 @@ def check_toolkit(root: str | Path = ".") -> list[ToolkitIssue]:
                     code="v3-2-frontend-workflow-missing-term",
                     path="docs/V3.2-FRONTEND-BROWSER-VIDEO-WORKFLOW.md",
                     message=f"V3.2 frontend/browser/video evidence must document {term}.",
+                )
+            )
+    v3_2_functional_validation = (
+        _read_text(root / "docs/V3.2-FUNCTIONAL-VALIDATION.md")
+        if (root / "docs/V3.2-FUNCTIONAL-VALIDATION.md").exists()
+        else ""
+    )
+    for term in REQUIRED_V3_2_FUNCTIONAL_VALIDATION_TERMS:
+        if v3_2_functional_validation and term not in v3_2_functional_validation:
+            issues.append(
+                ToolkitIssue(
+                    severity="error",
+                    code="v3-2-functional-validation-missing-term",
+                    path="docs/V3.2-FUNCTIONAL-VALIDATION.md",
+                    message=f"V3.2 functional validation must document {term}.",
                 )
             )
 

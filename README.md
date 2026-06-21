@@ -21,6 +21,8 @@ docs/
   V3.1-AGENT-CONTRACT-BENCHMARK.json
   V3.1-LOCAL-CODEX-SMOKE-REPORT.md
   V3.2-FRONTEND-BROWSER-VIDEO-WORKFLOW.md
+  V3.2-FUNCTIONAL-VALIDATION.json
+  V3.2-FUNCTIONAL-VALIDATION.md
   agent-collaboration-smoke.md
   codex-usage.md
   external-component-intake.md
@@ -46,6 +48,7 @@ scripts/
   codex_doctor.py
   codex_runtime_smoke.py
   render_usage_row.py
+  validate_v32_workflow_cases.py
   verify_apk_decode_smoke.py
   verify_live_install.py
   verify_toolkit.py
@@ -140,6 +143,8 @@ reverse-skill-router/
 
 `docs/V3.2-FRONTEND-BROWSER-VIDEO-WORKFLOW.md` 是 Junwei 个人前端/浏览器/demo 视频 workflow 证据包，记录 `microsoft/playwright-mcp`、`digitalsamba/claude-code-video-toolkit` 和前端设计 skill 的吸收方式：吸收精华，不照搬；保留 Playwright MCP 和视频 toolkit 为 pilot/repo-local 路径，不默认安装或启用。
 
+`docs/V3.2-FUNCTIONAL-VALIDATION.md` / `docs/V3.2-FUNCTIONAL-VALIDATION.json` 是 v3.2 真实案例验证报告，覆盖前端/浏览器/视频路由、安全 stop、backend no-overtrigger，以及 subagent 长期授权不需要本轮重复授权。对应脚本是 `scripts/validate_v32_workflow_cases.py`。
+
 `docs/agent-collaboration-smoke.md` 是 V3.1 subagent runtime 的手动/HITL smoke checklist，覆盖 read-only dual explorer、No-Dispatch、local-write boundary、visibility policy、skill coupling 和 lifecycle ledger。
 
 `docs/codex-usage.md` 是本 toolkit 仓库自己的 V3.1 真实试跑记录，当前包含第一阶段 4 个 M/L 样本、closeout 4 个 M/L 样本和阶段复盘，用于判断哪些规则真的省时间、哪些仍增加摩擦。它不同于 `repo-template/docs/codex-usage.md`，后者是复制到目标仓库的模板。
@@ -204,7 +209,7 @@ Codex doctor OK
 如果要运行 toolkit 自身测试，需要使用已安装 `pytest` 的 Python 环境：
 
 ```bash
-python3 -m pytest tests/test_verify_toolkit.py tests/test_verify_live_install.py tests/test_render_usage_row.py tests/test_codex_doctor.py tests/test_codex_runtime_smoke.py tests/test_audit_skill_contracts.py tests/test_audit_repo_adoption.py tests/test_audit_external_component.py tests/test_benchmark_skill_polish.py tests/test_benchmark_agent_contract.py -q
+python3 -m pytest tests/test_verify_toolkit.py tests/test_verify_live_install.py tests/test_render_usage_row.py tests/test_codex_doctor.py tests/test_codex_runtime_smoke.py tests/test_audit_skill_contracts.py tests/test_audit_repo_adoption.py tests/test_audit_external_component.py tests/test_benchmark_skill_polish.py tests/test_benchmark_agent_contract.py tests/test_validate_v32_workflow_cases.py -q
 cd repo-template
 python3 scripts/verify_context_pack.py
 python3 -m pytest tests/test_verify_context_pack.py -q
@@ -524,7 +529,7 @@ python3 scripts/verify_context_pack.py
 
 ## 试跑和效果评估
 
-给新仓库安装 context pack 后，不要立刻启用整套 hooks、MCP 或 memory。subagents 按全局协议主动评估：L/XL、已有实施计划、跨模块、多独立失败源、多文件审查和可并行调查要先做 suitability check；只有当前运行时或工具权限允许主动派发，且存在 2 个以上独立非重叠子任务时，才主动使用 subagents。若当前工具要求本轮显式授权 subagents/并行/委派，则记录 No-Dispatch Decision: tool permission constraint，除非用户本轮明确授权。推荐先做 3-5 个真实 M/L/XL 任务，把结果写入：
+给新仓库安装 context pack 后，不要立刻启用整套 hooks、MCP 或 memory。subagents 按全局协议主动评估：L/XL、已有实施计划、跨模块、多独立失败源、多文件审查和可并行调查要先做 suitability check；AGENTS/AGENTS.override 中的长期授权即视为显式授权，本轮重复授权不是必要条件；只有 subagent 工具实际可用且未被平台权限阻止，并且存在 2 个以上独立非重叠子任务时，才主动使用 subagents。若当前会话没有加载到这类长期授权，且当前工具要求显式授权 subagents/并行/委派，则记录 No-Dispatch Decision: tool permission constraint，除非用户本轮明确授权；这不包括已加载长期授权后缺少本轮重复授权。推荐先做 3-5 个真实 M/L/XL 任务，把结果写入：
 
 ```text
 docs/codex-usage.md

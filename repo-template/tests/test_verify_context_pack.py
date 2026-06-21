@@ -56,8 +56,11 @@ def _minimal_context_pack(root: Path) -> None:
             [
                 "## V3.1 Prompt Contract",
                 "subagent suitability check",
-                "当前运行时或工具权限允许",
-                "显式授权",
+                "subagent 工具实际可用且未被平台权限阻止",
+                "AGENTS.override",
+                "长期授权即视为显式授权",
+                "本轮重复授权不是必要条件",
+                "不包括已加载长期授权后缺少本轮重复授权",
                 "No-Dispatch Decision",
                 "tool permission constraint",
                 "allowed write set",
@@ -200,8 +203,11 @@ def test_check_context_pack_rejects_unconditional_subagent_dispatch(tmp_path):
             [
                 "## V3.1 Prompt Contract",
                 "subagent suitability check",
-                "当前运行时或工具权限允许",
-                "显式授权",
+                "subagent 工具实际可用且未被平台权限阻止",
+                "AGENTS.override",
+                "长期授权即视为显式授权",
+                "本轮重复授权不是必要条件",
+                "不包括已加载长期授权后缺少本轮重复授权",
                 "No-Dispatch Decision",
                 "tool permission constraint",
                 "allowed write set",
@@ -217,6 +223,20 @@ def test_check_context_pack_rejects_unconditional_subagent_dispatch(tmp_path):
     issues = check_context_pack(tmp_path)
 
     assert any(issue.code == "subagents-unconditional-dispatch-guidance" for issue in issues)
+
+
+def test_check_context_pack_rejects_repeated_subagent_authorization_regression(tmp_path):
+    _minimal_context_pack(tmp_path)
+    subagents = tmp_path / "docs/subagents.md"
+    subagents.write_text(
+        subagents.read_text(encoding="utf-8")
+        + "\n当前工具层仍要求本轮显式授权，所以记录 No-Dispatch: tool permission constraint。\n",
+        encoding="utf-8",
+    )
+
+    issues = check_context_pack(tmp_path)
+
+    assert any(issue.code == "subagents-repeat-authorization-regression" for issue in issues)
 
 
 def test_check_context_pack_flags_architecture_reference_mismatch(tmp_path):

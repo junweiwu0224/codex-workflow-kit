@@ -12,11 +12,11 @@
 
 先做 subagent suitability check：
 
-- 本协议视为当前仓库对主动执行 subagent suitability check 的长期授权，不等于绕过当前运行时或工具权限的 dispatch 授权。
+- 本协议视为用户写入 AGENTS/AGENTS.override 的长期授权即视为显式授权 Codex 在满足条件时使用 subagents；它授权主动执行 subagent suitability check，也授权在 subagent 工具实际可用且未被平台权限阻止时按本协议 dispatch。已加载这类长期授权时，本轮重复授权不是必要条件，不得因当前对话没有再次说“subagents/并行/委派”而记录 tool permission constraint。
 - L/XL 任务、已有实施计划、跨模块任务、多个独立失败源、多文件审查或预计可并行的调查，都要先判断是否能拆给 subagents。
-- 如果当前运行时或工具权限允许主动派发，且存在 2 个以上互不重叠、可独立推进、不会共享写入状态的子任务，应主动使用 subagents。
-- 如果当前工具要求用户在本轮显式授权 subagents/并行/委派，则只能记录 suitability check 和 No-Dispatch Decision: tool permission constraint，除非用户本轮明确授权。
-- 用户可以通过在当前任务中写“本轮授权按需使用 subagents/并行代理/委派”来解除当前工具层的显式授权约束。
+- 如果 subagent 工具实际可用且未被平台权限阻止，且存在 2 个以上互不重叠、可独立推进、不会共享写入状态的子任务，应主动使用 subagents。
+- 如果当前会话没有加载到 AGENTS/AGENTS.override 中的长期授权，且当前工具要求用户显式授权 subagents/并行/委派，则只能记录 suitability check 和 No-Dispatch Decision: tool permission constraint，除非用户本轮明确授权。
+- 只有当前会话没有加载长期授权时，用户才需要通过在当前任务中写“本轮授权按需使用 subagents/并行代理/委派”补充一次性显式授权。
 - 不使用时要简短说明原因，例如强耦合、下一步阻塞依赖、文件 ownership 冲突、风险集中在共享状态、涉及高风险外部操作或 tool permission constraint。
 - 主 agent 保留需求澄清、架构判断、共享文件、外部/生产风险、最终集成、diff review 和验证；把独立调查、独立模块实现、只读审查或互不重叠的 worker 任务交给 subagents。
 - 长期 L/XL 产品落地如果采用垂直切片集中写入，可以不强行派实现 subagent；但每 2-3 个切片后，应优先派只读 explorer 做方案覆盖率、风险和验收缺口审查，除非当前没有明确评审目标或会阻塞关键路径。
@@ -153,7 +153,7 @@ ledger 最少记录本轮派出的 agent id、角色、是否只读、目标、�
 - safety boundary：生产、账号、权限、支付、凭证、外部写入或破坏性风险。
 - unclear task：目标/验收不清，派发会扩大误差。
 - no independent subtask：少于 2 个独立非重叠子任务。
-- tool permission constraint：当前工具不可用或权限不足。
+- tool permission constraint：subagent 工具不可用、未暴露、调用被平台/权限拒绝，或当前会话既未加载长期授权也没有本轮明确授权；不包括已加载长期授权后缺少本轮重复授权。
 
 ## 生命周期收口
 

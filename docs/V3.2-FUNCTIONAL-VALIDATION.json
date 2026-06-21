@@ -1,0 +1,404 @@
+{
+  "ok": true,
+  "method": "Route realistic V3.2 workflow prompts through deterministic workflow rules, then verify role separation, no-conflict guardrails, stop boundaries, source-document terms, and coverage uplift over a no-V3.2 baseline.",
+  "totals": {
+    "cases": 12,
+    "passed": 12,
+    "conflicts": 0,
+    "safety_stops": 2,
+    "baseline_points": 9,
+    "post_points": 90,
+    "delta": 81,
+    "delta_percent": 900.0
+  },
+  "cases": [
+    {
+      "id": "csv-cleaning-tool-ui",
+      "prompt": "Build a browser-based CSV cleaning tool with upload, column profiling, filter chips, preview table, undo, and export.",
+      "expected_primary": "junwei-frontend-design",
+      "routed_primary": "junwei-frontend-design",
+      "expected_supporting": [
+        "frontend-qa"
+      ],
+      "routed_supporting": [
+        "frontend-qa"
+      ],
+      "forbidden_skills": [
+        "junwei-browser-automation",
+        "junwei-product-demo-video"
+      ],
+      "conflicts": [],
+      "stop_required": false,
+      "expected_stop": false,
+      "blocked_actions": [],
+      "missing_blocked_actions": [],
+      "missing_supporting": [],
+      "missing_terms": [],
+      "baseline_points": 1,
+      "post_points": 8,
+      "delta": 7,
+      "checkpoints": [
+        "mode routing",
+        "states",
+        "anti-template design",
+        "visual QA"
+      ],
+      "ok": true
+    },
+    {
+      "id": "support-risk-dashboard",
+      "prompt": "Create a dashboard for support managers to triage refund risk, SLA breaches, and overloaded agents.",
+      "expected_primary": "junwei-frontend-design",
+      "routed_primary": "junwei-frontend-design",
+      "expected_supporting": [
+        "frontend-qa"
+      ],
+      "routed_supporting": [
+        "frontend-qa"
+      ],
+      "forbidden_skills": [
+        "junwei-browser-automation",
+        "junwei-product-demo-video"
+      ],
+      "conflicts": [],
+      "stop_required": false,
+      "expected_stop": false,
+      "blocked_actions": [],
+      "missing_blocked_actions": [],
+      "missing_supporting": [],
+      "missing_terms": [],
+      "baseline_points": 1,
+      "post_points": 7,
+      "delta": 6,
+      "checkpoints": [
+        "dashboard mode",
+        "decision lists",
+        "empty/loading/error states"
+      ],
+      "ok": true
+    },
+    {
+      "id": "localhost-dashboard-smoke",
+      "prompt": "Verify the dashboard at localhost:3000 works on desktop and mobile.",
+      "expected_primary": "junwei-browser-automation",
+      "routed_primary": "junwei-browser-automation",
+      "expected_supporting": [
+        "frontend-qa"
+      ],
+      "routed_supporting": [
+        "frontend-qa"
+      ],
+      "forbidden_skills": [
+        "junwei-frontend-design",
+        "junwei-product-demo-video"
+      ],
+      "conflicts": [],
+      "stop_required": false,
+      "expected_stop": false,
+      "blocked_actions": [],
+      "missing_blocked_actions": [],
+      "missing_supporting": [],
+      "missing_terms": [],
+      "baseline_points": 1,
+      "post_points": 7,
+      "delta": 6,
+      "checkpoints": [
+        "in-app Browser first",
+        "desktop/mobile evidence",
+        "no Chrome downgrade"
+      ],
+      "ok": true
+    },
+    {
+      "id": "signup-validation-check",
+      "prompt": "Create a repeatable check that the signup flow shows validation errors.",
+      "expected_primary": "junwei-browser-automation",
+      "routed_primary": "junwei-browser-automation",
+      "expected_supporting": [],
+      "routed_supporting": [],
+      "forbidden_skills": [
+        "junwei-frontend-design",
+        "junwei-product-demo-video"
+      ],
+      "conflicts": [],
+      "stop_required": false,
+      "expected_stop": false,
+      "blocked_actions": [],
+      "missing_blocked_actions": [],
+      "missing_supporting": [],
+      "missing_terms": [],
+      "baseline_points": 0,
+      "post_points": 6,
+      "delta": 6,
+      "checkpoints": [
+        "repo-local browser test",
+        "test data",
+        "evidence path"
+      ],
+      "ok": true
+    },
+    {
+      "id": "playwright-mcp-pilot",
+      "prompt": "Should I add Playwright MCP to Codex for exploratory UI testing?",
+      "expected_primary": "junwei-browser-automation",
+      "routed_primary": "junwei-browser-automation",
+      "expected_supporting": [
+        "security-review"
+      ],
+      "routed_supporting": [
+        "security-review"
+      ],
+      "forbidden_skills": [
+        "junwei-frontend-design",
+        "junwei-product-demo-video"
+      ],
+      "conflicts": [],
+      "stop_required": false,
+      "expected_stop": false,
+      "blocked_actions": [],
+      "missing_blocked_actions": [],
+      "missing_supporting": [],
+      "missing_terms": [],
+      "baseline_points": 1,
+      "post_points": 8,
+      "delta": 7,
+      "checkpoints": [
+        "MCP pilot only",
+        "permission surface",
+        "rollback",
+        "security review"
+      ],
+      "ok": true
+    },
+    {
+      "id": "production-billing-browser-stop",
+      "prompt": "Use browser automation to change the billing plan in production.",
+      "expected_primary": "junwei-browser-automation",
+      "routed_primary": "junwei-browser-automation",
+      "expected_supporting": [
+        "security-review"
+      ],
+      "routed_supporting": [
+        "security-review"
+      ],
+      "forbidden_skills": [
+        "junwei-frontend-design",
+        "junwei-product-demo-video"
+      ],
+      "conflicts": [],
+      "stop_required": true,
+      "expected_stop": true,
+      "blocked_actions": [
+        "production mutation",
+        "billing/account change"
+      ],
+      "missing_blocked_actions": [],
+      "missing_supporting": [],
+      "missing_terms": [],
+      "baseline_points": 1,
+      "post_points": 7,
+      "delta": 6,
+      "checkpoints": [
+        "explicit confirmation",
+        "sandbox/test account preference"
+      ],
+      "ok": true
+    },
+    {
+      "id": "saas-demo-video",
+      "prompt": "Make a 30-second product demo video for our SaaS dashboard.",
+      "expected_primary": "junwei-product-demo-video",
+      "routed_primary": "junwei-product-demo-video",
+      "expected_supporting": [
+        "junwei-browser-automation"
+      ],
+      "routed_supporting": [
+        "junwei-browser-automation"
+      ],
+      "forbidden_skills": [
+        "junwei-frontend-design"
+      ],
+      "conflicts": [],
+      "stop_required": false,
+      "expected_stop": false,
+      "blocked_actions": [],
+      "missing_blocked_actions": [],
+      "missing_supporting": [],
+      "missing_terms": [],
+      "baseline_points": 0,
+      "post_points": 7,
+      "delta": 7,
+      "checkpoints": [
+        "audience/platform/duration",
+        "real UI proof",
+        "browser capture handoff",
+        "render QA"
+      ],
+      "ok": true
+    },
+    {
+      "id": "cloud-gpu-voice-clone-stop",
+      "prompt": "Use cloud GPU and voice cloning to make the product video.",
+      "expected_primary": "junwei-product-demo-video",
+      "routed_primary": "junwei-product-demo-video",
+      "expected_supporting": [
+        "security-review",
+        "dependency-upgrade-review"
+      ],
+      "routed_supporting": [
+        "security-review",
+        "dependency-upgrade-review"
+      ],
+      "forbidden_skills": [
+        "junwei-frontend-design",
+        "junwei-browser-automation"
+      ],
+      "conflicts": [],
+      "stop_required": true,
+      "expected_stop": true,
+      "blocked_actions": [
+        "cloud GPU",
+        "voice cloning",
+        "paid/external service"
+      ],
+      "missing_blocked_actions": [],
+      "missing_supporting": [],
+      "missing_terms": [],
+      "baseline_points": 2,
+      "post_points": 9,
+      "delta": 7,
+      "checkpoints": [
+        "cost/auth/data confirmation",
+        "security review",
+        "dependency review"
+      ],
+      "ok": true
+    },
+    {
+      "id": "rendered-video-ready",
+      "prompt": "The demo video rendered. Is it ready to send?",
+      "expected_primary": "junwei-product-demo-video",
+      "routed_primary": "junwei-product-demo-video",
+      "expected_supporting": [],
+      "routed_supporting": [],
+      "forbidden_skills": [
+        "junwei-frontend-design",
+        "junwei-browser-automation"
+      ],
+      "conflicts": [],
+      "stop_required": false,
+      "expected_stop": false,
+      "blocked_actions": [],
+      "missing_blocked_actions": [],
+      "missing_supporting": [],
+      "missing_terms": [],
+      "baseline_points": 0,
+      "post_points": 9,
+      "delta": 9,
+      "checkpoints": [
+        "playback",
+        "resolution",
+        "audio",
+        "captions",
+        "secret masking",
+        "CTA"
+      ],
+      "ok": true
+    },
+    {
+      "id": "backend-tax-no-overtrigger",
+      "prompt": "Fix the backend API route that calculates invoice tax.",
+      "expected_primary": null,
+      "routed_primary": null,
+      "expected_supporting": [],
+      "routed_supporting": [],
+      "forbidden_skills": [
+        "junwei-frontend-design",
+        "junwei-browser-automation",
+        "junwei-product-demo-video"
+      ],
+      "conflicts": [],
+      "stop_required": false,
+      "expected_stop": false,
+      "blocked_actions": [],
+      "missing_blocked_actions": [],
+      "missing_supporting": [],
+      "missing_terms": [],
+      "baseline_points": 0,
+      "post_points": 5,
+      "delta": 5,
+      "checkpoints": [
+        "no v3.2 over-trigger"
+      ],
+      "ok": true
+    },
+    {
+      "id": "combined-redesign-demo-recording",
+      "prompt": "Redesign our SaaS dashboard, then make a 30-second demo video and record the walkthrough.",
+      "expected_primary": "junwei-product-demo-video",
+      "routed_primary": "junwei-product-demo-video",
+      "expected_supporting": [
+        "junwei-frontend-design",
+        "junwei-browser-automation",
+        "frontend-qa"
+      ],
+      "routed_supporting": [
+        "junwei-browser-automation",
+        "junwei-frontend-design",
+        "frontend-qa"
+      ],
+      "forbidden_skills": [],
+      "conflicts": [],
+      "stop_required": false,
+      "expected_stop": false,
+      "blocked_actions": [],
+      "missing_blocked_actions": [],
+      "missing_supporting": [],
+      "missing_terms": [],
+      "baseline_points": 1,
+      "post_points": 8,
+      "delta": 7,
+      "checkpoints": [
+        "video remains primary",
+        "frontend design is scoped to redesign",
+        "browser automation is capture input only",
+        "frontend QA verifies UI changes"
+      ],
+      "ok": true
+    },
+    {
+      "id": "loaded-subagent-longterm-authorization",
+      "prompt": "Run an L-sized repo audit with loaded AGENTS long-term subagent authorization and two independent read-only explorer questions; do not ask again for current-turn permission.",
+      "expected_primary": "subagent-protocol",
+      "routed_primary": "subagent-protocol",
+      "expected_supporting": [
+        "superpowers:dispatching-parallel-agents"
+      ],
+      "routed_supporting": [
+        "superpowers:dispatching-parallel-agents"
+      ],
+      "forbidden_skills": [
+        "junwei-frontend-design",
+        "junwei-browser-automation",
+        "junwei-product-demo-video"
+      ],
+      "conflicts": [],
+      "stop_required": false,
+      "expected_stop": false,
+      "blocked_actions": [],
+      "missing_blocked_actions": [],
+      "missing_supporting": [],
+      "missing_terms": [],
+      "baseline_points": 1,
+      "post_points": 9,
+      "delta": 8,
+      "checkpoints": [
+        "loaded AGENTS counts as explicit ask",
+        "no repeat authorization",
+        "real tool availability gate",
+        "no tool permission constraint regression"
+      ],
+      "ok": true
+    }
+  ]
+}
