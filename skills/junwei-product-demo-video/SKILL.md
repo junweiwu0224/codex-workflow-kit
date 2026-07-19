@@ -1,15 +1,6 @@
 ---
 name: junwei-product-demo-video
 description: Use when planning, recording, composing, rendering, or reviewing product demo videos, SaaS walkthrough videos, launch films, sprint review demos, feature showcase clips, narrated browser demos, Remotion videos, product video scripts, demo storyboards, voiceover/audio planning, or video asset intake. Trigger for product demo, demo video, walkthrough recording, Remotion render, launch video, marketing reel, browser demo capture, or video QA.
-risk: medium
-source_repo: personal-workflow-kit
-source_type: curated-local
-date_added: 2026-06-22
-setup: optional-local-tools
-write_surface: project-artifacts
-auth: task-dependent
-network: local-by-default
-status: pilot
 ---
 
 # Junwei Product Demo Video

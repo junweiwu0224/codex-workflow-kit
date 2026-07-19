@@ -2,3 +2,5 @@ interface:
   display_name: "Junwei Product Demo Video"
   short_description: "Product demo video planning and rendering workflow"
   default_prompt: "Use $junwei-product-demo-video to plan, record, compose, and verify a product demo video workflow."
+policy:
+  allow_implicit_invocation: false

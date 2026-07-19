@@ -86,7 +86,7 @@
 
 ```bash
 # 拉 deepce（不依赖任何东西）
-wget https://github.com/stealthcopter/deepce/raw/main/deepce.sh
+# Use a reviewed deepce commit; do not download a moving branch.
 chmod +x deepce.sh
 ./deepce.sh
 # 输出：检测到 N 个逃逸路径

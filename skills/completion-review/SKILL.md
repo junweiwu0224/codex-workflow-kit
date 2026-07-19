@@ -1,15 +1,6 @@
 ---
 name: completion-review
 description: Use when implementation and verification are complete and Codex is preparing the final response for code, docs, config, automation, frontend, security, data, build, or cross-file work.
-risk: low
-source_repo: personal-workflow-kit
-source_type: curated-local
-date_added: 2026-06-07
-setup: none
-write_surface: none-by-skill
-auth: none
-network: none
-status: active
 ---
 
 # completion-review

@@ -46,21 +46,21 @@
       "docsUrl": "https://apktool.org/",
       "canAutoInstall": true,
       "verifyCommand": "apktool",
-      "kaliNote": "apt install apktool 即可，版本较旧时可从 GitHub 下载最新"
+      "kaliNote": "apt 版本受平台仓库影响；默认不安装，需显式接受平台包风险并按锁定 fallback 审阅"
     },
     {
       "name": "frida",
       "bootstrapKind": "pip-package",
-      "pipPackage": "frida-tools",
+      "pipPackage": "frida-tools==14.10.4",
       "docsUrl": "https://frida.re/",
       "canAutoInstall": true,
       "verifyCommand": "frida",
-      "kaliNote": "pip3 install frida-tools 或 apt install python3-frida-tools"
+      "kaliNote": "pip3 install frida-tools==14.10.4；apt 版本仅在显式允许未锁定平台包时使用"
     },
     {
       "name": "frida-ps",
       "bootstrapKind": "pip-package",
-      "pipPackage": "frida-tools",
+      "pipPackage": "frida-tools==14.10.4",
       "docsUrl": "https://frida.re/",
       "canAutoInstall": true,
       "verifyCommand": "frida-ps"
@@ -69,7 +69,7 @@
       "name": "idalib-mcp",
       "bootstrapKind": "pip-package",
       "pipPackage": "ida-pro-mcp",
-      "pipSource": "git+https://github.com/mrexodia/ida-pro-mcp.git",
+      "pipSource": "git+https://github.com/mrexodia/ida-pro-mcp.git@abb2732ad0d759d750c2e38b616f7f3e949ed2f9",
       "docsUrl": "https://github.com/mrexodia/ida-pro-mcp",
       "canAutoInstall": true,
       "verifyCommand": "ida-pro-mcp",
@@ -83,10 +83,10 @@
     {
       "name": "jshookmcp",
       "bootstrapKind": "npm-mcp",
-      "npmPackage": "@jshookmcp/jshook@latest",
+      "npmPackage": "@jshookmcp/jshook@0.3.3",
       "mcpNames": ["jshook"],
       "mcpCommand": "npx",
-      "mcpArgs": ["-y", "@jshookmcp/jshook@latest"],
+      "mcpArgs": ["-y", "@jshookmcp/jshook@0.3.3"],
       "mcpEnv": {
         "JSHOOK_BASE_PROFILE": "search"
       },
@@ -98,6 +98,7 @@
       "name": "anything-analyzer",
       "bootstrapKind": "local-http-mcp",
       "repoUrl": "https://github.com/Mouseww/anything-analyzer",
+      "commit": "25319f4b02d6bcebbc608ef9803ff620a5841a30",
       "installDir": "$HOME/tools/anything-analyzer",
       "startupDirCandidates": [
         "$HOME/tools/anything-analyzer"
@@ -159,8 +160,8 @@
     {
       "name": "agent-browser",
       "bootstrapKind": "npm-global",
-      "npmPackage": "agent-browser",
-      "postInstall": "npx playwright install chromium",
+      "npmPackage": "agent-browser@0.31.1",
+      "postInstall": "npx playwright@1.61.1 install chromium",
       "docsUrl": "https://github.com/nicepkg/agent-browser",
       "canAutoInstall": true,
       "verifyCommand": "agent-browser"
@@ -283,7 +284,7 @@
     {
       "name": "nuclei",
       "bootstrapKind": "go-install",
-      "goPackage": "github.com/projectdiscovery/nuclei/v3/cmd/nuclei@latest",
+      "goPackage": "github.com/projectdiscovery/nuclei/v3/cmd/nuclei@v3.11.0",
       "fallbackKind": "github-release-tar",
       "repo": "projectdiscovery/nuclei",
       "assetRegex": "^nuclei_.*_linux_amd64\\.zip$",
@@ -405,17 +406,16 @@
     {
       "name": "pentestswarm",
       "bootstrapKind": "go-install",
-      "goPackage": "github.com/Armur-Ai/Pentest-Swarm-AI/cmd/pentestswarm@latest",
-      "fallbackKind": "docker-image",
-      "dockerImage": "ghcr.io/armur-ai/pentestswarm:latest",
+      "goPackage": "github.com/Armur-Ai/Pentest-Swarm-AI/cmd/pentestswarm@v0.1.0",
       "mcpNames": ["pentestswarm"],
       "mcpCommand": "pentestswarm",
       "mcpArgs": ["mcp", "serve"],
       "docsUrl": "https://github.com/Armur-Ai/Pentest-Swarm-AI",
-      "canAutoInstall": true,
+      "canAutoInstall": false,
       "verifyCommand": "pentestswarm",
       "dependencies": ["go", "postgres", "redis"],
-      "kaliNote": "群体智能渗透框架。go install 或 Docker 运行。支持 MCP server 模式（pentestswarm mcp serve）。需要 Claude/Ollama API key。"
+      "manualInstallHint": "容器 digest 尚未验证；只允许按 reverse lock 中的 v0.1.0/commit 手动安装，禁止 latest fallback。",
+      "kaliNote": "群体智能渗透框架。支持 MCP server 模式（pentestswarm mcp serve）。需要 Claude/Ollama API key。"
     },
     {
       "name": "coercer",

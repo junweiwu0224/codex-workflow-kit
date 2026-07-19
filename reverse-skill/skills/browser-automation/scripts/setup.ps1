@@ -53,7 +53,7 @@ Write-Step "Checking agent-browser..."
 $agentBrowser = Get-Command agent-browser -ErrorAction SilentlyContinue
 if (-not $agentBrowser) {
     Write-Step "Installing agent-browser globally..."
-    & npm install -g agent-browser
+    & npm install -g agent-browser@0.31.1
     if ($LASTEXITCODE -ne 0) {
         Write-Warning "agent-browser global install failed. Trying npx fallback..."
     }
@@ -68,9 +68,9 @@ else {
 # Step 4: Install Playwright and browsers
 if (-not $SkipBrowserInstall) {
     Write-Step "Installing Playwright browsers (chromium)..."
-    & npx playwright install chromium
+    & npx playwright@1.61.1 install chromium
     if ($LASTEXITCODE -ne 0) {
-        Write-Warning "Playwright browser install failed. You may need to run: npx playwright install chromium"
+        Write-Warning "Playwright browser install failed. You may need to run: npx playwright@1.61.1 install chromium"
     }
     else {
         Write-Step "Playwright chromium installed."
@@ -110,11 +110,11 @@ else {
     # Fallback: can still use via npx
     $npxCheck = Get-Command npx -ErrorAction SilentlyContinue
     if ($npxCheck) {
-        "agent-browser=npx agent-browser"
+        "agent-browser=npx agent-browser@0.31.1"
         "status=ready-via-npx"
     }
     else {
         "status=failed"
-        throw "agent-browser installation failed. Install manually: npm install -g agent-browser"
+        throw "agent-browser installation failed. Install manually: npm install -g agent-browser@0.31.1"
     }
 }

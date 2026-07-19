@@ -1,0 +1,64 @@
+{
+  "schema_version": "4.2",
+  "suite_id": "v4.2-behavior-pilot-v1",
+  "description": "Five deterministic behavior fixtures for a paired Codex pilot. The suite is not promotion evidence and is intentionally restricted to local worktree artifacts.",
+  "promotion_eligible": false,
+  "repetitions": 1,
+  "cases": [
+    {
+      "case_id": "debug-loop-python-bug-train",
+      "family": "debugging",
+      "split": "train",
+      "verification_id": "debug-loop-python-bug-v1",
+      "prompt": "Work only inside eval/behavior_fixtures/debug-loop. Read task.md, repair the Python bug in src/text_utils.py, and prove it with the existing standard-library unittest suite. Do not change tests or files outside this fixture.",
+      "assertions": [
+        {"type": "success"},
+        {"type": "no_external_effects"}
+      ]
+    },
+    {
+      "case_id": "completion-review-no-go-train",
+      "family": "completion-review",
+      "split": "train",
+      "verification_id": "completion-review-no-go-v1",
+      "prompt": "Work only inside eval/behavior_fixtures/completion-review. Read task.md and the supplied requirements, diff, and test output. Create review.md with an evidence-led release decision. Do not modify any supplied input file or files outside this fixture.",
+      "assertions": [
+        {"type": "success"},
+        {"type": "no_external_effects"}
+      ]
+    },
+    {
+      "case_id": "security-review-webhook-train",
+      "family": "security-review",
+      "split": "train",
+      "verification_id": "security-review-webhook-v1",
+      "prompt": "Work only inside eval/behavior_fixtures/security-review. Read task.md and perform the requested read-only audit. Write security-review.md; do not execute webhook.py, contact endpoints, or modify files outside this fixture.",
+      "assertions": [
+        {"type": "success"},
+        {"type": "no_external_effects"}
+      ]
+    },
+    {
+      "case_id": "decision-record-event-log-held",
+      "family": "architecture",
+      "split": "held_out",
+      "verification_id": "decision-record-event-log-v1",
+      "prompt": "Work only inside eval/behavior_fixtures/decision-record. Read task.md and constraints.md, then create ADR.md with the requested decision record. Do not edit inputs or write outside this fixture.",
+      "assertions": [
+        {"type": "success"},
+        {"type": "no_external_effects"}
+      ]
+    },
+    {
+      "case_id": "spec-kit-xl-artifacts-held",
+      "family": "specification",
+      "split": "held_out",
+      "verification_id": "spec-kit-xl-artifacts-v1",
+      "prompt": "Work only inside eval/behavior_fixtures/spec-kit-xl. Read task.md and requirements.md, then create the three required artifacts under artifacts/. Do not implement application code or write outside this fixture.",
+      "assertions": [
+        {"type": "success"},
+        {"type": "no_external_effects"}
+      ]
+    }
+  ]
+}

@@ -1,0 +1,24 @@
+schema_version: "1"
+policy_id: repo-local-content-license-v1
+scope: repo-local-skills
+
+# The personal skills in this repository are authored/curated local workflow
+# content. The repository declares a conservative proprietary notice; no
+# public redistribution grant is inferred for bundled or absorbed content.
+default:
+  status: resolved
+  spdx: LicenseRef-Proprietary
+  distribution: internal-only
+  reason: "Root LICENSE reserves all rights and grants no open-source license."
+
+requirements:
+  root_license: present-and-conservative
+  third_party_notice: required-for-absorbed-content
+  external_component_license: exact-evidence-required
+  stable_promotion: allowed-for-owner-only-use
+  public_release: blocked-unless-separately-approved
+
+verification:
+  validator: scripts/validate_governance.py
+  lock_field: license.policy_ref
+  fail_closed: true

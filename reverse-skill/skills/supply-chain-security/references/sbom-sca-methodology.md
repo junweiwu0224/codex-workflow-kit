@@ -15,7 +15,7 @@
 cdxgen -o bom.json -t cyclonedx
 
 # Syft: 从容器/文件系统生成
-syft nginx:latest -o spdx-json > sbom.spdx.json
+syft nginx:<LOCKED_TAG_OR_DIGEST> -o spdx-json > sbom.spdx.json
 
 # SBOM-Tool: 微软工具链
 sbom-tool generate -b ./build -bc ./src -pn MyApp -pv 1.0

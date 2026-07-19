@@ -1,15 +1,6 @@
 ---
 name: dependency-upgrade-review
 description: Use when adding, removing, updating, pinning, auditing, or reviewing dependencies, lockfiles, package managers, Docker base images, GitHub Actions, vendored code, CVEs, advisories, licenses, or supply-chain risk.
-risk: medium
-source_repo: personal-workflow-kit
-source_type: curated-local
-date_added: 2026-06-07
-setup: none
-write_surface: task-dependent
-auth: task-dependent
-network: task-dependent
-status: active
 ---
 
 # dependency-upgrade-review

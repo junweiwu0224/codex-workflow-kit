@@ -1,15 +1,6 @@
 ---
 name: skill-plugin-intake-review
 description: Use when deciding whether an external skill, plugin, MCP server, hook, subagent prompt, workflow pack, or component should be promoted, piloted, kept repo-local, held, or rejected before absorption into Codex workflow kit or repo rules.
-risk: medium
-source_repo: personal-workflow-kit
-source_type: curated-local
-date_added: 2026-06-11
-setup: none
-write_surface: none-by-skill
-auth: none-by-skill
-network: none-by-default
-status: active
 ---
 
 # skill-plugin-intake-review
@@ -123,4 +114,3 @@ Skill/plugin intake review:
 - Do not print secrets; rely on redacted findings.
 - Do not reintroduce `implementation-plan`, planner, dispatcher, queue, or orchestrator behavior.
 - Do not make a global skill when docs, a repo-local rule, a read-only script, or a pilot checklist is enough.
-

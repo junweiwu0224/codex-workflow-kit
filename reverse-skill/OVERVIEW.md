@@ -53,7 +53,7 @@ Report + field journal
 | Skill Router | Routes tasks by target type, user intent, and toolchain requirements. |
 | Tool Orchestration | Connects jadx, apktool, Frida, radare2, IDA, BurpSuite, browsers, and scripts. |
 | MCP Integration | Exposes BurpSuite, IDA, browser analysis, and other execution surfaces to Agents. |
-| Bootstrap Scripts | Detects local tool status and guides automatic or manual setup. |
+| Bootstrap Scripts | Detects local tool status; use locked installation only after Task Contract approval, or provide a manual setup path. |
 | Field Journal | Stores reusable lessons, commands, pitfalls, and patterns after tasks. |
 | Report Generation | Produces analysis reports, diagrams, attack paths, and CTF writeups. |
 

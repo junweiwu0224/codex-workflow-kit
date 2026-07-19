@@ -1,0 +1,6 @@
+interface:
+  display_name: "Skill Plugin Intake Review"
+  short_description: "Audit external skills and plugins before adoption"
+  default_prompt: "Use $skill-plugin-intake-review to audit this external skill or plugin before adoption."
+policy:
+  allow_implicit_invocation: false

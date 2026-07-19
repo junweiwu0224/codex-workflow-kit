@@ -1,15 +1,6 @@
 ---
 name: research-brief
 description: Use when evaluating current external options such as GitHub repositories, skills, MCP servers, hooks, subagents, APIs, models, tools, libraries, standards, pricing, release status, or ecosystem recommendations.
-risk: medium
-source_repo: personal-workflow-kit
-source_type: curated-local
-date_added: 2026-06-07
-setup: none
-write_surface: none-by-skill
-auth: task-dependent
-network: task-dependent
-status: active
 ---
 
 # research-brief

@@ -1,0 +1,10 @@
+completion-review
+debug-loop
+decision-record
+dependency-upgrade-review
+frontend-qa
+junwei-frontend-design
+repo-onboarding
+research-brief
+security-review
+skill-plugin-intake-review

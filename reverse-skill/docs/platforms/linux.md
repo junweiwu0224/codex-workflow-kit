@@ -41,7 +41,7 @@ python3 -m pipx ensurepath
 | Ghidra | GitHub release ZIP | Flatpak / distro package | Java required. |
 | IDA Pro | manual Linux installer | — | Commercial tool; set `IDADIR` or document local path. |
 | BurpSuite | manual installer / jar | distro package if available | Load `burp-mcp-full` extension manually. |
-| jshookmcp | `npx -y @jshookmcp/jshook@latest` | MCP config command | Requires Node/npm/npx. |
+| jshookmcp | `npx -y @jshookmcp/jshook@0.3.3` | MCP config command | Requires Node/npm/npx; use only after explicit config approval. |
 | anything-analyzer | project clone + `pnpm install` | custom local service | Register its MCP endpoint in the Agent client. |
 | nuclei | GitHub release / `go install` | distro package if available | Often absent in Ubuntu apt. |
 | SecLists | `git clone https://github.com/danielmiessler/SecLists ~/tools/SecLists` | distro package if available | Keep path in tool index. |
@@ -63,17 +63,17 @@ python3 -m pipx ensurepath
 
 ## Installing common tools
 
-### jadx from GitHub release
+### jadx from the locked manifest
 
 ```bash
-mkdir -p ~/tools/jadx
-curl -L https://github.com/skylot/jadx/releases/latest/download/jadx-1.5.5.zip -o /tmp/jadx.zip
-unzip -q /tmp/jadx.zip -d ~/tools/jadx
-export PATH="$HOME/tools/jadx/bin:$PATH"
+# From the reverse-skill root, after the Task Contract approves installation:
+bash skills/scripts/bootstrap-reverse.sh jadx
+bash skills/scripts/refresh-tool-index.sh
 jadx --version
 ```
 
-If the release filename changes, download the latest Linux/ZIP asset from <https://github.com/skylot/jadx/releases>.
+If the locked asset is unavailable, update and review the lock instead of
+resolving a moving release URL.
 
 ### Frida via pipx
 
@@ -150,7 +150,7 @@ MCP stdio bridge example:
   "mcpServers": {
     "jshook": {
       "command": "npx",
-      "args": ["-y", "@jshookmcp/jshook@latest"],
+      "args": ["-y", "@jshookmcp/jshook@0.3.3"],
       "env": {
         "JSHOOK_BASE_PROFILE": "search"
       }

@@ -1,15 +1,6 @@
 ---
 name: release-readiness
 description: Use when preparing, packaging, verifying, or handing off a reusable artifact, portable toolkit, local release archive, installable package, checksum bundle, migration bundle, or release evidence before delivery.
-risk: medium
-source_repo: personal-workflow-kit
-source_type: curated-local
-date_added: 2026-06-12
-setup: none
-write_surface: artifacts-and-docs
-auth: none
-network: none-by-default
-status: pilot
 ---
 
 # release-readiness

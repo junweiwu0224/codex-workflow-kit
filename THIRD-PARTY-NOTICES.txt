@@ -1,0 +1,40 @@
+Codex Workflow Kit third-party and licensing notice
+====================================================
+
+The repository grants no open-source license. Distribution rights are not granted by this notice.
+Repo-local and external components remain subject to their recorded licenses and original authors' rights.
+
+Locked workflow components:
+- completion-review: LicenseRef-Proprietary (resolved); repo-local skills/completion-review/SKILL.md; sha256=5d14c23283fc7636d16b0811bd2f680054ac9c2b0a31f9a02101530ca7ed03a1
+- debug-loop: LicenseRef-Proprietary (resolved); repo-local skills/debug-loop/SKILL.md; sha256=20192be065c1136bf1d2a34f8c985b207537f655f7fc2f05c24d883433d9690c
+- decision-record: LicenseRef-Proprietary (resolved); repo-local skills/decision-record/SKILL.md; sha256=20dea5b791ee522821b45a5cf42e8238a42bc0f55a7edbac952ddb6f3e04b8fd
+- dependency-upgrade-review: LicenseRef-Proprietary (resolved); repo-local skills/dependency-upgrade-review/SKILL.md; sha256=e9f65828f1d336ddf6023c75a281b6db376104ab1fda049385bae5156e6b84bd
+- frontend-qa: LicenseRef-Proprietary (resolved); repo-local skills/frontend-qa/SKILL.md; sha256=00e025d16d681c13f2b9733d79c3803d83cb00e4a03c50ed33c56ccedbed8423
+- junwei-browser-automation: LicenseRef-Proprietary (resolved); repo-local skills/junwei-browser-automation/SKILL.md; sha256=48d8b19f6b11ce89077e6dd70f0a351bc0a2fd61860511b605efe5b667faa4c0
+- junwei-frontend-design: LicenseRef-Proprietary (resolved); repo-local skills/junwei-frontend-design/SKILL.md; sha256=72ef0ef4c0e7273ce3569603480c0ac88ccd94c051f4b44d56c8b42d613b227e
+- junwei-product-demo-video: LicenseRef-Proprietary (resolved); repo-local skills/junwei-product-demo-video/SKILL.md; sha256=a2273fd35aa3aa50260e6d5ff5673a2cc41e1ddc3885c139ed8d8af24ba3b357
+- release-readiness: LicenseRef-Proprietary (resolved); repo-local skills/release-readiness/SKILL.md; sha256=8854f82a104157202c62f8b2b30f5604a8d7e34783c58dbf2bf997529a713ad0
+- repo-onboarding: LicenseRef-Proprietary (resolved); repo-local skills/repo-onboarding/SKILL.md; sha256=dc10d7d24b8ee357905b2f2c438d337c20fcf4711a14e3ef9416275ffa0c9396
+- research-brief: LicenseRef-Proprietary (resolved); repo-local skills/research-brief/SKILL.md; sha256=cbb34755b2dc3282eb4049f6271522f33f59a95c95b05c2b81576b0e476c52ec
+- security-review: LicenseRef-Proprietary (resolved); repo-local skills/security-review/SKILL.md; sha256=b324528ed7d89a2f21b4f76c67c5ae054f624996a0c660095201717f8cf6d19c
+- skill-plugin-intake-review: LicenseRef-Proprietary (resolved); repo-local skills/skill-plugin-intake-review/SKILL.md; sha256=402557e33f15511229347047633233b5abdeae1ec1098cc99a05fcf7be6bef2c
+- spec-kit-xl: LicenseRef-Proprietary (resolved); repo-local skills/spec-kit-xl/SKILL.md; sha256=cba41dba4b0427d4c03b4ab7b122c3f234188ce23f267b2ab0944212417668d8
+
+Reverse optional dependencies (locked identity; per-field enforcement is explicit):
+- jshookmcp-npm (@jshookmcp/jshook): resolved 0.3.3; integrity=sha512-z1XpuxthRqp2V8VxKQ8QI1FGKknnTVC4KGvfph8CyUmcDkuIgfMvVsP2B+e+i4Utfc+Y3qVmJzK3+qzaV9SrkQ==; enforcement=integrity:metadata-only,package:metadata-only,version:metadata-only; license=NOASSERTION
+- agent-browser-npm (agent-browser): resolved 0.31.1; integrity=sha512-RjgfT0EsHe1oZQbwzUqJTPb7w3sU8DGbbAjMxLNI5dW1y0cc81TbVsqgjqQJmsy3GEbEcKe/ryARwmWGqJAXXQ==; enforcement=integrity:metadata-only,package:metadata-only,version:metadata-only; license=NOASSERTION
+- pnpm-npm (pnpm): resolved 11.12.0; integrity=sha512-ggpvvQ2fBMImY4ACrq0eRTQKkTndXcB3wdg+9EqiSByOtmN7TJqmlqPH41uoGOSc8nIT5fK5ETjQm3o+JuiYug==; enforcement=integrity:metadata-only,package:metadata-only,version:metadata-only; license=NOASSERTION
+- playwright-npm (playwright): resolved 1.61.1; integrity=sha512-DWnY5o3YbLWK4GovuAVwpqL+1VwGNdUGrRr++8j8PtQQzvAVZUIMjKQ90fY689sEJZJBbZVw1rXaOKSTitkzPQ==; enforcement=integrity:metadata-only,package:metadata-only,version:metadata-only; license=NOASSERTION
+- frida-tools-pypi (frida-tools): resolved 14.10.4; integrity=7a2c544b545d095040fffbd3768a287a426343dad89095b4a24f4b20382d926a; enforcement=package:metadata-only,sha256:metadata-only,version:metadata-only; license=NOASSERTION
+- sqlmap-pypi (sqlmap): resolved 1.10.7; integrity=b8e93fd157034cf23a26ebfc40419ed7594c909dcf7960f68df0aa58a1b2cdcc; enforcement=package:metadata-only,sha256:metadata-only,version:metadata-only; license=NOASSERTION
+- ida-pro-mcp-git (https://github.com/mrexodia/ida-pro-mcp.git): resolved abb2732ad0d759d750c2e38b616f7f3e949ed2f9; integrity=abb2732ad0d759d750c2e38b616f7f3e949ed2f9; enforcement=commit:metadata-only,repository:metadata-only; license=NOASSERTION
+- proxycat-git (https://github.com/honmashironeko/ProxyCat.git): resolved 1689d9fe3274f7c7682527794fac36f80b1dd033; integrity=1689d9fe3274f7c7682527794fac36f80b1dd033; enforcement=commit:metadata-only,repository:metadata-only; license=NOASSERTION
+- anything-analyzer-git (https://github.com/Mouseww/anything-analyzer.git): resolved 25319f4b02d6bcebbc608ef9803ff620a5841a30; integrity=25319f4b02d6bcebbc608ef9803ff620a5841a30; enforcement=commit:enforced,repository:enforced; license=NOASSERTION
+- seclists-git (https://github.com/danielmiessler/SecLists.git): resolved 999e119c5a126c66fa351b96f896a4611174b43f; integrity=999e119c5a126c66fa351b96f896a4611174b43f; enforcement=commit:metadata-only,repository:metadata-only; license=NOASSERTION
+- jadx-release (skylot/jadx): resolved v1.5.6; integrity=545ea2be9c242511bc145755cf4bda2485ade42966e096f8b4d3da2a230e8974; enforcement=asset:metadata-only,commit:metadata-only,repository:metadata-only,sha256:metadata-only,tag:metadata-only,url:metadata-only; license=NOASSERTION
+- apktool-release (iBotPeaches/Apktool): resolved v3.0.2; integrity=eee4669a704a14e0623407e6701b0b91887e61e1e4049cb7a82833e14ae8b5fd; enforcement=asset:metadata-only,commit:metadata-only,repository:metadata-only,sha256:metadata-only,tag:metadata-only,url:metadata-only; license=NOASSERTION
+- ghidra-release (NationalSecurityAgency/ghidra): resolved Ghidra_12.1.2_build; integrity=b62e81a0390618466c019c60d8c2f796ced2509c4c1aea4a37644a77272cf99d; enforcement=asset:metadata-only,commit:metadata-only,pyghidra_version:metadata-only,pyghidra_wheel:metadata-only,repository:metadata-only,sha256:metadata-only,tag:metadata-only,url:metadata-only; license=NOASSERTION
+- nuclei-go (github.com/projectdiscovery/nuclei/v3/cmd/nuclei): resolved v3.11.0; integrity=57db38350267f0854bd58c633c29d168478a702f; enforcement=commit:metadata-only,module:metadata-only,repository:metadata-only,version:metadata-only; license=NOASSERTION
+- nuclei-release (projectdiscovery/nuclei): resolved v3.11.0; integrity=dc238d6040813e14fc30514dac5a2eb1b430c694f3ca99eee2a5097e55076283; enforcement=asset:metadata-only,commit:metadata-only,repository:metadata-only,sha256:metadata-only,tag:metadata-only,url:metadata-only; license=NOASSERTION
+- pentestswarm-go (github.com/Armur-Ai/Pentest-Swarm-AI/cmd/pentestswarm): resolved v0.1.0; integrity=d9df06b40916d18d6037fbaa62f493872e3e471a; enforcement=commit:metadata-only,module:metadata-only,repository:metadata-only,version:metadata-only; license=NOASSERTION
+- pentestswarm-container (ghcr.io/armur-ai/pentestswarm): blocked ghcr.io/armur-ai/pentestswarm; integrity=unresolved; enforcement=image:blocked; license=NOASSERTION

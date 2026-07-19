@@ -2,7 +2,7 @@ from pathlib import Path
 import shutil
 import subprocess
 
-from scripts.build_release import build_manifest, verify_archive
+from scripts.build_release import build_archive, build_manifest, verify_archive, write_manifest
 from scripts.verify_toolkit import EXPECTED_SKILLS, ToolkitIssue, build_report, check_toolkit, main
 
 
@@ -402,6 +402,19 @@ def test_check_toolkit_requires_skill_frontmatter_and_boundaries(tmp_path):
     assert any(issue.code == "skill-missing-boundary-guidance" for issue in issues)
 
 
+def test_check_toolkit_rejects_new_floating_dependency(tmp_path):
+    shadow = _clean_package_copy(tmp_path)
+    install_script = shadow / "install.sh"
+    install_script.write_text(
+        install_script.read_text(encoding="utf-8") + "\nnpx playwright install chromium\n",
+        encoding="utf-8",
+    )
+
+    issues = check_toolkit(shadow)
+
+    assert any(issue.code == "floating-dependency-drift" for issue in issues)
+
+
 def test_check_toolkit_flags_removed_implementation_plan(tmp_path):
     shadow = _clean_package_copy(tmp_path)
 
@@ -776,6 +789,15 @@ def test_check_toolkit_flags_incomplete_quickstart(tmp_path):
     assert any(issue.code == "quickstart-missing-term" for issue in issues)
 
 
+def test_check_toolkit_flags_stale_third_party_notices(tmp_path):
+    shadow = _clean_package_copy(tmp_path)
+    _write(shadow / "THIRD-PARTY-NOTICES.txt", "stale\n")
+
+    issues = check_toolkit(shadow)
+
+    assert any(issue.code == "third-party-notices-out-of-date" for issue in issues)
+
+
 def test_check_toolkit_flags_incomplete_v2_adoption_plan(tmp_path):
     shadow = _clean_package_copy(tmp_path)
     _write(shadow / "docs/superpowers/plans/2026-06-07-workflow-kit-v2-adoption.md", "# Plan\n")
@@ -806,23 +828,20 @@ def test_check_toolkit_flags_incomplete_v2_adoption_evidence(tmp_path):
     assert any(issue.code == "v2-evidence-missing-term" for issue in issues)
 
 
-def test_check_toolkit_requires_v3_1_evidence_for_current_version(tmp_path):
+def test_check_toolkit_requires_v4_2_evidence_for_current_version(tmp_path):
     shadow = _clean_package_copy(tmp_path)
     (shadow / "VERSION").write_text("2099.01.02\n", encoding="utf-8")
-    evidence = shadow / "docs/V3.1-ADOPTION-EVIDENCE.md"
-    evidence.write_text(
-        evidence.read_text(encoding="utf-8").replace(
-            "codex-workflow-kit-2026.06.12.tar.gz: OK",
-            "codex-workflow-kit-2026.06.11.tar.gz: OK",
-        ),
-        encoding="utf-8",
-    )
 
     issues = check_toolkit(shadow)
 
     assert any(
-        issue.code == "v3-1-evidence-release-mismatch"
-        and "codex-workflow-kit-2099.01.02.tar.gz: OK" in issue.message
+        issue.code == "v4-2-evidence-version-mismatch"
+        and "Version: `2099.01.02`" in issue.message
+        for issue in issues
+    )
+    assert any(
+        issue.code == "v4-2-evidence-archive-mismatch"
+        and "codex-workflow-kit-2099.01.02.tar.gz" in issue.message
         for issue in issues
     )
 
@@ -1071,7 +1090,7 @@ def test_install_repo_only_skips_global_files(tmp_path):
     assert str(agents_home / "skills") not in result.stdout
 
 
-def test_install_dry_run_lists_all_expected_skills(tmp_path):
+def test_install_dry_run_lists_stable_skills_only(tmp_path):
     root = _clean_package_copy(tmp_path)
     codex_home = tmp_path / "codex-home"
     agents_home = tmp_path / "agents-home"
@@ -1092,12 +1111,46 @@ def test_install_dry_run_lists_all_expected_skills(tmp_path):
     )
 
     assert result.returncode == 0
+    stable_skills = (root / "catalog/profiles/stable.txt").read_text(encoding="utf-8").splitlines()
+    pilot_skills = (root / "catalog/profiles/pilot.txt").read_text(encoding="utf-8").splitlines()
+    for skill_name in stable_skills:
+        assert f"{agents_home}/skills/{skill_name}/SKILL.md" in result.stdout
+    for skill_name in pilot_skills:
+        assert f"{agents_home}/skills/{skill_name}/SKILL.md" not in result.stdout
+
+
+def test_install_with_pilots_lists_all_expected_skills(tmp_path):
+    root = _clean_package_copy(tmp_path)
+    codex_home = tmp_path / "codex-home"
+    agents_home = tmp_path / "agents-home"
+
+    result = subprocess.run(
+        [
+            str(root / "install.sh"),
+            "--codex-home",
+            str(codex_home),
+            "--agents-home",
+            str(agents_home),
+            "--with-pilots",
+            "--dry-run",
+        ],
+        cwd=root,
+        text=True,
+        capture_output=True,
+        check=False,
+    )
+
+    assert result.returncode == 0
     for skill_name in EXPECTED_SKILLS:
         assert f"{agents_home}/skills/{skill_name}/SKILL.md" in result.stdout
 
 
 def test_release_archive_checksum_matches_manifest(tmp_path):
     root = _clean_package_copy(tmp_path)
-    archive = root / "releases" / f"codex-workflow-kit-{(root / 'VERSION').read_text(encoding='utf-8').strip()}.tar.gz"
+    package_root = tmp_path / "codex-workflow-kit"
+    root.rename(package_root)
+    root = package_root
+    write_manifest(root)
+    archive = build_archive(root, tmp_path / "release")
 
     verify_archive(archive)

@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# bootstrap-reverse.sh — Kali Linux 版自动安装/补齐工具
+# bootstrap-reverse.sh — Kali Linux 版经批准工具安装/补齐
 # 等价于 Windows 版的 bootstrap-reverse.ps1
 #
 # 用法:
@@ -13,7 +13,149 @@
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-source "$SCRIPT_DIR/lib/tool-discovery.sh"
+if [[ "${BOOTSTRAP_REVERSE_LIB_ONLY:-0}" != "1" ]]; then
+    source "$SCRIPT_DIR/lib/tool-discovery.sh"
+fi
+REPO_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
+WORKFLOW_ROOT="$(cd "$REPO_ROOT/.." && pwd)"
+LOCK_FILE="${REVERSE_DEPENDENCY_LOCK:-$WORKFLOW_ROOT/catalog/reverse-dependencies.lock.yaml}"
+
+lock_value() {
+    local dependency_id="$1"
+    local field="$2"
+    [[ -f "$LOCK_FILE" ]] || return 1
+    awk -v wanted="$dependency_id" -v wanted_field="$field" '
+        $1 == "-" && $2 == "id:" {
+            current=$3
+            gsub(/^"|"$/, "", current)
+            next
+        }
+        current == wanted && $1 == wanted_field ":" {
+            sub(/^[^:]+:[[:space:]]*/, "")
+            gsub(/^"|"$/, "")
+            print
+            exit
+        }
+    ' "$LOCK_FILE"
+}
+
+require_locked_dependency() {
+    local dependency_id="$1"
+    local status
+    status="$(lock_value "$dependency_id" status || true)"
+    if [[ "$status" != "resolved" ]]; then
+        log_warn "MANUAL_INSTALL_REQUIRED: $dependency_id is not resolved in $LOCK_FILE"
+        return 1
+    fi
+}
+
+verify_sha256() {
+    local expected="$1"
+    local file="$2"
+    if command -v sha256sum >/dev/null 2>&1; then
+        printf '%s  %s\n' "$expected" "$file" | sha256sum -c - >/dev/null
+    else
+        printf '%s  %s\n' "$expected" "$file" | shasum -a 256 -c - >/dev/null
+    fi
+}
+
+fetch_locked_repo() {
+  local dependency_id="$1"
+  local destination="$2"
+  require_locked_dependency "$dependency_id" || return 1
+  local repository commit origin_url checkout_status actual_commit
+  repository="$(lock_value "$dependency_id" repository)"
+  commit="$(lock_value "$dependency_id" commit)"
+  [[ "$repository" =~ ^https://.+\.git$ ]] && [[ "$commit" =~ ^[0-9a-f]{40}$ ]] || {
+    log_warn "MANUAL_INSTALL_REQUIRED: $dependency_id requires an HTTPS repository and full commit in $LOCK_FILE"
+    return 1
+  }
+  if [[ -d "$destination/.git" ]]; then
+    origin_url="$(git -C "$destination" remote get-url origin 2>/dev/null || true)"
+    if [[ "$origin_url" != "$repository" ]]; then
+      log_err "Refusing $dependency_id checkout with unexpected origin: ${origin_url:-missing}"
+      return 1
+    fi
+    if ! checkout_status="$(git -C "$destination" status --porcelain --untracked-files=all)"; then
+      log_err "Refusing $dependency_id checkout whose worktree state cannot be verified: $destination"
+      return 1
+    fi
+    if [[ -n "$checkout_status" ]]; then
+      log_err "Refusing dirty $dependency_id checkout: $destination"
+      return 1
+    fi
+    git -C "$destination" fetch --depth=1 origin "$commit"
+  elif [[ -e "$destination" ]]; then
+    log_err "Refusing non-Git checkout path for $dependency_id: $destination"
+    return 1
+  else
+    mkdir -p "$destination"
+    git -C "$destination" init -q
+    git -C "$destination" remote add origin "$repository"
+    git -C "$destination" fetch --depth=1 origin "$commit"
+  fi
+  git -C "$destination" cat-file -e "${commit}^{commit}"
+  git -C "$destination" checkout --detach -q "$commit"
+  actual_commit="$(git -C "$destination" rev-parse HEAD)"
+  if [[ "$actual_commit" != "$commit" ]]; then
+    log_err "Refusing $dependency_id checkout: expected $commit, got $actual_commit"
+    return 1
+  fi
+}
+
+verify_go_tag_commit() {
+    local dependency_id="$1"
+    require_locked_dependency "$dependency_id" || return 1
+    if ! command -v git >/dev/null 2>&1; then
+        log_warn "MANUAL_INSTALL_REQUIRED: Git is required to verify the locked Go tag commit"
+        return 1
+    fi
+    local repository version commit actual_commit
+    repository="$(lock_value "$dependency_id" repository || true)"
+    version="$(lock_value "$dependency_id" version || true)"
+    commit="$(lock_value "$dependency_id" commit || true)"
+    [[ "$repository" =~ ^https://.+\.git$ ]] && [[ -n "$version" ]] && [[ "$commit" =~ ^[0-9a-f]{40}$ ]] || {
+        log_warn "MANUAL_INSTALL_REQUIRED: $dependency_id requires repository, version, and full commit in $LOCK_FILE"
+        return 1
+    }
+    actual_commit="$(git ls-remote "$repository" "refs/tags/${version}^{}" "refs/tags/${version}" | awk -v direct="refs/tags/${version}" -v peeled="refs/tags/${version}^{}" '
+        $2 == peeled { print $1; found=1; exit }
+        $2 == direct { candidate=$1 }
+        END { if (!found && candidate != "") print candidate }
+    ')"
+    if [[ "$actual_commit" != "$commit" ]]; then
+        log_err "Refusing $dependency_id: tag $version resolved to ${actual_commit:-missing}, not $commit"
+        return 1
+    fi
+}
+
+install_locked_go_package() {
+    local dependency_id="$1"
+    local module version
+    require_locked_dependency "$dependency_id" || return 1
+    module="$(lock_value "$dependency_id" module || true)"
+    version="$(lock_value "$dependency_id" version || true)"
+    [[ -n "$module" && -n "$version" ]] || {
+        log_warn "MANUAL_INSTALL_REQUIRED: $dependency_id has no module/version in $LOCK_FILE"
+        return 1
+    }
+    verify_go_tag_commit "$dependency_id" || return 1
+    go install "${module}@${version}"
+}
+
+install_pnpm_dependencies_frozen() {
+    local project_dir="$1"
+    if [[ ! -f "$project_dir/pnpm-lock.yaml" ]]; then
+        log_err "Refusing to start without pnpm-lock.yaml: $project_dir"
+        return 1
+    fi
+    (cd "$project_dir" && pnpm install --frozen-lockfile)
+}
+
+# Test-only library mode exposes the lock helpers without invoking bootstrap.
+if [[ "${BOOTSTRAP_REVERSE_LIB_ONLY:-0}" == "1" ]]; then
+    return 0 2>/dev/null || exit 0
+fi
 
 # ─── 参数解析 ──────────────────────────────────────────────────────────────────────
 
@@ -73,6 +215,14 @@ log_ok() { echo -e "\033[32m[OK]\033[0m $*"; }
 log_warn() { echo -e "\033[33m[WARN]\033[0m $*"; }
 log_err() { echo -e "\033[31m[ERR]\033[0m $*"; }
 
+require_unpinned_platform_opt_in() {
+    if [[ "${REVERSE_ALLOW_UNPINNED_PLATFORM_PACKAGES:-0}" != "1" ]]; then
+        log_warn "MANUAL_INSTALL_REQUIRED: unpinned apt installs are disabled by default"
+        log_warn "Install manually, or explicitly set REVERSE_ALLOW_UNPINNED_PLATFORM_PACKAGES=1"
+        return 1
+    fi
+}
+
 # 检查是否有 sudo 权限
 check_sudo() {
     if [[ $EUID -eq 0 ]]; then
@@ -88,6 +238,7 @@ check_sudo() {
 # apt 安装
 install_apt_package() {
     local package="$1"
+    require_unpinned_platform_opt_in || return 1
     log_info "apt install $package ..."
     if [[ $EUID -eq 0 ]]; then
         apt-get update -qq && apt-get install -y -qq "$package"
@@ -109,31 +260,32 @@ install_pip_package() {
 # npm 全局安装
 install_npm_global() {
     local package="$1"
-    log_info "npm install -g $package ..."
+    local version="${2:-}"
+    log_info "install locked npm package $package ..."
+    [[ -n "$version" ]] || {
+        log_warn "MANUAL_INSTALL_REQUIRED: $package has no locked npm version"
+        return 1
+    }
     if [[ $EUID -eq 0 ]]; then
-        npm install -g "$package"
+        npm install -g "${package}@${version}"
     else
-        sudo npm install -g "$package" 2>/dev/null || npm install -g "$package"
+        sudo npm install -g "${package}@${version}" 2>/dev/null || npm install -g "${package}@${version}"
     fi
 }
 
 # GitHub Release 下载并解压
 install_github_release() {
-    local repo="$1"
-    local asset_regex="$2"
-    local install_dir="$3"
+    local dependency_id="$1"
+    local install_dir="$2"
 
-    log_info "从 GitHub Release 下载: $repo ..."
+    require_locked_dependency "$dependency_id" || return 1
+    log_info "从锁定 GitHub Release 下载: $dependency_id ..."
 
-    local api_url="https://api.github.com/repos/${repo}/releases/latest"
-    local release_json
-    release_json=$(curl -sL "$api_url")
-
-    local download_url
-    download_url=$(echo "$release_json" | jq -r ".assets[] | select(.name | test(\"${asset_regex}\")) | .browser_download_url" | head -n1)
-
-    if [[ -z "$download_url" || "$download_url" == "null" ]]; then
-        log_err "未找到匹配 $asset_regex 的 release asset"
+    local download_url expected_sha
+    download_url="$(lock_value "$dependency_id" url || true)"
+    expected_sha="$(lock_value "$dependency_id" sha256 || true)"
+    if [[ -z "$download_url" || ! "$expected_sha" =~ ^[0-9a-f]{64}$ ]]; then
+        log_err "锁中缺少 $dependency_id 的固定 URL 或 SHA-256"
         return 1
     fi
 
@@ -143,6 +295,11 @@ install_github_release() {
 
     log_info "下载: $download_url"
     curl -sL -o "$tmp_file" "$download_url"
+    if ! verify_sha256 "$expected_sha" "$tmp_file"; then
+        rm -f "$tmp_file"
+        log_err "校验失败: $dependency_id"
+        return 1
+    fi
 
     # 创建安装目录
     mkdir -p "$install_dir"
@@ -168,6 +325,7 @@ install_github_release() {
             rm -rf "$tmp_extract"
             ;;
         *.deb)
+            require_unpinned_platform_opt_in || return 1
             if [[ $EUID -eq 0 ]]; then
                 dpkg -i "$tmp_file" || apt-get install -f -y
             else
@@ -349,15 +507,12 @@ ensure_capability() {
                 log_ok "pentestswarm 已可用"
             elif command -v go &>/dev/null; then
                 log_info "go install pentestswarm ..."
-                go install github.com/Armur-Ai/Pentest-Swarm-AI/cmd/pentestswarm@latest
-            elif command -v docker &>/dev/null; then
-                log_info "拉取 pentestswarm Docker 镜像 ..."
-                docker pull ghcr.io/armur-ai/pentestswarm:latest
-                log_info "使用方式: docker run --rm ghcr.io/armur-ai/pentestswarm:latest scan <target> --scope <scope>"
+                require_locked_dependency pentestswarm-go || return 1
+                install_locked_go_package pentestswarm-go
             else
                 log_warn "需要 Go 1.24+ 或 Docker 来安装 pentestswarm"
                 log_info "安装 Go: apt install golang-go"
-                log_info "然后: go install github.com/Armur-Ai/Pentest-Swarm-AI/cmd/pentestswarm@latest"
+                log_info "然后使用 $LOCK_FILE 中的固定版本安装 Pentest-Swarm-AI"
                 return 1
             fi
             register_mcp_server "pentestswarm" '{
@@ -372,19 +527,22 @@ ensure_capability() {
 
         # ─── pip 安装 ───
         frida|frida-ps)
-            install_pip_package "frida-tools"
+            require_locked_dependency frida-tools-pypi || return 1
+            install_pip_package "frida-tools==$(lock_value frida-tools-pypi version)"
             ;;
         idalib-mcp)
-            install_pip_package "ida-pro-mcp" "git+https://github.com/mrexodia/ida-pro-mcp.git"
+            require_locked_dependency ida-pro-mcp-git || return 1
+            install_pip_package "ida-pro-mcp" "git+$(lock_value ida-pro-mcp-git repository)@$(lock_value ida-pro-mcp-git commit)"
             log_info "运行 ida-pro-mcp --install 完成 IDA 插件安装"
             ;;
         proxycat)
-            install_pip_package "proxycat"
+            require_locked_dependency proxycat-git || return 1
+            install_pip_package "proxycat" "git+$(lock_value proxycat-git repository)@$(lock_value proxycat-git commit)"
             ;;
 
         # ─── GitHub Release ───
         jadx)
-            install_github_release "skylot/jadx" "^jadx-[0-9].*\\.zip$" "$HOME/tools/jadx"
+            install_github_release jadx-release "$HOME/tools/jadx"
             chmod +x "$HOME/tools/jadx/bin/jadx" 2>/dev/null || true
             ;;
         ghidra-mcp)
@@ -392,16 +550,17 @@ ensure_capability() {
                 log_ok "ghidra 已通过 apt 安装"
             else
                 install_apt_package "ghidra" 2>/dev/null \
-                    || install_github_release "NationalSecurityAgency/ghidra" "^ghidra_.*_PUBLIC_.*\\.zip$" "$HOME/tools/ghidra"
+                    || install_github_release ghidra-release "$HOME/tools/ghidra"
             fi
             log_warn "GhidraMCP 插件需手动安装: https://github.com/LaurieWired/GhidraMCP/releases"
             ;;
         nuclei)
             if command -v go &>/dev/null; then
                 log_info "go install nuclei ..."
-                go install github.com/projectdiscovery/nuclei/v3/cmd/nuclei@latest
+                require_locked_dependency nuclei-go || return 1
+                install_locked_go_package nuclei-go
             else
-                install_github_release "projectdiscovery/nuclei" "^nuclei_.*_linux_amd64\\.zip$" "$HOME/tools/nuclei"
+                install_github_release nuclei-release "$HOME/tools/nuclei"
             fi
             ;;
 
@@ -413,26 +572,29 @@ ensure_capability() {
             if ! command -v npm &>/dev/null; then
                 install_apt_package "npm"
             fi
-            register_mcp_server "jshook" '{
-                "command": "npx",
-                "args": ["-y", "@jshookmcp/jshook@latest"],
-                "env": {"JSHOOK_BASE_PROFILE": "search"}
-            }'
+            require_locked_dependency jshookmcp-npm || return 1
+            local jshook_version
+            jshook_version="$(lock_value jshookmcp-npm version)"
+            register_mcp_server "jshook" "{\"command\":\"npx\",\"args\":[\"-y\",\"@jshookmcp/jshook@$jshook_version\"],\"env\":{\"JSHOOK_BASE_PROFILE\":\"search\"}}"
             ;;
         agent-browser)
             if ! command -v node &>/dev/null; then
                 install_apt_package "nodejs"
             fi
-            install_npm_global "agent-browser"
-            npx playwright install chromium 2>/dev/null || true
+            require_locked_dependency agent-browser-npm || return 1
+            require_locked_dependency playwright-npm || return 1
+            install_npm_global "agent-browser" "$(lock_value agent-browser-npm version)"
+            npx --yes "playwright@$(lock_value playwright-npm version)" install chromium 2>/dev/null || true
             ;;
 
         # ─── 本地 HTTP MCP 服务 ───
         anything-analyzer)
-            register_mcp_server "anything-analyzer" "{\"url\": \"http://localhost:23816/mcp\"}"
             if [[ "$START_SERVICES" == "true" ]]; then
                 start_anything_analyzer
+            else
+                ensure_anything_analyzer_checkout
             fi
+            register_mcp_server "anything-analyzer" "{\"url\": \"http://localhost:23816/mcp\"}"
             ;;
         idapro)
             # 先确保 idalib-mcp 已安装
@@ -459,24 +621,31 @@ ensure_capability() {
 
 # ─── 服务启动 ──────────────────────────────────────────────────────────────────────
 
-start_anything_analyzer() {
-    if test_tcp_port 23816 2>/dev/null; then
-        log_ok "anything-analyzer 已在运行 (port 23816)"
-        return 0
+ensure_anything_analyzer_checkout() {
+    local repo_dir="$HOME/tools/anything-analyzer"
+    if ! command -v git &>/dev/null; then
+        install_apt_package git || return 1
     fi
+    fetch_locked_repo anything-analyzer-git "$repo_dir"
+}
 
+start_anything_analyzer() {
     local repo_dir="$HOME/tools/anything-analyzer"
 
-    if [[ ! -d "$repo_dir" ]]; then
-        log_info "克隆 anything-analyzer ..."
-        git clone https://github.com/Mouseww/anything-analyzer.git "$repo_dir"
+    ensure_anything_analyzer_checkout || return 1
+
+    if test_tcp_port 23816 2>/dev/null; then
+        log_err "Refusing to reuse an already-running anything-analyzer service whose checkout cannot be verified"
+        return 1
     fi
 
     if ! command -v pnpm &>/dev/null; then
-        npm install -g pnpm
+        require_locked_dependency pnpm-npm || return 1
+        install_npm_global pnpm "$(lock_value pnpm-npm version)"
     fi
 
-    (cd "$repo_dir" && pnpm install && nohup pnpm dev > /tmp/anything-analyzer.log 2>&1 &)
+    install_pnpm_dependencies_frozen "$repo_dir" || return 1
+    (cd "$repo_dir" && nohup pnpm dev > /tmp/anything-analyzer.log 2>&1 &)
 
     log_info "等待 anything-analyzer 启动 (port 23816) ..."
     if wait_for_port 23816 120; then

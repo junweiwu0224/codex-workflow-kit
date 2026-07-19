@@ -1,0 +1,196 @@
+schema_version: "4.2"
+policy: fail-closed
+description: "Pinned references used by the opt-in reverse bootstrap scripts. Per-field enforcement records distinguish runtime verification from metadata-only evidence; blocked entries require manual review."
+generated_at: "2026-07-12"
+dependencies:
+  - id: jshookmcp-npm
+    kind: npm
+    package: "@jshookmcp/jshook"
+    version: "0.3.3"
+    integrity: "sha512-z1XpuxthRqp2V8VxKQ8QI1FGKknnTVC4KGvfph8CyUmcDkuIgfMvVsP2B+e+i4Utfc+Y3qVmJzK3+qzaV9SrkQ=="
+    status: resolved
+    enforcement:
+      package: metadata-only
+      version: metadata-only
+      integrity: metadata-only
+  - id: agent-browser-npm
+    kind: npm
+    package: agent-browser
+    version: "0.31.1"
+    integrity: "sha512-RjgfT0EsHe1oZQbwzUqJTPb7w3sU8DGbbAjMxLNI5dW1y0cc81TbVsqgjqQJmsy3GEbEcKe/ryARwmWGqJAXXQ=="
+    status: resolved
+    enforcement:
+      package: metadata-only
+      version: metadata-only
+      integrity: metadata-only
+  - id: pnpm-npm
+    kind: npm
+    package: pnpm
+    version: "11.12.0"
+    integrity: "sha512-ggpvvQ2fBMImY4ACrq0eRTQKkTndXcB3wdg+9EqiSByOtmN7TJqmlqPH41uoGOSc8nIT5fK5ETjQm3o+JuiYug=="
+    status: resolved
+    enforcement:
+      package: metadata-only
+      version: metadata-only
+      integrity: metadata-only
+  - id: playwright-npm
+    kind: npm
+    package: playwright
+    version: "1.61.1"
+    integrity: "sha512-DWnY5o3YbLWK4GovuAVwpqL+1VwGNdUGrRr++8j8PtQQzvAVZUIMjKQ90fY689sEJZJBbZVw1rXaOKSTitkzPQ=="
+    status: resolved
+    enforcement:
+      package: metadata-only
+      version: metadata-only
+      integrity: metadata-only
+  - id: frida-tools-pypi
+    kind: pypi
+    package: frida-tools
+    version: "14.10.4"
+    sha256: "7a2c544b545d095040fffbd3768a287a426343dad89095b4a24f4b20382d926a"
+    status: resolved
+    enforcement:
+      package: metadata-only
+      version: metadata-only
+      sha256: metadata-only
+  - id: sqlmap-pypi
+    kind: pypi
+    package: sqlmap
+    version: "1.10.7"
+    sha256: "b8e93fd157034cf23a26ebfc40419ed7594c909dcf7960f68df0aa58a1b2cdcc"
+    status: resolved
+    enforcement:
+      package: metadata-only
+      version: metadata-only
+      sha256: metadata-only
+  - id: ida-pro-mcp-git
+    kind: git
+    repository: https://github.com/mrexodia/ida-pro-mcp.git
+    commit: abb2732ad0d759d750c2e38b616f7f3e949ed2f9
+    status: resolved
+    enforcement:
+      repository: metadata-only
+      commit: metadata-only
+  - id: proxycat-git
+    kind: git
+    repository: https://github.com/honmashironeko/ProxyCat.git
+    commit: 1689d9fe3274f7c7682527794fac36f80b1dd033
+    status: resolved
+    enforcement:
+      repository: metadata-only
+      commit: metadata-only
+  - id: anything-analyzer-git
+    kind: git
+    repository: https://github.com/Mouseww/anything-analyzer.git
+    commit: 25319f4b02d6bcebbc608ef9803ff620a5841a30
+    status: resolved
+    enforcement:
+      repository: enforced
+      commit: enforced
+  - id: seclists-git
+    kind: git
+    repository: https://github.com/danielmiessler/SecLists.git
+    commit: 999e119c5a126c66fa351b96f896a4611174b43f
+    status: resolved
+    enforcement:
+      repository: metadata-only
+      commit: metadata-only
+  - id: jadx-release
+    kind: github-release
+    repository: skylot/jadx
+    tag: v1.5.6
+    asset: jadx-1.5.6.zip
+    url: https://github.com/skylot/jadx/releases/download/v1.5.6/jadx-1.5.6.zip
+    sha256: 545ea2be9c242511bc145755cf4bda2485ade42966e096f8b4d3da2a230e8974
+    commit: 28ff15e4ae69950aebea110a13e5ab895d234dfc
+    status: resolved
+    enforcement:
+      repository: metadata-only
+      tag: metadata-only
+      asset: metadata-only
+      url: metadata-only
+      sha256: metadata-only
+      commit: metadata-only
+  - id: apktool-release
+    kind: github-release
+    repository: iBotPeaches/Apktool
+    tag: v3.0.2
+    asset: apktool_3.0.2.jar
+    url: https://github.com/iBotPeaches/Apktool/releases/download/v3.0.2/apktool_3.0.2.jar
+    sha256: eee4669a704a14e0623407e6701b0b91887e61e1e4049cb7a82833e14ae8b5fd
+    commit: 1c1d15b070c2138d958fa8b685d430c49c4bb117
+    status: resolved
+    enforcement:
+      repository: metadata-only
+      tag: metadata-only
+      asset: metadata-only
+      url: metadata-only
+      sha256: metadata-only
+      commit: metadata-only
+  - id: ghidra-release
+    kind: github-release
+    repository: NationalSecurityAgency/ghidra
+    tag: Ghidra_12.1.2_build
+    asset: ghidra_12.1.2_PUBLIC_20260605.zip
+    url: https://github.com/NationalSecurityAgency/ghidra/releases/download/Ghidra_12.1.2_build/ghidra_12.1.2_PUBLIC_20260605.zip
+    sha256: b62e81a0390618466c019c60d8c2f796ced2509c4c1aea4a37644a77272cf99d
+    commit: c0f584bf229fffba61b36431f3ce30c0c3e4e682
+    pyghidra_version: "3.1.0"
+    pyghidra_wheel: Ghidra/Features/PyGhidra/pypkg/dist/pyghidra-3.1.0-py3-none-any.whl
+    status: resolved
+    enforcement:
+      repository: metadata-only
+      tag: metadata-only
+      asset: metadata-only
+      url: metadata-only
+      sha256: metadata-only
+      commit: metadata-only
+      pyghidra_version: metadata-only
+      pyghidra_wheel: metadata-only
+  - id: nuclei-go
+    kind: go
+    module: github.com/projectdiscovery/nuclei/v3/cmd/nuclei
+    repository: https://github.com/projectdiscovery/nuclei.git
+    version: v3.11.0
+    commit: 57db38350267f0854bd58c633c29d168478a702f
+    status: resolved
+    enforcement:
+      module: metadata-only
+      repository: metadata-only
+      version: metadata-only
+      commit: metadata-only
+  - id: nuclei-release
+    kind: github-release
+    repository: projectdiscovery/nuclei
+    tag: v3.11.0
+    asset: nuclei_3.11.0_linux_amd64.zip
+    url: https://github.com/projectdiscovery/nuclei/releases/download/v3.11.0/nuclei_3.11.0_linux_amd64.zip
+    sha256: dc238d6040813e14fc30514dac5a2eb1b430c694f3ca99eee2a5097e55076283
+    commit: 57db38350267f0854bd58c633c29d168478a702f
+    status: resolved
+    enforcement:
+      repository: metadata-only
+      tag: metadata-only
+      asset: metadata-only
+      url: metadata-only
+      sha256: metadata-only
+      commit: metadata-only
+  - id: pentestswarm-go
+    kind: go
+    module: github.com/Armur-Ai/Pentest-Swarm-AI/cmd/pentestswarm
+    repository: https://github.com/Armur-Ai/Pentest-Swarm-AI.git
+    version: v0.1.0
+    commit: d9df06b40916d18d6037fbaa62f493872e3e471a
+    status: resolved
+    enforcement:
+      module: metadata-only
+      repository: metadata-only
+      version: metadata-only
+      commit: metadata-only
+  - id: pentestswarm-container
+    kind: container
+    image: ghcr.io/armur-ai/pentestswarm
+    status: blocked
+    reason: "Registry digest could not be independently verified; Docker fallback is disabled until a digest is recorded."
+    enforcement:
+      image: blocked

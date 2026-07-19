@@ -1,0 +1,50 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://codex-workflow-kit.local/governance/eval-report.schema.json",
+  "title": "Codex Workflow V4.2 Eval Report",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "report_type", "run_id", "suite_id", "suite_sha256", "subject", "source_commit", "metrics", "verdict", "fixture_only"],
+  "properties": {
+    "schema_version": {"const": "4.2"},
+    "report_type": {"const": "eval"},
+    "run_id": {"type": "string", "minLength": 1},
+    "suite_id": {"type": "string", "minLength": 1},
+    "suite_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "subject": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "id", "content_sha256"],
+      "properties": {
+        "kind": {"enum": ["fixture", "component", "profile"]},
+        "id": {"type": "string", "minLength": 1},
+        "content_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+      }
+    },
+    "source_commit": {
+      "oneOf": [
+        {"type": "null"},
+        {"type": "string", "pattern": "^[0-9a-f]{40}$"}
+      ]
+    },
+    "harness_version": {"type": "string"},
+    "fixture_only": {"type": "boolean"},
+    "promotion_eligible": {"type": "boolean"},
+    "generated_at": {"type": "string"},
+    "seed": {"type": "integer"},
+    "mode": {"enum": ["paired", "shadow"]},
+    "repetitions": {"type": "integer", "minimum": 1},
+    "prompt_set_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "held_out_case_ids": {"type": "array", "items": {"type": "string"}},
+    "case_counts": {"type": "object"},
+    "metrics": {"type": "object"},
+    "pair_records": {"type": "array", "items": {"type": "object"}},
+    "blind_review": {"type": "object"},
+    "assertion_failures": {"type": "integer", "minimum": 0},
+    "safety_findings": {"type": "array", "items": {"type": "object"}},
+    "verdict": {"enum": ["pass", "fail", "needs_human_review"]},
+    "promotion_decision": {"enum": ["promote", "hold", "tighten", "rollback", "retire"]},
+    "disclaimer": {"type": "string"},
+    "evidence": {"type": "object"}
+  }
+}

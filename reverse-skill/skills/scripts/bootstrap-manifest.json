@@ -4,6 +4,9 @@
       "name": "jadx",
       "bootstrapKind": "github-release-zip",
       "repo": "skylot/jadx",
+      "releaseTag": "v1.5.6",
+      "assetName": "jadx-1.5.6.zip",
+      "sha256": "545ea2be9c242511bc145755cf4bda2485ade42966e096f8b4d3da2a230e8974",
       "assetRegex": "^jadx-[0-9].*\\.zip$",
       "installDir": "%USERPROFILE%\\Tools\\jadx",
       "docsUrl": "https://github.com/skylot/jadx",
@@ -14,6 +17,9 @@
       "name": "apktool",
       "bootstrapKind": "github-release-jar-wrapper",
       "repo": "iBotPeaches/Apktool",
+      "releaseTag": "v3.0.2",
+      "assetName": "apktool_3.0.2.jar",
+      "sha256": "eee4669a704a14e0623407e6701b0b91887e61e1e4049cb7a82833e14ae8b5fd",
       "assetRegex": "^apktool_.*\\.jar$",
       "installDir": "%USERPROFILE%\\Tools\\apktool",
       "wrapperName": "apktool.bat",
@@ -24,7 +30,7 @@
     {
       "name": "frida",
       "bootstrapKind": "pip-package",
-      "pipPackage": "frida-tools",
+      "pipPackage": "frida-tools==14.10.4",
       "docsUrl": "https://frida.re/",
       "canAutoInstall": true,
       "verifyCommand": "frida"
@@ -32,7 +38,7 @@
     {
       "name": "frida-ps",
       "bootstrapKind": "pip-package",
-      "pipPackage": "frida-tools",
+      "pipPackage": "frida-tools==14.10.4",
       "docsUrl": "https://frida.re/",
       "canAutoInstall": true,
       "verifyCommand": "frida-ps"
@@ -41,7 +47,7 @@
       "name": "idalib-mcp",
       "bootstrapKind": "pip-package",
       "pipPackage": "ida-pro-mcp",
-      "pipSource": "git+https://github.com/mrexodia/ida-pro-mcp.git",
+      "pipSource": "git+https://github.com/mrexodia/ida-pro-mcp.git@abb2732ad0d759d750c2e38b616f7f3e949ed2f9",
       "docsUrl": "https://github.com/mrexodia/ida-pro-mcp",
       "canAutoInstall": true,
       "verifyCommand": "ida-pro-mcp",
@@ -54,10 +60,10 @@
     {
       "name": "jshookmcp",
       "bootstrapKind": "npm-mcp",
-      "npmPackage": "@jshookmcp/jshook@latest",
+      "npmPackage": "@jshookmcp/jshook@0.3.3",
       "mcpNames": ["jshook"],
       "mcpCommand": "npx",
-      "mcpArgs": ["-y", "@jshookmcp/jshook@latest"],
+      "mcpArgs": ["-y", "@jshookmcp/jshook@0.3.3"],
       "mcpEnv": {
         "JSHOOK_BASE_PROFILE": "search"
       },
@@ -69,6 +75,7 @@
       "name": "anything-analyzer",
       "bootstrapKind": "local-http-mcp",
       "repoUrl": "https://github.com/Mouseww/anything-analyzer",
+      "commit": "25319f4b02d6bcebbc608ef9803ff620a5841a30",
       "installDir": "%USERPROFILE%\\Tools\\anything-analyzer",
       "startupDirCandidates": [
         "%USERPROFILE%\\Tools\\anything-analyzer"
@@ -103,8 +110,9 @@
       "assetRegex": "^radare2-.*-w64\\.zip$",
       "installDir": "%USERPROFILE%\\Tools\\radare2",
       "docsUrl": "https://github.com/radareorg/radare2",
-      "canAutoInstall": true,
-      "verifyCommand": "r2"
+      "canAutoInstall": false,
+      "verifyCommand": "r2",
+      "manualInstallHint": "No verified Windows release asset hash is recorded; install manually or add an exact tag, asset name, and SHA-256."
     },
     {
       "name": "rabin2",
@@ -113,8 +121,9 @@
       "assetRegex": "^radare2-.*-w64\\.zip$",
       "installDir": "%USERPROFILE%\\Tools\\radare2",
       "docsUrl": "https://github.com/radareorg/radare2",
-      "canAutoInstall": true,
-      "verifyCommand": "rabin2"
+      "canAutoInstall": false,
+      "verifyCommand": "rabin2",
+      "manualInstallHint": "No verified Windows release asset hash is recorded; install manually or add an exact tag, asset name, and SHA-256."
     },
     {
       "name": "adb",
@@ -128,8 +137,8 @@
     {
       "name": "agent-browser",
       "bootstrapKind": "npm-global",
-      "npmPackage": "agent-browser",
-      "postInstall": "npx playwright install chromium",
+      "npmPackage": "agent-browser@0.31.1",
+      "postInstall": "npx playwright@1.61.1 install chromium",
       "installDir": "%LOCALAPPDATA%\\ms-playwright",
       "docsUrl": "https://github.com/nicepkg/agent-browser",
       "canAutoInstall": true,
@@ -140,6 +149,9 @@
       "name": "ghidra-mcp",
       "bootstrapKind": "github-release-zip",
       "repo": "NationalSecurityAgency/ghidra",
+      "releaseTag": "Ghidra_12.1.2_build",
+      "assetName": "ghidra_12.1.2_PUBLIC_20260605.zip",
+      "sha256": "b62e81a0390618466c019c60d8c2f796ced2509c4c1aea4a37644a77272cf99d",
       "assetRegex": "^ghidra_.*_PUBLIC_.*\\.zip$",
       "installDir": "%USERPROFILE%\\Tools\\ghidra",
       "docsUrl": "https://ghidra-sre.org/",
@@ -159,6 +171,7 @@
       "name": "seclists",
       "bootstrapKind": "git-clone",
       "repo": "https://github.com/danielmiessler/SecLists.git",
+      "commit": "999e119c5a126c66fa351b96f896a4611174b43f",
       "installDir": "%USERPROFILE%\\Tools\\SecLists",
       "docsUrl": "https://github.com/danielmiessler/SecLists",
       "canAutoInstall": true
@@ -167,12 +180,13 @@
       "name": "proxycat",
       "bootstrapKind": "git-clone",
       "repo": "https://github.com/honmashironeko/ProxyCat.git",
+      "commit": "1689d9fe3274f7c7682527794fac36f80b1dd033",
       "installDir": "&lt;工具根目录&gt;\\ProxyCat",
       "docsUrl": "https://github.com/honmashironeko/ProxyCat",
       "canAutoInstall": true,
       "verifyCommand": "proxycat",
       "postInstallSteps": [
-        "git clone https://github.com/honmashironeko/ProxyCat.git &lt;工具根目录&gt;\\ProxyCat",
+        "git clone https://github.com/honmashironeko/ProxyCat.git &lt;工具根目录&gt;\\ProxyCat && git -C &lt;工具根目录&gt;\\ProxyCat checkout 1689d9fe3274f7c7682527794fac36f80b1dd033",
         "pip install -r &lt;工具根目录&gt;\\ProxyCat\\requirements.txt",
         "使用 &lt;工具根目录&gt;\\bin\\proxycat.bat 启动"
       ]
@@ -199,16 +213,15 @@
     {
       "name": "pentestswarm",
       "bootstrapKind": "go-install",
-      "goPackage": "github.com/Armur-Ai/Pentest-Swarm-AI/cmd/pentestswarm@latest",
-      "fallbackKind": "docker-image",
-      "dockerImage": "ghcr.io/armur-ai/pentestswarm:latest",
+      "goPackage": "github.com/Armur-Ai/Pentest-Swarm-AI/cmd/pentestswarm@v0.1.0",
       "mcpNames": ["pentestswarm"],
       "mcpCommand": "pentestswarm",
       "mcpArgs": ["mcp", "serve"],
       "docsUrl": "https://github.com/Armur-Ai/Pentest-Swarm-AI",
-      "canAutoInstall": true,
+      "canAutoInstall": false,
       "verifyCommand": "pentestswarm",
-      "note": "群体智能渗透框架。需要 Go 1.24+ 或 Docker。支持 MCP server 模式。需要 Claude/Ollama API key。"
+      "manualInstallHint": "容器 digest 尚未验证；只允许按 reverse lock 中的 v0.1.0/commit 手动安装，禁止 latest fallback。",
+      "note": "群体智能渗透框架。需要 Go 1.24+。支持 MCP server 模式。需要 Claude/Ollama API key。"
     }
   ]
 }

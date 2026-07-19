@@ -1,15 +1,6 @@
 ---
 name: repo-onboarding
 description: Use when a repository needs onboarding, AGENTS.md setup, project command discovery, architecture/testing docs, or a repo context pack so Codex can work reliably in the codebase.
-risk: low
-source_repo: personal-workflow-kit
-source_type: curated-local
-date_added: 2026-06-07
-setup: none
-write_surface: repo-docs
-auth: none
-network: none
-status: active
 ---
 
 # repo-onboarding

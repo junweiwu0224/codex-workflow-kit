@@ -71,7 +71,10 @@ $bootstrapScript = Join-Path $PSScriptRoot '..\..\scripts\bootstrap-reverse.ps1'
 if (-not $SkipJadx) {
     $jadxSpec = Resolve-ReverseToolSpec -Name 'jadx'
     if (-not $jadxSpec.Available) {
-        Write-Host 'INFO: jadx not found, attempting auto-bootstrap...' -ForegroundColor Yellow
+        if ($env:REVERSE_ALLOW_TOOL_BOOTSTRAP -ne '1') {
+            throw 'Missing jadx. Default is fail-closed; set REVERSE_ALLOW_TOOL_BOOTSTRAP=1 only after approving the locked bootstrap.'
+        }
+        Write-Host 'INFO: jadx not found, running approved locked bootstrap...' -ForegroundColor Yellow
         & powershell.exe -NoProfile -ExecutionPolicy Bypass -File $bootstrapScript -Capability @('jadx') -SkipRefresh
         if ($LASTEXITCODE -ne 0) {
             throw 'Bootstrap failed for jadx. Please install manually: https://github.com/skylot/jadx'
@@ -86,7 +89,10 @@ if (-not $SkipJadx) {
 if (-not $SkipApktool) {
     $apktoolSpec = Resolve-ReverseToolSpec -Name 'apktool'
     if (-not $apktoolSpec.Available) {
-        Write-Host 'INFO: apktool not found, attempting auto-bootstrap...' -ForegroundColor Yellow
+        if ($env:REVERSE_ALLOW_TOOL_BOOTSTRAP -ne '1') {
+            throw 'Missing apktool. Default is fail-closed; set REVERSE_ALLOW_TOOL_BOOTSTRAP=1 only after approving the locked bootstrap.'
+        }
+        Write-Host 'INFO: apktool not found, running approved locked bootstrap...' -ForegroundColor Yellow
         & powershell.exe -NoProfile -ExecutionPolicy Bypass -File $bootstrapScript -Capability @('apktool') -SkipRefresh
         if ($LASTEXITCODE -ne 0) {
             throw 'Bootstrap failed for apktool. Please install manually: https://apktool.org/'

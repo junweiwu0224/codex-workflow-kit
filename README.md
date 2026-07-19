@@ -1,6 +1,8 @@
 # Codex Workflow Kit
 
-这是一套用于增强个人 Codex 工作流的可迁移工具包，包含全局规则、repo context pack 模板、个人 skills、完整 `reverse-skill` 能力包、安装脚本、自检脚本和发布归档脚本。当前包是 v3.2 口径：在 V3.1 的外部组件准入、code graph/memory pilot、hook discipline、subagent prompt cards 和自诊断收口基础上，并入 Codex Desktop 侧逆向工程/安全分析能力，以及 Junwei 个人前端设计、浏览器自动化和产品 demo 视频 workflow。它仍不默认启用外部工具、MCP server、云服务或后台服务。
+这是一套用于增强个人 Codex 工作流的可迁移工具包，包含薄全局规则、风险路由、Task Contract、repo context pack、14 个个人 skills、可选 `reverse-skill` 能力包、黑盒 Eval、生命周期治理、安装回滚和可复现发布工具。当前包是 V4.2 implementation candidate；它仍不默认启用外部工具、MCP server、云服务、后台服务或实验 Skill。
+
+V4.2 最终基线见 [`docs/V4.2-IMPLEMENTATION-PLAN.md`](docs/V4.2-IMPLEMENTATION-PLAN.md)，本版本证据边界见 [`docs/V4.2-RELEASE-EVIDENCE.md`](docs/V4.2-RELEASE-EVIDENCE.md)。治理面使用 catalog、内容寻址 lock、Eval report 和 release manifest 分离期望、解析、证据与发布状态；运行面使用唯一 `transition_driver`、确定性检查和 fail-closed tool broker。Task Contract 描述权限边界，但不等于授权；Governed allow 还需要独立事件锚点以及宿主 tool broker 提供的可信审批/强制器校验回调。fixture Eval 只证明 harness 可运行，并且永远保持 `hold`，不证明 Superpowers、OpenSpec 或其他候选已晋升。
 
 ## 目录
 
@@ -10,6 +12,8 @@ MANIFEST.sha256
 QUICKSTART.md
 WORKFLOW-REVIEW.md
 docs/
+  V4.2-IMPLEMENTATION-PLAN.md
+  V4.2-RELEASE-EVIDENCE.md
   V2-ADOPTION-EVIDENCE.md
   V3.1-ADOPTION-EVIDENCE.md
   V3.1-BENCHMARK.md
@@ -33,6 +37,17 @@ docs/
 
 global/
   AGENTS.md
+
+catalog/
+  components.yaml
+  floating-dependencies-baseline.json
+  profiles/
+    stable.txt
+    pilot.txt
+  upstreams.lock.json
+
+governance/
+  task-contract.schema.json
 
 install.sh
 install.ps1
@@ -127,9 +142,13 @@ reverse-skill-router/
 
 `docs/V3.1-ADOPTION-EVIDENCE.md` 是当前 V3.1 证据包，记录 `promote != install`、`pilot != enable`、`core != runtime/background`、11 skills verified、reject lines、新机器演练要求和 release checksum 证据。
 
-`reverse-skill/` 是当前打包的完整逆向工程/安全分析能力树，保留 routing、子技能、CTF orchestrator、Burp/Ghidra bridge、bootstrap 脚本、platform docs 和 field journal 结构。它默认安装到 `~/.codex/reverse-skill/`，避免破坏原有相对路径假设。
+`reverse-skill/` 是当前打包的完整逆向工程/安全分析能力树，保留 routing、子技能、CTF orchestrator、Burp/Ghidra bridge、bootstrap 脚本、platform docs 和 field journal 结构。它是可选 profile，只有显式使用 `--with-reverse` 或 `--with-reverse-core` 才安装到 `~/.codex/reverse-skill/`。
 
-`reverse-skill-router/reverse-engineering/SKILL.md` 是全局 router 入口，默认安装到 `~/.codex/skills/reverse-engineering/SKILL.md`，用于把 Codex Desktop 的逆向/渗透类请求路由到 `~/.codex/reverse-skill/`。
+`catalog/reverse-dependencies.lock.yaml` 对每个字段分别记录 `enforced`、`verified`、`metadata-only` 或 `blocked`。锁中出现版本、commit、integrity 或 SHA-256 不代表 bootstrap 对所有字段都做了 exact enforcement；只有标为 `enforced`/`verified` 的字段可以按其声明强度使用，`metadata-only` 仅是盘点证据，`blocked` 不得安装。
+
+当前 reverse lock 只有 anything-analyzer 的 repository/commit 在每次使用时达到 `enforced`；其余可选依赖因 bootstrap 可能复用系统已有命令，保守标为 `metadata-only`。apt/Homebrew 无跨平台可复现版本锁，POSIX bootstrap 默认拒绝自动安装；只有用户另外显式设置 `REVERSE_ALLOW_UNPINNED_PLATFORM_PACKAGES=1` 才允许平台包管理器继续。legacy `kali/scripts/quick-setup.sh` 同样默认 fail closed。Windows 兼容 bootstrap 还会拒绝运行，除非用户明确设置 `REVERSE_ALLOW_UNPINNED_WINDOWS_BOOTSTRAP=1`；这不是 Windows 供应链已验证的替代品。浮动扫描的“零发现”只覆盖 npm、PyPI、Git、Go、GitHub release 和 container 等已扫描生态，不把平台包误报成已锁定。
+
+`reverse-skill-router/reverse-engineering/SKILL.md` 是可选 profile 的 router 入口，显式启用后安装到 `~/.codex/skills/reverse-engineering/SKILL.md`，用于把 Codex Desktop 的逆向/渗透类请求路由到 `~/.codex/reverse-skill/`。
 
 `docs/V3.1-BENCHMARK.md` / `docs/V3.1-BENCHMARK.json` 是 V3.1 对比 V2.2 的量化 benchmark，覆盖 XS/S/M/L 任务、耗时、检查覆盖、风险发现和任务通过数。对应脚本是 `scripts/benchmark_v31_vs_v22.py`。
 
@@ -165,10 +184,21 @@ python3 scripts/verify_toolkit.py
 Workflow toolkit OK
 ```
 
+V4.2 治理骨架可以单独校验：
+
+```bash
+python3 scripts/validate_governance.py
+python3 scripts/refresh_local_lock.py
+python3 scripts/audit_floating_dependencies.py
+python3 scripts/validate_task_contract.py /path/to/task-contract.json
+```
+
+`refresh_local_lock.py` 为每个 repo-local Skill 计算整个 Skill 目录树的确定性 SHA-256，包括相对路径、文件内容和可执行位；它不是只哈希 `SKILL.md`。符号链接、特殊文件和越界路径会被拒绝。
+
 这个检查会确认：
 
 - 全局 `AGENTS.md`、repo 模板、14 个个人 Codex skills 都在包里。
-- `reverse-skill/` 完整能力树和 `reverse-skill-router/` 全局入口都在包里。
+- `reverse-skill/` 完整能力树和 `reverse-skill-router/` 可选入口都在包里；它们只有显式启用 reverse profile 后才进入本机安装面。
 - 外部组件准入文档、`scripts/audit_external_component.py`、`skill-plugin-intake-review` 都在包里。
 - `implementation-plan` 没有重新出现，避免和 Superpowers 计划职责冲突。
 - repo 模板自带的 `scripts/verify_context_pack.py` 可以通过。
@@ -190,7 +220,7 @@ python3 scripts/verify_live_install.py
 Live install OK
 ```
 
-这个检查只读比较 `~/.codex/AGENTS.md`、`~/.codex/skills/reverse-engineering/`、`~/.codex/reverse-skill/` 和 `~/.agents/skills/` 下的 packaged 文件，并检查活跃 Codex/Chrome 插件、native host 和 plugin cache symlink 路径没有指向其他 macOS 用户目录；发现本机配置与 output 包不一致或插件路径跑偏时会报告问题，不会自动覆盖。
+这个检查只读比较 `~/.codex/AGENTS.md` 和 `~/.agents/skills/` 下的 packaged 文件；如果 reverse profile 已安装，则加上 `~/.codex/skills/reverse-engineering/`、`~/.codex/reverse-skill/`。它还检查活跃 Codex/Chrome 插件、native host 和 plugin cache symlink 路径没有指向其他 macOS 用户目录；发现本机配置与 output 包不一致或插件路径跑偏时会报告问题，不会自动覆盖。需要强制要求 reverse profile 时加 `--with-reverse`。
 
 如果想跑一条更完整但仍然只读的本机巡检命令：
 
@@ -222,7 +252,7 @@ python3 -m pytest tests/test_verify_context_pack.py -q
 目录可以直接复制，也可以构建带 checksum 的归档包：
 
 ```bash
-python3 scripts/build_release.py
+python3 scripts/build_release.py --require-clean
 ```
 
 输出位置：
@@ -253,10 +283,33 @@ shasum -a 256 -c codex-workflow-kit-<VERSION>.tar.gz.sha256
 ./install.sh --dry-run
 ```
 
-确认后安装全局 Codex 宪法、reverse router、reverse pack 和个人 skills：
+确认后安装全局 Codex 宪法和 Stable skills；Pilot skills 与 reverse profile 默认不安装：
 
 ```bash
 ./install.sh
+```
+
+需要把 `spec-kit-xl`、browser automation、product demo video 和 release-readiness 等 Pilot 一并安装时，显式使用：
+
+```bash
+./install.sh --with-pilots
+```
+
+安装器通过 `scripts/manage_install.py` 在复制前建立私有 write-ahead journal，并由同一状态管理器校验 preimage、创建排他 nonce 备份和原子替换目标；成功后才提交 `~/.agents/.codex-workflow-kit/install-state.json`。安装中途失败会自动 `abort`，恢复已经覆盖的文件并移除本次新建的文件。升级不会静默删除旧 Pilot 或 reverse 文件；先用下面的 preview 查看，再显式 prune。`prune` 和 `uninstall` 默认保护用户修改；若一个 Skill 或可选 Profile 的任意受管文件被修改，`prune` 会保留整个受管组件，只有显式 `--force` 才允许删除。`rollback` 只撤销最近一次已提交安装并恢复前一份 Profile/ownership state，即使带 `--force` 也不会丢弃本次新建后又被用户修改的内容，且不会猜测旧 `.bak-*` 的归属。
+
+```bash
+./install.sh --prune-preview
+./install.sh --prune
+./install.sh --uninstall
+./install.sh --rollback
+```
+
+`--repo-only --repo PATH` 使用目标仓库自己的 journal 和状态文件，不会误删全局安装。PowerShell 对应参数为 `-PrunePreview`、`-Prune`、`-Uninstall` 和 `-Rollback`。当前环境没有 `pwsh`，因此 PowerShell 路径只有结构化静态测试，真实 Windows 演练仍是发布前外部证据项。
+
+需要启用 reverse router 和完整能力包时，显式使用：
+
+```bash
+./install.sh --with-reverse
 ```
 
 如果目标是“新机器装完后，逆向任务尽量接近开箱即用”，直接使用 reverse-ready 安装档：
@@ -273,15 +326,18 @@ python3 scripts/verify_apk_decode_smoke.py --apk-fixture /path/to/app.apk
 ./install.sh --with-reverse-core --start-reverse-services
 ```
 
-如果是 Windows 新机器，使用顶层 PowerShell 安装入口：
+如果是 Windows 新机器，使用顶层 PowerShell 安装入口。普通 global/skills 安装可直接运行；reverse core 的兼容 bootstrap 默认 fail closed，只有完成人工审查后才显式放开：
 
 ```powershell
 powershell -ExecutionPolicy Bypass -File .\install.ps1 -DryRun
 powershell -ExecutionPolicy Bypass -File .\install.ps1
+$env:REVERSE_ALLOW_UNPINNED_WINDOWS_BOOTSTRAP = '1'
 powershell -ExecutionPolicy Bypass -File .\install.ps1 -WithReverseCore -VerifyReverseReady
 python scripts/verify_reverse_ready.py
 python scripts/verify_apk_decode_smoke.py --apk-fixture C:\path\to\app.apk
 ```
+
+这只是 Windows 目标命令面；当前 V4.2 尚未取得真实 Windows 主机上的安装、卸载、rollback 或 reverse bootstrap 签署证据。未设置上述环境变量时，Windows reverse bootstrap 应明确失败而不是执行浮动安装。Ghidra 大型 release asset/bootstrap 也仍需在显式 reverse 环境单独做 smoke，不能由静态 lock 或其他 reverse 工具通过代替。
 
 如果你想把 reverse-ready 校验显式绑定到安装命令，也可以直接用：
 
@@ -313,6 +369,95 @@ python scripts/verify_apk_decode_smoke.py --apk-fixture C:\path\to\app.apk
 ./install.sh --codex-home /tmp/codex-home --agents-home /tmp/agents-home
 ```
 
+### 3.1 V4.2 治理、Eval 与发布证据
+
+V4.2 将“声明”与“运行时 enforcement”分开：
+
+```bash
+python3 scripts/validate_governance.py
+python3 scripts/validate_task_contract.py path/to/task-contract.json --json
+python3 scripts/policy_router.py path/to/task-contract.json --json
+python3 scripts/runtime_router.py path/to/task-contract.json --to verified --json
+python3 scripts/runtime_policy.py route path/to/task-contract.json \
+  --event-log path/to/events.jsonl \
+  --event-anchor path/to/events.anchor.json \
+  --json
+python3 scripts/event_log.py validate path/to/events.jsonl \
+  --anchor-path path/to/events.anchor.json \
+  --json
+```
+
+`policy_router.py` 只返回纯决策。`runtime_policy.py` CLI 是诊断入口，不会自行认证 JSON 审批，也没有能力证明工具强制器已安装，因此从 CLI 直接发起的 Governed 请求会 fail closed。实际 tool broker 必须调用 Python API，并提供可信的 `approval_verifier`（需要审批时）和 `enforcement_verifier` 回调；审批证据必须绑定当前 `contract_id`，同时带 `at`、`expires_at`，有效期最多 15 分钟。Governed allow 还必须同时具备 contract ID、持久化事件日志和单独路径的 event anchor。
+
+`event_log.py` 使用追加式 hash chain、log+anchor 双资源跨进程排他锁和原子 anchor 更新，并拒绝 log/anchor 符号链接。anchor 保存 canonical log identity、事件数量和末尾 hash；两个日志不能共享同一 anchor，缺失/不匹配可检测单边或意外的日志截尾/替换。日志与 anchor 必须是两个路径，验证命令必须带 `--anchor-path`；不能向 append API 伪造 sequence/hash 等链字段。本地双文件不是独立签名信任域：能同时改写两者的攻击者仍可重算链；需要抗此类篡改时，broker 必须把 expected hash/count 存入外部签名、WORM 或其他可信 anchor store。
+
+可运行示例在 `governance/examples/`。其中审批证据固定为 `pending`，只能演示数据形状，不能作为真实授权。
+
+黑盒 Eval 支持干净 HOME/worktree、with/without 配对、held-out Prompt、重复稳定性和 Shadow。干净目录不是操作系统沙箱；任何非 fixture adapter 都必须由宿主通过 `isolation_verifier` 可信回调证明其网络、写入和工具隔离。当前 `--runner command` CLI 无法提供该回调，因此默认在执行命令前 fail closed：
+
+```bash
+PYTHONPATH=. python3 scripts/eval_harness.py \
+  --suite eval/fixtures/routing-demo.json \
+  --runner fixture \
+  --output /tmp/codex-v42-eval.json
+```
+
+fixture report 会记录 `isolation_enforcement: fixture-only`，且无论指标是否通过都保持 `promotion_decision: hold`。真实 adapter report 必须在运行时绑定正式 suite 的完整 hash、当前 lock 中的 component/Profile 内容 hash，以及实际评测的 40 位 `source_commit`。报告本身仍不能自动晋升 Skill。`eval/attestations.json` 只是空 schema 模板；真实签署表必须由 `attest-eval` 生成到仓库外，并通过 `--eval-attestations` 显式传入。HMAC key 的 `key_id` 和 SHA-256 指纹还必须预先钉在 `catalog/eval-trust-policy.json`，否则任意自选 key 只能得到 `unattested`。
+
+```bash
+python3 scripts/build_release_evidence.py attest-eval \
+  --root . --eval-report /secure/eval/report.json \
+  --eval-attestation-key /secure/eval/eval-hmac.key \
+  --key-id <trusted-key-id> --reviewed-by <reviewer> \
+  --isolation-verifier <trusted-broker-id> \
+  --output /secure/eval/attestations.json
+```
+
+Skill 生命周期与 resolver：
+
+```bash
+python3 scripts/skill_lifecycle.py --state /tmp/skill-lifecycle.json show
+python3 scripts/resolve_components.py \
+  --catalog catalog/components.yaml \
+  --lock catalog/upstreams.lock.json \
+  --root . \
+  --output /tmp/resolver-result.json
+```
+
+候选必须经过 `Discovered -> Audited -> Shadow -> Repo Pilot -> Stable`；没有真实候选证据时，fixture Eval 只能证明 harness 工作，不能证明外部 Skill 已通过。
+
+发布前从干净 checkout 生成 manifest、CycloneDX SBOM 和 third-party notices；输出放到 repo 外，不把新 tarball 提交进 Git：
+
+```bash
+python3 scripts/build_plugin.py --root . --output /tmp/junwei-core --profile stable
+python3 scripts/refresh_local_lock.py
+PYTHONPATH=. python3 scripts/eval_harness.py \
+  --suite eval/fixtures/routing-demo.json --runner fixture --mode paired \
+  --output /tmp/codex-v42-eval.json
+PYTHONPATH=. python3 scripts/eval_harness.py \
+  --suite eval/fixtures/routing-demo.json --runner fixture --mode shadow \
+  --output /tmp/codex-v42-shadow.json
+python3 scripts/build_release.py --require-clean --output-dir /tmp/codex-workflow-kit-release
+python3 scripts/build_release_evidence.py write \
+  --root . --output /tmp/codex-workflow-kit-evidence \
+  --archive /tmp/codex-workflow-kit-release/codex-workflow-kit-<VERSION>.tar.gz \
+  --plugin /tmp/junwei-core \
+  --eval-report /tmp/codex-v42-eval.json \
+  --eval-report /tmp/codex-v42-shadow.json \
+  --require-clean-source
+python3 scripts/build_release_evidence.py verify \
+  --root . --output /tmp/codex-workflow-kit-evidence \
+  --archive /tmp/codex-workflow-kit-release/codex-workflow-kit-<VERSION>.tar.gz \
+  --plugin /tmp/junwei-core \
+  --eval-report /tmp/codex-v42-eval.json \
+  --eval-report /tmp/codex-v42-shadow.json \
+  --require-resolved --require-clean-source --require-eval
+```
+
+发布流程要求 `write` 和 `verify` 显式传入完全相同的 archive、plugin 和全部 Eval reports。`verify` 会重算源码 `MANIFEST.sha256`、release manifest、CycloneDX SBOM 和 notices，逐项确认 index/工作树 bytes、mode 和文件集合与 `HEAD` 一致，要求归档是当前源码的逐字节可复现构建，并要求 plugin manifest、Profile 与整树内容锁一致；省略或替换任何 artifact 都不会验证原集合。`--require-eval` 拒绝空 Eval 集；fixture reports 只用于发布管道。真实门使用 `--require-real-eval --eval-attestations /secure/path/attestations.json --eval-attestation-key /secure/path/eval-hmac.key`。registry 必须位于仓库外，避免 `source_commit` 自引用；`--public` 还会原子要求 clean HEAD、resolved governance、archive、Stable plugin、受信 key 签署的 paired/pass/promote Stable Profile Eval，以及公开许可证。
+
+仓库没有声明开源许可证；`LICENSE` 是保守的 All rights reserved notice。公开分发必须先由仓库所有者选择并确认许可证，release gate 不会把 `NOASSERTION` 猜成 MIT。
+
 ### 4. 全局 Codex 宪法
 
 `global/AGENTS.md` 是个人全局工作原则。安装脚本会把它放到 Codex home 的 `AGENTS.md`。
@@ -321,8 +466,8 @@ python scripts/verify_apk_decode_smoke.py --apk-fixture C:\path\to\app.apk
 
 ```text
 ~/.codex/AGENTS.md
-~/.codex/skills/reverse-engineering/
-~/.codex/reverse-skill/
+~/.codex/skills/              # reverse profile 启用后才包含 reverse-engineering/
+~/.codex/reverse-skill/      # 仅 --with-reverse / --with-reverse-core
 ```
 
 `scripts/verify_reverse_ready.py` 是机器级 readiness 检查：它会确认这台机器上 `jadx`、`apktool`、`frida`、`r2`、`nmap`、`sqlmap`、`ffuf`、`nuclei`、`binwalk`、`graphviz` 这些 reverse-ready core 是否真的可执行，并提示 `apksigner`、`zipalign`、`adb`、`plantuml` 等常用补充项是否仍缺失。它还会检查 `~/.codex/config.toml` 或 `~/.claude/mcp.json` 是否存在，避免出现“工具装了但 MCP 运行面还没接上”的半落地状态。
@@ -430,7 +575,7 @@ python3 scripts/codex_runtime_smoke.py --check-prompt-input
 python3 scripts/codex_runtime_smoke.py --markdown
 ```
 
-它会汇总 live install、local doctor、Codex CLI 和 `docs/agent-collaboration-smoke.md` 手动 checklist。默认不跑 `codex debug prompt-input`；只有加 `--check-prompt-input` 时才验证模型可见的 14 个 custom skills。
+它会汇总 live install、local doctor、Codex CLI 和 `docs/agent-collaboration-smoke.md` 手动 checklist。默认不跑 `codex debug prompt-input`；加 `--check-prompt-input` 时按当前 Stable/Pilot profile 验证本地 Skill，可再加 `--require-superpowers` 显式验证外部 Superpowers skill set。
 
 需要重新生成 V3.1/V2.2 量化对比时运行：
 
@@ -474,7 +619,7 @@ python3 scripts/benchmark_skill_polish.py
 安装位置：
 
 ```text
-~/.agents/skills/
+~/.agents/skills/             # 默认仅 catalog/profiles/stable.txt
 ```
 
 复制后应确认 Codex 的 skill 列表能看到：
@@ -550,14 +695,14 @@ docs/codex-usage.md
 换机器或迁移到新 Codex 环境时，确认：
 
 - `python3 scripts/verify_toolkit.py` 输出 `Workflow toolkit OK`。
-- `python3 scripts/build_release.py` 已生成 `releases/codex-workflow-kit-<VERSION>.tar.gz` 和 `.sha256`。
+- `python3 scripts/build_release.py --require-clean` 已从干净 checkout 生成 repo 外的 `codex-workflow-kit-<VERSION>.tar.gz` 和 `.sha256`。
 - `./install.sh --dry-run` 的计划符合预期。
 - `global/AGENTS.md` 已复制到 `~/.codex/AGENTS.md`。
-- `skills/*` 已复制到 `~/.agents/skills/`。
+- `catalog/profiles/stable.txt` 中的 Skill 已复制到 `~/.agents/skills/`；需要 Pilot 时已显式使用 `--with-pilots`。
 - `python3 scripts/verify_live_install.py` 能确认安装内容没有 drift。
 - `python3 scripts/codex_doctor.py` 能确认 live install 和 active plugin paths 正常。
 - 新仓库已复制 `repo-template/AGENTS.md`、`repo-template/docs/`、`repo-template/scripts/`，以及可选的 `repo-template/tests/`；其中包含 `docs/codegraph-pilot.md` 和 `docs/memory-recall-pilot.md`。
-- Codex 可发现 14 个个人 Codex skills。
+- Codex 默认可发现 10 个 Stable skills；显式安装 Pilot profile 后可发现全部 14 个。
 - repo `AGENTS.md` 没有重复全局宪法，只保留项目事实和边界。
 - repo `docs/subagents.md` 包含 lifecycle 收口规则：本轮派出的 agent id 必须在不再需要时 `close_agent`。
 - 已检查目标仓库是否有同类文档或大小写等价文件，避免重复创建或覆盖人工文档。

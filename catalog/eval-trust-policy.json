@@ -1,0 +1,6 @@
+{
+  "schema_version": "4.2",
+  "policy_id": "v4.2-eval-attestation-trust",
+  "description": "Trusted external HMAC key fingerprints for real Eval attestations. Empty until the owner provisions a release key.",
+  "keys": []
+}

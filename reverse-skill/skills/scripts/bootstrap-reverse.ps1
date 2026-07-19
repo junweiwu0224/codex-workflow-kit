@@ -21,6 +21,13 @@ $OutputEncoding = [System.Text.UTF8Encoding]::new($false)
 
 . (Join-Path $PSScriptRoot 'lib\ToolDiscovery.ps1')
 
+# The Windows manifest still contains platform/package-manager paths that do
+# not have reproducible cross-host pinning. Keep this compatibility bootstrap
+# fail-closed until a real Windows lock-consumption/evidence drill exists.
+if ($env:REVERSE_ALLOW_UNPINNED_WINDOWS_BOOTSTRAP -ne '1') {
+    throw 'Windows reverse bootstrap is disabled by default. Review the manifest and explicitly set REVERSE_ALLOW_UNPINNED_WINDOWS_BOOTSTRAP=1 for a controlled manual run.'
+}
+
 $Capability = @(
     foreach ($item in @($Capability)) {
         if ([string]::IsNullOrWhiteSpace($item)) {
@@ -157,7 +164,7 @@ function Ensure-Pnpm {
         if ([string]::IsNullOrWhiteSpace($npm)) {
             throw 'npm is not available after Node.js installation.'
         }
-        & $npm install -g pnpm
+        & $npm install -g pnpm@11.12.0
         if ($LASTEXITCODE -ne 0) {
             throw 'Failed to install pnpm globally.'
         }
@@ -338,19 +345,39 @@ function Approve-AnythingAnalyzerBuildScripts {
     Set-AnythingAnalyzerPnpmBuildApprovals -RepoDir $RepoDir -Packages $buildPackages
 }
 
-function Get-GitHubLatestReleaseAsset {
+function Get-LockedGitHubReleaseAsset {
+    param([Parameter(Mandatory = $true)]$Definition)
+
+    foreach ($field in @('repo', 'releaseTag', 'assetName', 'sha256')) {
+        if (-not $Definition.PSObject.Properties[$field] -or [string]::IsNullOrWhiteSpace([string]$Definition.$field)) {
+            throw "MANUAL_INSTALL_REQUIRED: release definition is missing locked field '$field'."
+        }
+    }
+    if ($Definition.repo -notmatch '^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$') {
+        throw "MANUAL_INSTALL_REQUIRED: invalid locked GitHub repository '$($Definition.repo)'."
+    }
+    if ($Definition.assetName.Contains('/') -or $Definition.assetName.Contains('\') -or $Definition.sha256 -notmatch '^[0-9a-fA-F]{64}$') {
+        throw 'MANUAL_INSTALL_REQUIRED: invalid locked release asset name or SHA-256.'
+    }
+
+    return [pscustomobject]@{
+        name = [string]$Definition.assetName
+        url = "https://github.com/$($Definition.repo)/releases/download/$($Definition.releaseTag)/$($Definition.assetName)"
+        sha256 = ([string]$Definition.sha256).ToLowerInvariant()
+    }
+}
+
+function Assert-LockedFileHash {
     param(
-        [Parameter(Mandatory = $true)][string]$Repo,
-        [Parameter(Mandatory = $true)][string]$AssetRegex
+        [Parameter(Mandatory = $true)][string]$Path,
+        [Parameter(Mandatory = $true)][string]$ExpectedSha256
     )
 
-    $uri = "https://api.github.com/repos/$Repo/releases/latest"
-    $release = Invoke-RestMethod -Uri $uri -Headers @{ 'User-Agent' = 'reverse-skill-bootstrap' }
-    $asset = @($release.assets) | Where-Object { $_.name -match $AssetRegex } | Select-Object -First 1
-    if ($null -eq $asset) {
-        throw "No release asset matched $AssetRegex for $Repo"
+    $actual = (Get-FileHash -LiteralPath $Path -Algorithm SHA256).Hash.ToLowerInvariant()
+    if ($actual -ne $ExpectedSha256.ToLowerInvariant()) {
+        Remove-Item -LiteralPath $Path -Force -ErrorAction SilentlyContinue
+        throw "Locked release checksum mismatch for $Path. expected=$ExpectedSha256 actual=$actual"
     }
-    return $asset
 }
 
 function Expand-ArchiveIntoDirectory {
@@ -403,10 +430,11 @@ function Ensure-GitHubZipInstall {
         return $existing
     }
 
-    $asset = Get-GitHubLatestReleaseAsset -Repo $Definition.repo -AssetRegex $Definition.assetRegex
-    $downloadUrl = if ($asset.PSObject.Properties['browser_download_url']) { $asset.browser_download_url } else { $asset.url }
+    $asset = Get-LockedGitHubReleaseAsset -Definition $Definition
+    $downloadUrl = $asset.url
     $downloadPath = Join-Path $env:TEMP $asset.name
     Invoke-WebRequest -Uri $downloadUrl -OutFile $downloadPath -Headers @{ 'Accept' = 'application/octet-stream' }
+    Assert-LockedFileHash -Path $downloadPath -ExpectedSha256 $asset.sha256
     Ensure-DownloadDirectory -Path (Split-Path -Path $TargetPath -Parent)
     Expand-ArchiveIntoDirectory -ZipPath $downloadPath -Destination $TargetPath
     Remove-Item -LiteralPath $downloadPath -Force
@@ -434,14 +462,15 @@ function Ensure-ApktoolInstall {
     }
 
     Ensure-JavaRuntime
-    $asset = Get-GitHubLatestReleaseAsset -Repo $Definition.repo -AssetRegex $Definition.assetRegex
+    $asset = Get-LockedGitHubReleaseAsset -Definition $Definition
     $installDir = $Definition.installDir
     Ensure-DownloadDirectory -Path $installDir
 
     $jarName = [System.IO.Path]::GetFileName($asset.name)
     $jarPath = Join-Path $installDir 'apktool.jar'
-    $downloadUrl = if ($asset.PSObject.Properties['browser_download_url']) { $asset.browser_download_url } else { $asset.url }
+    $downloadUrl = $asset.url
     Invoke-WebRequest -Uri $downloadUrl -OutFile $jarPath -Headers @{ 'Accept' = 'application/octet-stream' }
+    Assert-LockedFileHash -Path $jarPath -ExpectedSha256 $asset.sha256
 
     $wrapperPath = Join-Path $installDir $Definition.wrapperName
     @(

@@ -1,15 +1,6 @@
 ---
 name: decision-record
 description: Use when a task involves long-term technical decisions, ADRs, architecture tradeoffs, framework/database/auth/deployment choices, module boundaries, public APIs, data models, risks, or accepted technical debt.
-risk: low
-source_repo: personal-workflow-kit
-source_type: curated-local
-date_added: 2026-06-07
-setup: none
-write_surface: docs
-auth: none
-network: none
-status: active
 ---
 
 # decision-record

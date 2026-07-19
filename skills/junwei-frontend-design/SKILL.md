@@ -1,15 +1,6 @@
 ---
 name: junwei-frontend-design
 description: Use when creating, redesigning, or polishing user-visible web or app UI, including landing pages, SaaS dashboards, product tools, mobile screens, design systems, visual references, responsive layout, component styling, and frontend QA. Trigger for frontend design, UI design, page/app/site/tool/game visuals, better taste, premium design, less generic AI design, product UI polish, redesign, mobile UI, landing page art direction, or generated frontend mockups/references.
-risk: low
-source_repo: personal-workflow-kit
-source_type: curated-local
-date_added: 2026-06-22
-setup: none
-write_surface: task-dependent
-auth: none
-network: none-by-default
-status: active
 ---
 
 # Junwei Frontend Design
@@ -101,4 +92,3 @@ Frontend design result:
 - Browser/visual QA:
 - Residual risks:
 ```
-

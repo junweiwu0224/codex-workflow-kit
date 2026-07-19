@@ -366,7 +366,7 @@ frida -U -f com.example.app -l hook.js
 ### 自举触发点
 
 - `scripts/decode.ps1`：缺 jadx 或 apktool 时自动调用 `bootstrap-reverse.ps1`
-- `scripts/rebuild-sign-install.ps1`：缺 adb 或 apktool 时自动调用 bootstrap
+- `scripts/rebuild-sign-install.ps1`：缺 adb 或 apktool 时默认 fail-closed；经批准后设置 `REVERSE_ALLOW_TOOL_BOOTSTRAP=1`
 - `scripts/frida-run.ps1`：当前仍为手动检查（frida 通常已通过 pip 安装）
 
 ### 自举失败时

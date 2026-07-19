@@ -2,76 +2,72 @@
 
 本文件记录这套 Codex Workflow Kit 的最终路线、完成状态、可复用范围、仍保持候选的能力，以及后续真实使用时的触发条件。
 
-## 最终路线
+## 最终路线：当前 V4.2
 
 ```text
-个人 Codex 宪法
--> 任务分级协议
--> repo context pack
--> Superpowers/spec-kit
--> 自定义核心 skills
--> 外部组件准入
--> MCP/代码图谱/memory
--> hooks 质量门禁
--> subagents 并行
--> usage/效果评估
--> real repo trial runs
--> 新机器演练
+薄 global/AGENTS.md
+-> Fast / Standard / Governed Policy Router
+-> 分级 Task Contract
+-> 当前状态转换的唯一 Driver
+-> Overlay / Guardrail
+-> Deterministic Checks
+-> Verifier Policy
+-> lifecycle / release evidence / rollback
 ```
 
-## 完成状态
+治理事实按 `catalog -> resolver -> lock -> eval report -> release manifest` 流动。Catalog 表达期望，lock 表达已解析内容，eval report 表达运行证据，release manifest 表达实际发布内容；四者不能互相冒充。
 
-已完成并打包：
+## 完成状态：当前实现
 
-- `global/AGENTS.md`：个人 Codex 宪法、任务分级、Superpowers/spec-kit 总控、MCP/memory/hooks/subagents 边界。
-- `reverse-skill/`：完整逆向工程/安全分析能力树，保留 routing、子技能、CTF orchestrator、Burp/Ghidra bridge、bootstrap 脚本、platform docs 和 field journal 结构。
-- `reverse-skill-router/reverse-engineering/SKILL.md`：全局 reverse router 入口，安装到 `~/.codex/skills/reverse-engineering/`，把 Desktop 侧逆向/渗透类请求稳定路由到 `~/.codex/reverse-skill/`。
-- `repo-template/`：项目级 `AGENTS.md`、commands/testing/quality-gates/subagents/observability/mcp-pilot/usage/playbook/ADR/specs/glossary 模板。
-- `skills/`：`repo-onboarding`、`spec-kit-xl`、`debug-loop`、`frontend-qa`、`decision-record`、`completion-review`、`security-review`、`dependency-upgrade-review`、`research-brief`、`skill-plugin-intake-review`、`release-readiness`、`junwei-frontend-design`、`junwei-browser-automation`、`junwei-product-demo-video`。
-- `install.sh`：非破坏式安装器，支持 dry-run、自定义 Codex/Agents home、repo 模板安装、backup/force。
-- `scripts/verify_toolkit.py`：包级自检，覆盖必需文件、manifest、14 个 skills、Superpowers 边界、外部组件准入、Junwei 前端/浏览器/demo 视频 workflow、release-readiness pilot、质量门禁模板、usage/observability/MCP/codegraph/memory pilot 复盘机制、生成缓存、私有路径和敏感模式。
-- `scripts/audit_external_component.py`：只读外部组件准入扫描，用于 skill/plugin/MCP/hook/subagent prompt/workflow pack 的 promote/pilot/repo-local/hold/reject 判断。
-- `scripts/benchmark_skill_polish.py`：对比 pre-polish `2026.06.12` release 和当前 post-polish tree，量化 skill count、Output Shape、accessibility、release readiness 和 progressive disclosure。
-- `scripts/verify_live_install.py`：只读比较当前机器 `~/.codex/AGENTS.md` 和 `~/.agents/skills/` 是否与 output 包一致，用于发现 live install drift。
-- `scripts/codex_runtime_smoke.py`：只读汇总本机 live install、local doctor、Codex CLI、可选 prompt-input skill 可见性和 `docs/agent-collaboration-smoke.md` 手动 agent smoke 证据。
-- `scripts/audit_skill_contracts.py`：只读审计 14 个 packaged skills 的 metadata、trigger、Output Shape、边界、验证条件、progressive disclosure 和 Superpowers overlap 信号。
-- `docs/agent-collaboration-smoke.md`：V3.1 subagent runtime 手动/HITL smoke checklist，覆盖 read-only dual explorer、No-Dispatch、local-write boundary、visibility policy、skill coupling 和 Lifecycle Ledger。
-- `scripts/build_release.py`：刷新 `MANIFEST.sha256`，构建 release tarball 和 checksum。
+V4.2 当前是 **implementation candidate**，不是“proven optimal”或已公开发布的 Stable 套件。
 
-已移除并保持移除：
+已进入工作树并有机器验证的能力：
 
-- `implementation-plan` skill。计划、TDD、阶段推进和执行由 Superpowers 负责，个人 skills 只做专项补强。
+- `global/AGENTS.md` 已收敛为风险路由、安全边界、验证和协作原则；按需细节由 Skill 和 repo context 提供。
+- `catalog/components.yaml` 记录 14 个 packaged Skill 的 owner、角色、状态、隐式调用、网络、写入和 License；Skill frontmatter 只保留规范字段。
+- `catalog/upstreams.lock.json` 和 `catalog/reverse-dependencies.lock.yaml` 分别记录 repo-local 内容 hash 与 reverse 精确依赖；无法验证 digest 的容器保持 blocked，不会静默安装。
+- Policy Router、Task Contract schema/validator、单 transition Driver、runtime policy gate 和 hash-chained event log 已实现；关键审批或 enforcement 缺失时 fail closed。
+- Eval Harness 支持 clean HOME/worktree、paired 随机顺序、Shadow、held-out、重复稳定性、盲评包、安全负例和脱敏报告。
+- Skill lifecycle 支持 Discovered、Audited、Shadow、Repo Pilot、Stable、Deprecated、Retired，以及 scoped Canary、kill switch 和 last-known-good rollback。
+- `eval/suites/v4.2-routing-baseline.json` 固定 40 个独立路由 Prompt，其中 16 个 held-out，覆盖 14 个 Skill 与 12 个 no-Skill control。
+- 安装器支持 Stable/Pilot/reverse Profile、write-ahead journal、状态记录、prune preview、prune、uninstall 和最近事务 rollback；修改过的用户文件默认保留，只有 prune/uninstall 的显式 force 会改变该行为。
+- Plugin builder 与 release evidence builder 可以生成 Profile 插件、release manifest、SBOM 和 third-party notices；公开发布受 License policy 门禁约束。
+- `implementation-plan` Skill 继续保持移除；V4.2 不增加新的通用 orchestrator。
+
+证据边界：
+
+- 单元测试和 `eval/fixtures/routing-demo.json` 只证明机制与失败路径，fixture 的通过结果固定为 Hold，不能晋升任何 Skill。
+- 40-Prompt baseline 是冻结输入集，不是已运行的真实 Codex report。真实 trigger precision/recall 必须由隔离 runner 执行后计算。
+- Task Contract 和 runtime wrapper 不等于操作系统沙箱；平台无法强制的边界必须继续标记为 advisory 或 unavailable。
+- 当前工作树构建不等于 clean checkout 发布、新机器演练或 Windows PowerShell 运行证据。
+- 没有 paired real-task report 的外部候选和重复能力淘汰仍是 evidence pending。
 
 ## 可复用能力
 
-以下内容已经通过真实仓库试跑和新机器演练，适合直接复用：
+当前可以直接复用的是机制和保守默认值：
 
-- 个人 Codex 宪法和任务分级：XS/S 不过度流程化，M/L/XL 使用 Superpowers 或 `spec-kit-xl`。
-- repo context pack 模板：用于快速建立项目事实、命令、测试、架构、质量门禁和 usage 记录。
-- context pack verifier：适合作为 A 级低副作用文档/context pack 门禁。
-- 自定义核心 skills：作为 Superpowers 的补充，而不是替代总控流程。
-- quality-gates 模板：按副作用分层，把 targeted tests 按受影响范围选择，不要求每次全部运行。
-- V2.1 observability / MCP pilot 模板：把 usage/session 观测、长任务监控、MCP/code graph 试点写成候选和回退流程，不默认安装外部工具、不启用 hooks、不启动 MCP。
-- V2.1 subagent prompt cards：为 read-only code mapper、test/debug investigator、frontend QA reviewer、docs/content-contract reviewer、architecture/migration reviewer 提供可复制 prompt，同时保留主 agent 集成和共享状态边界。
-- V2.2 P0 专项 skills：`security-review`、`dependency-upgrade-review`、`research-brief` 补齐安全审查、依赖升级审查和生态研究选型缺口；它们不替代 Superpowers 计划/TDD/debug，不默认安装外部工具、不启用 hooks、不启动 MCP。
-- install/release 流程：可在新机器解包、验证、dry-run、安装、live install drift 检查、重复安装和冲突保护。
-- reverse-skill 迁移：通过保留独立子树和原相对路径，跨机器复用 reverse routing、bootstrap、MCP bridge 和 CTF 子技能，而不把能力摊平成噪音式平铺目录。
-- Junwei 前端/浏览器/demo 视频 workflow：`junwei-frontend-design` 负责 taste/interface 和反模板化方向，`junwei-browser-automation` 负责浏览器证据、Playwright CLI/MCP 路由和安全边界，`junwei-product-demo-video` 负责产品 demo 视频脚本、录制输入、组合和渲染 QA。三者吸收精华，不照搬外部仓库，也不默认安装 Playwright MCP、DigitalSamba toolkit、云 GPU、API、voice cloning 或 publish 流程。
+- Fast 任务只保留内存中的 lane、写入范围和验收检查；Standard 使用上下文内 Contract；Governed 才持久化审批与副作用证据。
+- repo context pack、targeted quality gates、`repo-onboarding` 和历史 V2/V3 的真实仓库校准仍有效，但不自动证明 V4.2 新候选优于旧能力。
+- `security-review`、`dependency-upgrade-review` 和 `research-brief` 作为 Guardrail/治理能力使用，不争夺当前 transition 的 Driver 权限。
+- `junwei-frontend-design`、`junwei-browser-automation`、`frontend-qa` 和 `junwei-product-demo-video` 按设计、浏览器证据、验证和媒体职责分离。
+- reverse 保留完整独立子树，但只通过显式 Profile 安装；重量级工具和 blocked 依赖不进入默认安装。
+- 确定性测试、schema、hash、截图断言和可复现渲染优先；主观或高风险结果再交给新上下文 Verifier。
+- 外部组件只允许按 Discovered -> Audited -> Shadow -> Repo Pilot -> Stable 晋升；任一步都可 Hold/Reject，严重安全失败直接 kill/rollback。
 
 ## 候选边界
 
-以下能力保持文档化候选，不作为默认动作：
+| 候选 | 当前决策 | 晋升所缺证据 |
+| --- | --- | --- |
+| Anthropic `frontend-design` | 方法已被本地设计 Skill 借鉴；不增加同名入口 | 合并前后路由与真实 UI 任务配对证据 |
+| Superpowers | Hold；不复制进默认包 | 固定 SHA、Shadow、Standard/Governed 真实任务收益和交接证据 |
+| OpenSpec | Hold；只考虑规格 transition | 与 `spec-kit-xl` 的单变量 A/B，且不得与实现 Driver 双控 |
+| Find Skills | 仅候选发现 | 只读来源审计；永不自动全局安装 |
+| AnySearch | Lab-only | 公开非敏感检索的来源质量、安全边界和一手资料复核证据 |
+| Remotion | 项目缺口触发的 repo-local 候选 | 兼容版本锁、真实渲染 smoke 和媒体任务收益 |
+| Skill Creator | 仅吸收创建与 Eval 方法 | 不作为日常 Driver，不进入默认发现面 |
+| SkillFather | 仅研究模板与生命周期方法 | 来源、License、安全和独立收益审计 |
 
-- hooks：默认不启用阻断型 hooks。只有 A 级、短耗时、稳定、无外部依赖、无业务数据写入、无隐藏产物的命令才考虑前移。
-- MCP/代码图谱/memory：先用 repo context pack、`rg`、语言工具和测试建立临时上下文；只有重复收益明确、边界清楚、可回退时再增加长期服务。
-- subagents：L/XL、已有实施计划、跨模块、多独立失败源、多文件审查和可并行调查必须先做 suitability check；AGENTS/AGENTS.override 中的长期授权即视为显式授权，本轮重复授权不是必要条件。只有 subagent 工具实际可用且未被平台权限阻止，并且存在 2 个以上互不重叠的独立子任务时，才主动使用 subagents；若当前会话没有加载到这类长期授权且本轮也未明确授权，记录 No-Dispatch Decision: tool permission constraint；这不包括已加载长期授权后缺少本轮重复授权。共享入口、schema/storage、应用生命周期、交易/生产路径由主 agent 串行控制。
-- subagent lifecycle：主 agent 记录本轮派出的 agent id；收到结果、决定不采纳或不再需要时必须 `close_agent`，最终回复前检查是否还有未关闭 agent。只读 explorer / reviewer / 竞品观察也必须收口。
-- observability：本地 usage、菜单栏状态、长任务监控、通知或 HUD 工具仅作为候选；必须确认本地日志读取范围、网络/后台行为和关闭方式后试用。
-- `spec-kit-xl`：只用于 XL、正式规格、长期验收标准或用户明确要求规格文档的任务。
-- browser/frontend QA：前端布局、CSS、交互、资源加载、跨 viewport 或用户可见风险较高时触发；纯 JS 契约或小 empty-state 改动可先用 targeted tests。
-- Playwright MCP：仅作为 `junwei-browser-automation` 的 pilot 路径。默认先用 repo 测试、in-app Browser 或 Playwright CLI；只有持久浏览器状态、结构化 accessibility snapshots 或多步探索明显值得额外上下文/权限成本时才评估 MCP。
-- 产品 demo 视频工具链：仅作为 `junwei-product-demo-video` 的 repo-local pilot。默认先做脚本、场景、capture plan 和本地 QA；安装 Remotion/FFmpeg wrapper、配置 API、cloud GPU、voice cloning、upload 或 publish 都必须另行确认。
-- 大型 skill/subagent/security/SaaS 包：只作为研究素材或 repo-local 候选，不全局安装；优先把确定性检查放脚本/hooks 候选，把外部能力放 MCP pilot，把角色分工放 subagent prompt cards。
+其他 hooks、MCP、代码图谱、memory、Playwright MCP、后台监控和 SaaS 能力继续保持显式 Pilot 或 Hold；默认不启用、不启动、不写入外部系统。Subagent 只在边界独立且能够并行时使用，主 agent 负责共享文件、集成、验证和收口。
 
 ## V3.1 Delivery Review
 
@@ -127,10 +123,10 @@ V3.1 verifier/tests/README/QUICKSTART/VERSION/MANIFEST/release 必须同步通�
 - 保留独立 `reverse-skill/` 子树，不把内容硬塞进 `skills/` 平铺层。
 - 保留关键 bridge/runtime 文件：`burp-mcp-full/mcp-bridge.js`、`ghidra-mcp/headless/ghidra_headless_mcp.py`、CTF orchestrator、bootstrap 脚本、field journal、平台文档。
 - 排除机器态和生成噪音：`.venv/`、`__pycache__/`、`.pyc`、生成的 `tool-index.md/json`、`.bak-*`、`.DS_Store`。
-- 安装器把 reverse pack 落到 `~/.codex/reverse-skill/`，把 router 落到 `~/.codex/skills/reverse-engineering/`，避免破坏原有路径假设。
-- live verifier 把 global AGENTS、11 个个人 skills、reverse router、reverse pack 和活跃插件路径一起校验，避免“仓库里有文件但 Desktop 里没接上”。
+- 安装器仅在 `--with-reverse` 或 `--with-reverse-core` 下把 reverse pack 落到 `~/.codex/reverse-skill/`、把 router 落到 `~/.codex/skills/reverse-engineering/`，避免默认上下文和安装面膨胀，同时保留原有路径假设。
+- live verifier 默认校验 global AGENTS、Stable skills 和活跃插件路径；`--with-pilots` 要求 Pilot skills，reverse profile 启用后用 `--with-reverse` 加验 router 与 reverse pack，避免“仓库里有文件但 Desktop 里没接上”。
 - `install.sh --with-reverse-core` 提供新机器 `reverse-ready` 安装档：文件安装完成后，再 bootstrap 一批高频 reverse core 工具，并自动调用 `scripts/verify_reverse_ready.py` 做机器级只读检查。
-- `install.ps1` 提供 Windows 顶层安装入口，复用同一套 global AGENTS / skills / reverse pack / repo-template 安装语义，并可透传 `-WithReverseCore`、`-VerifyReverseReady` 到 Windows PowerShell bootstrap 路径。
+- `install.ps1` 提供 Windows 顶层安装入口，复用同一套 global AGENTS / skills / reverse pack / repo-template 安装语义；Windows reverse bootstrap 当前默认 fail closed，只有显式设置 `REVERSE_ALLOW_UNPINNED_WINDOWS_BOOTSTRAP=1` 才会进入兼容路径，且该放开不构成供应链验证证据。
 
 ## V3.2 Frontend Browser Video Workflow
 
@@ -154,12 +150,14 @@ No-Conflict Matrix:
 - Demo video from product UI: use `junwei-product-demo-video`; call `junwei-browser-automation` only for capture inputs.
 - External tool absorption: use `research-brief` + `skill-plugin-intake-review`; security-sensitive MCP/video boundaries require `security-review`; release/package work requires `release-readiness`.
 
-## 真实验证
+## V2/V3 历史验证
+
+以下记录是既有版本的真实仓库和机器演练证据，用于保留回归基线。它们不会自动证明 V4.2 Router、外部候选或新生命周期已经通过真实任务评测；V4.2 的当前证据边界以本文开头和 `docs/V4.2-IMPLEMENTATION-PLAN.md` 第 19 节为准。
 
 已完成的验证层：
 
 - toolkit 自检：`scripts/verify_toolkit.py` 输出 `Workflow toolkit OK`。
-- live install 自检：`scripts/verify_live_install.py` 输出 `Live install OK`，确认全局 AGENTS、14 个 skill 入口、reverse router、reverse pack 和 packaged skill assets 与 output 包一致。
+- live install 自检：`scripts/verify_live_install.py` 输出 `Live install OK`，默认确认全局 AGENTS、10 个 Stable skill 入口和 packaged assets；使用 `--with-pilots` 时扩展到 14 个，启用 reverse profile 时再用 `--with-reverse` 验证 router 和 reverse pack。
 - repo-template 自检：`repo-template/scripts/verify_context_pack.py repo-template` 输出 `Context pack OK`。
 - toolkit tests：覆盖 toolkit 自检、manifest/release、安装器 preflight、质量门禁模板和 workflow review。
 - repo-template tests：覆盖 context pack verifier。
@@ -180,15 +178,16 @@ No-Conflict Matrix:
 - C 级：TestClient/app health/dev server/preview server，可能触发应用生命周期、本地 DB、缓存、端口或后台任务。
 - D 级：外部服务、真实数据同步、迁移、部署、权限、交易、支付、生产或凭证相关操作。
 
-## 触发条件
+## V4.2 运行触发条件
 
 在新仓库中按以下方式使用：
 
 - 首次进入仓库且上下文不足：使用 `repo-onboarding` 建立 context pack。
-- XS/S 任务：直接读相关文件、做最小改动、跑 targeted verification。
-- M 任务：使用 Superpowers 做轻量澄清、TDD/实现和验证；必要时记录 usage 信号。
-- L 任务：先调查影响范围，再由 Superpowers 写计划并推进；长期取舍用 `decision-record`。
-- XL/正式需求：先用 `spec-kit-xl` 写规格，规格确认后再交给 Superpowers 写计划和执行。
+- Fast：需求明确、工作区内可逆、无外部副作用、有强判定器且不跨安全/公开接口边界；native Codex 直接执行，不写持久化 Contract。
+- Standard：存在设计选择、多模块影响或需要 TDD，但仍可在工作区回滚；在上下文中维护 Task Contract，并为当前 transition 选择一个 native 或已明确启用的 Driver。
+- Governed：生产/外部写入、凭据、权限、数据迁移、公开 API、不可逆动作或正式审批；持久化 Contract 和 event log，缺少有效审批或关键 enforcement 时 fail closed。
+- 正式规格：只有用户或项目明确要求时显式使用 `spec-kit-xl` Pilot；OpenSpec 在完成单变量 A/B 前不参与默认路由，Superpowers 在完成 Repo Pilot 前也不能被文档假定为已安装 Driver。
+- 通道执行中只能自动升级，不能由当前 Driver 为减少流程而自动降级；一个 transition 始终只有一个权威 Driver。
 - 测试、构建、启动、E2E 或运行失败：进入 `debug-loop`。
 - 前端用户可见风险：使用 `frontend-qa`，必要时浏览器截图或多 viewport 验证。
 - 创建、重做或打磨 UI/视觉/页面/app/tool/game 前端设计：使用 `junwei-frontend-design` 先定模式、审美方向、反模板化风险和验收重点；验证阶段仍使用 `frontend-qa` 或项目测试。
@@ -210,6 +209,16 @@ cd codex-workflow-kit
 python3 scripts/verify_toolkit.py
 ./install.sh --dry-run
 ./install.sh
+python3 scripts/verify_live_install.py
+./install.sh --prune-preview
+```
+
+`--prune`、`--uninstall` 和 `--rollback` 都依赖安装状态。prune/uninstall 默认保留修改文件但显式 force 可删除；rollback 只撤销最近提交，并且不会删除本次新建后又被用户修改的内容。reverse 只在显式需要时另行演练：
+
+```bash
+./install.sh --with-reverse --dry-run
+./install.sh --with-reverse
+python3 scripts/verify_live_install.py --with-reverse
 python3 scripts/verify_apk_decode_smoke.py --apk-fixture /path/to/app.apk
 ```
 
@@ -217,9 +226,11 @@ Windows:
 
 ```powershell
 powershell -ExecutionPolicy Bypass -File .\install.ps1 -DryRun
-powershell -ExecutionPolicy Bypass -File .\install.ps1 -WithReverseCore -VerifyReverseReady
-python scripts/verify_apk_decode_smoke.py --apk-fixture C:\path\to\app.apk
+powershell -ExecutionPolicy Bypass -File .\install.ps1
+powershell -ExecutionPolicy Bypass -File .\install.ps1 -PrunePreview
 ```
+
+Windows 的 reverse-ready、uninstall 和 rollback 必须在真实 PowerShell 环境另行演练；默认阻断和静态解析都不能写成跨平台通过。
 
 给某个仓库安装 context pack：
 
@@ -230,7 +241,7 @@ cd /path/to/repo
 python3 scripts/verify_context_pack.py
 ```
 
-默认安装器是非破坏式的：遇到不同内容会先报冲突，不会覆盖。`--backup` 用于保留旧文件后替换，`--force` 只在确认覆盖时使用。
+默认安装器只安装全局规则和 Stable skills；Pilot skills 需要 `--with-pilots`，reverse profile 需要显式启用。安装器仍是非破坏式的，遇到不同内容会先报冲突，不会覆盖。`--backup` 用于保留旧文件后替换，`--force` 只在确认覆盖时使用。
 
 ## V2 Adoption Review
 

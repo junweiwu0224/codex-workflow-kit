@@ -1,0 +1,8 @@
+============================= test session starts ==============================
+collected 6 items
+
+tests/test_callback.py ......                                           [100%]
+
+============================== 6 passed in 0.04s ===============================
+
+Covered cases: accepted payment event; rejected unknown callback host.

@@ -1,0 +1,56 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://codex-workflow-kit.local/governance/eval-attestation.schema.json",
+  "title": "Codex Workflow V4.2 Eval Attestations",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "attestations"],
+  "properties": {
+    "schema_version": {"const": "4.2"},
+    "description": {"type": "string"},
+    "attestations": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "report_sha256",
+          "run_id",
+          "suite_id",
+          "suite_sha256",
+          "subject",
+          "source_commit",
+          "decision",
+          "reviewed_by",
+          "reviewed_at",
+          "isolation_verifier",
+          "key_id",
+          "signature"
+        ],
+        "properties": {
+          "report_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+          "run_id": {"type": "string", "minLength": 1},
+          "suite_id": {"type": "string", "minLength": 1},
+          "suite_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+          "subject": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["kind", "id", "content_sha256"],
+            "properties": {
+              "kind": {"enum": ["component", "profile"]},
+              "id": {"type": "string", "minLength": 1},
+              "content_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+            }
+          },
+          "source_commit": {"type": "string", "pattern": "^[0-9a-f]{40}$"},
+          "decision": {"enum": ["qualified", "rejected"]},
+          "reviewed_by": {"type": "string", "minLength": 1},
+          "reviewed_at": {"type": "string", "format": "date-time"},
+          "isolation_verifier": {"type": "string", "minLength": 1},
+          "key_id": {"type": "string", "minLength": 1},
+          "signature": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+        }
+      }
+    }
+  }
+}

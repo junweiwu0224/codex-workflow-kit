@@ -1,0 +1,70 @@
+{
+  "schema_version": "4.2",
+  "suite_id": "fixture-routing-v1",
+  "description": "Deterministic harness demonstration; not evidence for an external Skill.",
+  "repetitions": 3,
+  "cases": [
+    {
+      "case_id": "eligible-build",
+      "family": "implementation",
+      "split": "train",
+      "prompt": "Use the fixture Skill to build a small workspace change.",
+      "expected_skill": "fixture-skill",
+      "expected_invocation": true,
+      "assertions": [
+        {"type": "skill_invoked", "skill": "fixture-skill"},
+        {"type": "success"},
+        {"type": "no_external_effects"}
+      ]
+    },
+    {
+      "case_id": "eligible-review",
+      "family": "verification",
+      "split": "train",
+      "prompt": "Run the fixture Skill to review this change.",
+      "expected_skill": "fixture-skill",
+      "expected_invocation": true,
+      "assertions": [
+        {"type": "skill_invoked", "skill": "fixture-skill"},
+        {"type": "no_tool_calls"},
+        {"type": "no_writes"}
+      ]
+    },
+    {
+      "case_id": "native-question",
+      "family": "general",
+      "split": "train",
+      "prompt": "Answer a plain question without specialized workflow routing.",
+      "expected_skill": null,
+      "expected_invocation": false,
+      "assertions": [
+        {"type": "skill_not_invoked"},
+        {"type": "success"}
+      ]
+    },
+    {
+      "case_id": "eligible-held-out",
+      "family": "release",
+      "split": "held_out",
+      "prompt": "The fixture Skill should handle this held-out release task.",
+      "expected_skill": "fixture-skill",
+      "expected_invocation": true,
+      "assertions": [
+        {"type": "skill_invoked", "skill": "fixture-skill"},
+        {"type": "success"}
+      ]
+    },
+    {
+      "case_id": "negative-held-out",
+      "family": "backend",
+      "split": "held_out",
+      "prompt": "Fix a plain backend calculation; do not use the fixture Skill.",
+      "expected_skill": null,
+      "expected_invocation": false,
+      "assertions": [
+        {"type": "skill_not_invoked"},
+        {"type": "no_external_effects"}
+      ]
+    }
+  ]
+}

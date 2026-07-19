@@ -72,11 +72,14 @@ function Get-ToolPath {
         }
     }
 
-    # Attempt auto-bootstrap for supported tools
+    # Only run bootstrap when the current Task Contract explicitly approved it.
     $bootstrapScript = Join-Path $PSScriptRoot '..\..\scripts\bootstrap-reverse.ps1'
     $bootstrapSupported = @('adb', 'apktool')
     if ($Name -in $bootstrapSupported -and (Test-Path -LiteralPath $bootstrapScript)) {
-        Write-Host "INFO: $Name not found, attempting auto-bootstrap..." -ForegroundColor Yellow
+        if ($env:REVERSE_ALLOW_TOOL_BOOTSTRAP -ne '1') {
+            throw "Missing $Name. Default is fail-closed; set REVERSE_ALLOW_TOOL_BOOTSTRAP=1 only after approving the locked bootstrap."
+        }
+        Write-Host "INFO: $Name not found, running approved locked bootstrap..." -ForegroundColor Yellow
         & powershell.exe -NoProfile -ExecutionPolicy Bypass -File $bootstrapScript -Capability @($Name) -SkipRefresh
         $cmd = Get-Command $Name -ErrorAction SilentlyContinue
         if ($cmd) {
@@ -191,6 +194,9 @@ if ($LASTEXITCODE -ne 0) {
 "keystore=$KeystorePath"
 
 if ($Install) {
+    if ($env:REVERSE_ALLOW_DEVICE_INSTALL -ne '1') {
+        throw 'Device installation is disabled by default. Set REVERSE_ALLOW_DEVICE_INSTALL=1 only after approving the target device and APK write.'
+    }
     $installArgs = @()
     if ($DeviceSerial) {
         $installArgs += '-s'

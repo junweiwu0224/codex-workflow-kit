@@ -43,22 +43,26 @@ if [[ ! -f "$APK_PATH" ]]; then
     exit 1
 fi
 
-# ─── 工具检测与自动安装 ─────────────────────────────────────────────────────────────
+# ─── 工具检测与显式 Bootstrap ──────────────────────────────────────────────────────
 
 ensure_tool() {
     local name="$1"
     if command -v "$name" &>/dev/null; then
         return 0
     fi
-    echo "INFO: $name 未找到，尝试自动安装..."
+    if [[ "${REVERSE_ALLOW_TOOL_BOOTSTRAP:-0}" != "1" ]]; then
+        echo "ERR: $name 未找到；默认不安装。批准锁定 bootstrap 后设置 REVERSE_ALLOW_TOOL_BOOTSTRAP=1。"
+        return 1
+    fi
+    echo "INFO: $name 未找到，运行已批准的锁定 bootstrap..."
     if [[ -x "$KALI_BOOTSTRAP" ]]; then
         bash "$KALI_BOOTSTRAP" "$name" --skip-refresh 2>/dev/null || true
     fi
     if ! command -v "$name" &>/dev/null; then
-        echo "ERR: $name 安装失败，请手动安装"
+        echo "ERR: $name bootstrap 失败，请审阅锁定来源和安装日志"
         return 1
     fi
-    echo "INFO: $name 安装成功"
+    echo "INFO: $name bootstrap 成功"
 }
 
 tool_path_from_index() {

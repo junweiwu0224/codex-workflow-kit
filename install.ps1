@@ -10,6 +10,10 @@ param(
 
     [switch]$RepoOnly,
 
+    [switch]$WithPilots,
+
+    [switch]$WithReverse,
+
     [switch]$WithReverseCore,
 
     [switch]$StartReverseServices,
@@ -17,6 +21,14 @@ param(
     [switch]$VerifyReverseReady,
 
     [string]$ReverseCapabilities,
+
+    [switch]$PrunePreview,
+
+    [switch]$Prune,
+
+    [switch]$Uninstall,
+
+    [switch]$Rollback,
 
     [switch]$DryRun,
 
@@ -117,11 +129,7 @@ function Copy-ToolkitFile {
             Write-Log "replace: $Target"
         }
         elseif ($Backup) {
-            $backupPath = "$Target.bak-$(Get-Date -Format 'yyyyMMddHHmmss')"
-            Write-Log "backup: $Target -> $backupPath"
-            Invoke-Step -Preview "Copy-Item -LiteralPath `"$Target`" -Destination `"$backupPath`" -Force" -Action {
-                Copy-Item -LiteralPath $Target -Destination $backupPath -Force
-            }
+            Write-Log "backup and replace: $Target"
         }
         else {
             Write-Log "conflict: $Target"
@@ -133,8 +141,13 @@ function Copy-ToolkitFile {
         Write-Log "create: $Target"
     }
 
-    Invoke-Step -Preview "Copy-Item -LiteralPath `"$Source`" -Destination `"$Target`" -Force" -Action {
-        Copy-Item -LiteralPath $Source -Destination $Target -Force
+    if ($DryRun) {
+        Invoke-Step -Preview "Copy-Item -LiteralPath `"$Source`" -Destination `"$Target`" -Force" -Action {
+            Copy-Item -LiteralPath $Source -Destination $Target -Force
+        }
+    }
+    else {
+        Invoke-InstallState -Mode 'copy-target' -Target $Target
     }
 }
 
@@ -176,10 +189,39 @@ function Install-ReversePack {
     Copy-ToolkitTree -SourceRoot (Join-Path $KitRoot 'reverse-skill') -TargetRoot (Join-Path $CodexHome 'reverse-skill')
 }
 
+function Install-ReverseLock {
+    Copy-ToolkitFile `
+        -Source (Join-Path $KitRoot 'catalog\reverse-dependencies.lock.yaml') `
+        -Target (Join-Path $CodexHome 'catalog\reverse-dependencies.lock.yaml')
+}
+
+function Get-SelectedSkillNames {
+    $profileFiles = @((Join-Path $KitRoot 'catalog\profiles\stable.txt'))
+    if ($WithPilots) {
+        $profileFiles += (Join-Path $KitRoot 'catalog\profiles\pilot.txt')
+    }
+    $names = foreach ($profileFile in $profileFiles) {
+        if (-not (Test-Path -LiteralPath $profileFile -PathType Leaf)) {
+            throw "skill profile missing: $profileFile"
+        }
+        foreach ($line in Get-Content -LiteralPath $profileFile) {
+            $name = $line.Trim()
+            if (-not [string]::IsNullOrWhiteSpace($name) -and -not $name.StartsWith('#')) {
+                $name
+            }
+        }
+    }
+    return @($names | Sort-Object -Unique)
+}
+
 function Install-Skills {
     $skillsRoot = Join-Path $KitRoot 'skills'
-    foreach ($skillDir in Get-ChildItem -LiteralPath $skillsRoot -Directory | Sort-Object Name) {
-        Copy-ToolkitTree -SourceRoot $skillDir.FullName -TargetRoot (Join-Path $AgentsHome "skills\$($skillDir.Name)")
+    foreach ($skillName in Get-SelectedSkillNames) {
+        $skillDir = Join-Path $skillsRoot $skillName
+        if (-not (Test-Path -LiteralPath $skillDir -PathType Container)) {
+            throw "profile skill missing: $skillDir"
+        }
+        Copy-ToolkitTree -SourceRoot $skillDir -TargetRoot (Join-Path $AgentsHome "skills\$skillName")
     }
 }
 
@@ -265,8 +307,67 @@ function Invoke-ReverseReadyVerifier {
     }
 }
 
+function Invoke-InstallState {
+    param(
+        [Parameter(Mandatory = $true)]
+        [ValidateSet('begin', 'preflight-copy', 'create-backup', 'copy-target', 'commit', 'abort', 'record', 'prune-preview', 'prune', 'uninstall', 'rollback')]
+        [string]$Mode,
+
+        [string]$Target
+    )
+
+    $stateScript = Join-Path $KitRoot 'scripts\manage_install.py'
+    if (-not (Test-Path -LiteralPath $stateScript -PathType Leaf)) {
+        throw "install state manager missing: $stateScript"
+    }
+    $python = Get-Command python -ErrorAction SilentlyContinue
+    if (-not $python) {
+        $python = Get-Command python3 -ErrorAction SilentlyContinue
+    }
+    if (-not $python) {
+        throw 'python or python3 is required to manage install state'
+    }
+    $arguments = @(
+        $stateScript,
+        $Mode,
+        '--kit-root', $KitRoot,
+        '--codex-home', $CodexHome,
+        '--agents-home', $AgentsHome
+    )
+    if ($RepoOnly) {
+        $arguments += '--repo-only'
+    }
+    if (-not [string]::IsNullOrWhiteSpace($Repo)) {
+        $arguments += @('--repo', $Repo)
+    }
+    if ($WithPilots) {
+        $arguments += '--with-pilots'
+    }
+    if ($WithReverse) {
+        $arguments += '--with-reverse'
+    }
+    if ($Backup) {
+        $arguments += '--backup'
+    }
+    if ($Force) {
+        $arguments += '--force'
+    }
+    if (-not [string]::IsNullOrWhiteSpace($Target)) {
+        $arguments += @('--target', $Target)
+    }
+    & $python.Source @arguments
+    if ($LASTEXITCODE -ne 0) {
+        throw "manage_install.py failed with exit code $LASTEXITCODE"
+    }
+}
+
 if ($Backup -and $Force) {
     throw '-Backup and -Force cannot be used together'
+}
+
+$managementModes = @($PrunePreview, $Prune, $Uninstall, $Rollback) | Where-Object { $_ } | Measure-Object | Select-Object -ExpandProperty Count
+if ($managementModes -gt 1) {
+    throw '-PrunePreview, -Prune, -Uninstall, and -Rollback are mutually exclusive'
 }
 
 if ($RepoOnly -and [string]::IsNullOrWhiteSpace($Repo)) {
@@ -277,27 +378,82 @@ if ($StartReverseServices -and -not $WithReverseCore) {
     throw '-StartReverseServices requires -WithReverseCore'
 }
 
+if ($WithReverseCore) {
+    $WithReverse = $true
+}
+
 $CodexHome = Resolve-AbsolutePath -PathValue $CodexHome
 $AgentsHome = Resolve-AbsolutePath -PathValue $AgentsHome
 if (-not [string]::IsNullOrWhiteSpace($Repo)) {
     $Repo = Resolve-AbsolutePath -PathValue $Repo
 }
 
-if (-not $RepoOnly) {
-    Install-GlobalAgents
-    Install-ReverseRouterSkill
-    Install-ReversePack
-    Install-Skills
+if ($managementModes -eq 1) {
+    if ($RepoOnly -and [string]::IsNullOrWhiteSpace($Repo)) {
+        throw 'management mode with -RepoOnly requires -Repo PATH'
+    }
+    if ($PrunePreview) {
+        Invoke-InstallState -Mode 'prune-preview'
+    }
+    elseif ($Prune) {
+        Invoke-InstallState -Mode 'prune'
+    }
+    elseif ($Uninstall) {
+        Invoke-InstallState -Mode 'uninstall'
+    }
+    else {
+        Invoke-InstallState -Mode 'rollback'
+    }
+    exit 0
 }
-Install-RepoTemplate
 
-if (-not $RepoOnly -and $WithReverseCore) {
-    Write-Log 'bootstrap reverse core tools'
-    Invoke-ReverseBootstrap
+$transactionStarted = $false
+try {
+    # Dry runs must remain side-effect free, including state-manager writes.
+    if (-not $DryRun) {
+        Invoke-InstallState -Mode 'begin'
+        $transactionStarted = $true
+    }
+
+    if (-not $RepoOnly) {
+        Install-GlobalAgents
+        if ($WithReverse) {
+            Install-ReverseRouterSkill
+            Install-ReversePack
+            Install-ReverseLock
+        }
+        Install-Skills
+    }
+    Install-RepoTemplate
+
+    if (-not $RepoOnly -and $WithReverseCore) {
+        Write-Log 'bootstrap reverse core tools'
+        Invoke-ReverseBootstrap
+    }
+
+    if (-not $RepoOnly -and ($VerifyReverseReady -or $WithReverseCore)) {
+        Invoke-ReverseReadyVerifier
+    }
+
+    if (-not $DryRun) {
+        Invoke-InstallState -Mode 'commit'
+        $transactionStarted = $false
+    }
 }
-
-if (-not $RepoOnly -and ($VerifyReverseReady -or $WithReverseCore)) {
-    Invoke-ReverseReadyVerifier
+catch {
+    Write-Log 'Install failed; restoring uncommitted managed files.'
+    throw
+}
+finally {
+    if ($transactionStarted) {
+        try {
+            Invoke-InstallState -Mode 'abort'
+        }
+        catch {
+            # Never mask the original install failure with an abort failure.
+            Write-Log "Install abort failed; manual recovery may be required: $($_.Exception.Message)"
+        }
+    }
 }
 
 Write-Log 'Install plan complete.'

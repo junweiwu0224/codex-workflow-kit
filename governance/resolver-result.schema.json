@@ -1,0 +1,33 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://codex-workflow-kit.local/governance/resolver-result.schema.json",
+  "title": "Codex Workflow V4.2 Resolver Result",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "report_type", "resolver_version", "summary", "entries"],
+  "properties": {
+    "schema_version": {"const": "4.2"},
+    "report_type": {"const": "resolver-result"},
+    "resolver_version": {"type": "string"},
+    "generated_at": {"type": "string"},
+    "catalog_path": {"type": "string"},
+    "lock_path": {"type": "string"},
+    "repository_root": {"type": ["string", "null"]},
+    "catalog_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "lock_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "summary": {
+      "type": "object",
+      "required": ["total", "resolved", "unresolved", "stable_unresolved", "release_eligible"],
+      "properties": {
+        "total": {"type": "integer", "minimum": 0},
+        "resolved": {"type": "integer", "minimum": 0},
+        "unresolved": {"type": "integer", "minimum": 0},
+        "stable_unresolved": {"type": "integer", "minimum": 0},
+        "release_eligible": {"type": "boolean"}
+      },
+      "additionalProperties": false
+    },
+    "entries": {"type": "array", "items": {"type": "object"}},
+    "disclaimer": {"type": "string"}
+  }
+}

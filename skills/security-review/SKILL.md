@@ -1,15 +1,6 @@
 ---
 name: security-review
 description: Use when code, configuration, dependencies, hooks, MCP/plugin setup, CI, auth, permissions, secrets, user data, payments, production settings, external writes, or trust boundaries need security review.
-risk: medium
-source_repo: personal-workflow-kit
-source_type: curated-local
-date_added: 2026-06-07
-setup: none
-write_surface: task-dependent
-auth: task-dependent
-network: task-dependent
-status: active
 ---
 
 # security-review

@@ -235,7 +235,7 @@ function Get-ReverseToolCatalog {
             Name = 'jshookmcp'
             Skill = 'js-reverse'
             Purpose = '通过 npx 启动 @jshookmcp/jshook MCP（仍需先配置并启用 MCP server）'
-            FixedVersion = '@jshookmcp/jshook@latest'
+            FixedVersion = '@jshookmcp/jshook@0.3.3'
             VersionArgs = @()
             Fallbacks = @(
                 [pscustomobject]@{ Type = 'command'; Value = 'npx' }
@@ -911,4 +911,3 @@ function Get-ReverseToolReport {
         }
     }
 }
-

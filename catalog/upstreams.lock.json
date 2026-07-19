@@ -1,0 +1,430 @@
+{
+  "schema_version": "4.2",
+  "repository": {
+    "name": "codex-workflow-kit",
+    "commit_policy": "release-manifest"
+  },
+  "license_policy": "catalog/license-policy.yaml",
+  "entries": [
+    {
+      "name": "completion-review",
+      "catalog_ref": "completion-review",
+      "source": {
+        "kind": "repo-local",
+        "repository": "junweiwu0224/codex-workflow-kit",
+        "path": "skills/completion-review/SKILL.md"
+      },
+      "resolution": {
+        "status": "resolved",
+        "kind": "repo-local-content"
+      },
+      "content": {
+        "status": "resolved",
+        "algorithm": "sha256",
+        "scope": "skill-tree",
+        "value": "5d14c23283fc7636d16b0811bd2f680054ac9c2b0a31f9a02101530ca7ed03a1"
+      },
+      "compatibility": {
+        "status": "resolved",
+        "codex": "agentskills-standard-v1",
+        "evidence": "scripts/validate_governance.py"
+      },
+      "license": {
+        "status": "resolved",
+        "spdx": "LicenseRef-Proprietary",
+        "policy_ref": "catalog/license-policy.yaml",
+        "reason": "Root LICENSE reserves all rights; internal-only distribution."
+      }
+    },
+    {
+      "name": "debug-loop",
+      "catalog_ref": "debug-loop",
+      "source": {
+        "kind": "repo-local",
+        "repository": "junweiwu0224/codex-workflow-kit",
+        "path": "skills/debug-loop/SKILL.md"
+      },
+      "resolution": {
+        "status": "resolved",
+        "kind": "repo-local-content"
+      },
+      "content": {
+        "status": "resolved",
+        "algorithm": "sha256",
+        "scope": "skill-tree",
+        "value": "20192be065c1136bf1d2a34f8c985b207537f655f7fc2f05c24d883433d9690c"
+      },
+      "compatibility": {
+        "status": "resolved",
+        "codex": "agentskills-standard-v1",
+        "evidence": "scripts/validate_governance.py"
+      },
+      "license": {
+        "status": "resolved",
+        "spdx": "LicenseRef-Proprietary",
+        "policy_ref": "catalog/license-policy.yaml",
+        "reason": "Root LICENSE reserves all rights; internal-only distribution."
+      }
+    },
+    {
+      "name": "decision-record",
+      "catalog_ref": "decision-record",
+      "source": {
+        "kind": "repo-local",
+        "repository": "junweiwu0224/codex-workflow-kit",
+        "path": "skills/decision-record/SKILL.md"
+      },
+      "resolution": {
+        "status": "resolved",
+        "kind": "repo-local-content"
+      },
+      "content": {
+        "status": "resolved",
+        "algorithm": "sha256",
+        "scope": "skill-tree",
+        "value": "20dea5b791ee522821b45a5cf42e8238a42bc0f55a7edbac952ddb6f3e04b8fd"
+      },
+      "compatibility": {
+        "status": "resolved",
+        "codex": "agentskills-standard-v1",
+        "evidence": "scripts/validate_governance.py"
+      },
+      "license": {
+        "status": "resolved",
+        "spdx": "LicenseRef-Proprietary",
+        "policy_ref": "catalog/license-policy.yaml",
+        "reason": "Root LICENSE reserves all rights; internal-only distribution."
+      }
+    },
+    {
+      "name": "dependency-upgrade-review",
+      "catalog_ref": "dependency-upgrade-review",
+      "source": {
+        "kind": "repo-local",
+        "repository": "junweiwu0224/codex-workflow-kit",
+        "path": "skills/dependency-upgrade-review/SKILL.md"
+      },
+      "resolution": {
+        "status": "resolved",
+        "kind": "repo-local-content"
+      },
+      "content": {
+        "status": "resolved",
+        "algorithm": "sha256",
+        "scope": "skill-tree",
+        "value": "e9f65828f1d336ddf6023c75a281b6db376104ab1fda049385bae5156e6b84bd"
+      },
+      "compatibility": {
+        "status": "resolved",
+        "codex": "agentskills-standard-v1",
+        "evidence": "scripts/validate_governance.py"
+      },
+      "license": {
+        "status": "resolved",
+        "spdx": "LicenseRef-Proprietary",
+        "policy_ref": "catalog/license-policy.yaml",
+        "reason": "Root LICENSE reserves all rights; internal-only distribution."
+      }
+    },
+    {
+      "name": "frontend-qa",
+      "catalog_ref": "frontend-qa",
+      "source": {
+        "kind": "repo-local",
+        "repository": "junweiwu0224/codex-workflow-kit",
+        "path": "skills/frontend-qa/SKILL.md"
+      },
+      "resolution": {
+        "status": "resolved",
+        "kind": "repo-local-content"
+      },
+      "content": {
+        "status": "resolved",
+        "algorithm": "sha256",
+        "scope": "skill-tree",
+        "value": "00e025d16d681c13f2b9733d79c3803d83cb00e4a03c50ed33c56ccedbed8423"
+      },
+      "compatibility": {
+        "status": "resolved",
+        "codex": "agentskills-standard-v1",
+        "evidence": "scripts/validate_governance.py"
+      },
+      "license": {
+        "status": "resolved",
+        "spdx": "LicenseRef-Proprietary",
+        "policy_ref": "catalog/license-policy.yaml",
+        "reason": "Root LICENSE reserves all rights; internal-only distribution."
+      }
+    },
+    {
+      "name": "junwei-browser-automation",
+      "catalog_ref": "junwei-browser-automation",
+      "source": {
+        "kind": "repo-local",
+        "repository": "junweiwu0224/codex-workflow-kit",
+        "path": "skills/junwei-browser-automation/SKILL.md"
+      },
+      "resolution": {
+        "status": "resolved",
+        "kind": "repo-local-content"
+      },
+      "content": {
+        "status": "resolved",
+        "algorithm": "sha256",
+        "scope": "skill-tree",
+        "value": "48d8b19f6b11ce89077e6dd70f0a351bc0a2fd61860511b605efe5b667faa4c0"
+      },
+      "compatibility": {
+        "status": "resolved",
+        "codex": "agentskills-standard-v1",
+        "evidence": "scripts/validate_governance.py"
+      },
+      "license": {
+        "status": "resolved",
+        "spdx": "LicenseRef-Proprietary",
+        "policy_ref": "catalog/license-policy.yaml",
+        "reason": "Root LICENSE reserves all rights; internal-only distribution."
+      }
+    },
+    {
+      "name": "junwei-frontend-design",
+      "catalog_ref": "junwei-frontend-design",
+      "source": {
+        "kind": "repo-local",
+        "repository": "junweiwu0224/codex-workflow-kit",
+        "path": "skills/junwei-frontend-design/SKILL.md"
+      },
+      "resolution": {
+        "status": "resolved",
+        "kind": "repo-local-content"
+      },
+      "content": {
+        "status": "resolved",
+        "algorithm": "sha256",
+        "scope": "skill-tree",
+        "value": "72ef0ef4c0e7273ce3569603480c0ac88ccd94c051f4b44d56c8b42d613b227e"
+      },
+      "compatibility": {
+        "status": "resolved",
+        "codex": "agentskills-standard-v1",
+        "evidence": "scripts/validate_governance.py"
+      },
+      "license": {
+        "status": "resolved",
+        "spdx": "LicenseRef-Proprietary",
+        "policy_ref": "catalog/license-policy.yaml",
+        "reason": "Root LICENSE reserves all rights; internal-only distribution."
+      }
+    },
+    {
+      "name": "junwei-product-demo-video",
+      "catalog_ref": "junwei-product-demo-video",
+      "source": {
+        "kind": "repo-local",
+        "repository": "junweiwu0224/codex-workflow-kit",
+        "path": "skills/junwei-product-demo-video/SKILL.md"
+      },
+      "resolution": {
+        "status": "resolved",
+        "kind": "repo-local-content"
+      },
+      "content": {
+        "status": "resolved",
+        "algorithm": "sha256",
+        "scope": "skill-tree",
+        "value": "a2273fd35aa3aa50260e6d5ff5673a2cc41e1ddc3885c139ed8d8af24ba3b357"
+      },
+      "compatibility": {
+        "status": "resolved",
+        "codex": "agentskills-standard-v1",
+        "evidence": "scripts/validate_governance.py"
+      },
+      "license": {
+        "status": "resolved",
+        "spdx": "LicenseRef-Proprietary",
+        "policy_ref": "catalog/license-policy.yaml",
+        "reason": "Root LICENSE reserves all rights; internal-only distribution."
+      }
+    },
+    {
+      "name": "release-readiness",
+      "catalog_ref": "release-readiness",
+      "source": {
+        "kind": "repo-local",
+        "repository": "junweiwu0224/codex-workflow-kit",
+        "path": "skills/release-readiness/SKILL.md"
+      },
+      "resolution": {
+        "status": "resolved",
+        "kind": "repo-local-content"
+      },
+      "content": {
+        "status": "resolved",
+        "algorithm": "sha256",
+        "scope": "skill-tree",
+        "value": "8854f82a104157202c62f8b2b30f5604a8d7e34783c58dbf2bf997529a713ad0"
+      },
+      "compatibility": {
+        "status": "resolved",
+        "codex": "agentskills-standard-v1",
+        "evidence": "scripts/validate_governance.py"
+      },
+      "license": {
+        "status": "resolved",
+        "spdx": "LicenseRef-Proprietary",
+        "policy_ref": "catalog/license-policy.yaml",
+        "reason": "Root LICENSE reserves all rights; internal-only distribution."
+      }
+    },
+    {
+      "name": "repo-onboarding",
+      "catalog_ref": "repo-onboarding",
+      "source": {
+        "kind": "repo-local",
+        "repository": "junweiwu0224/codex-workflow-kit",
+        "path": "skills/repo-onboarding/SKILL.md"
+      },
+      "resolution": {
+        "status": "resolved",
+        "kind": "repo-local-content"
+      },
+      "content": {
+        "status": "resolved",
+        "algorithm": "sha256",
+        "scope": "skill-tree",
+        "value": "dc10d7d24b8ee357905b2f2c438d337c20fcf4711a14e3ef9416275ffa0c9396"
+      },
+      "compatibility": {
+        "status": "resolved",
+        "codex": "agentskills-standard-v1",
+        "evidence": "scripts/validate_governance.py"
+      },
+      "license": {
+        "status": "resolved",
+        "spdx": "LicenseRef-Proprietary",
+        "policy_ref": "catalog/license-policy.yaml",
+        "reason": "Root LICENSE reserves all rights; internal-only distribution."
+      }
+    },
+    {
+      "name": "research-brief",
+      "catalog_ref": "research-brief",
+      "source": {
+        "kind": "repo-local",
+        "repository": "junweiwu0224/codex-workflow-kit",
+        "path": "skills/research-brief/SKILL.md"
+      },
+      "resolution": {
+        "status": "resolved",
+        "kind": "repo-local-content"
+      },
+      "content": {
+        "status": "resolved",
+        "algorithm": "sha256",
+        "scope": "skill-tree",
+        "value": "cbb34755b2dc3282eb4049f6271522f33f59a95c95b05c2b81576b0e476c52ec"
+      },
+      "compatibility": {
+        "status": "resolved",
+        "codex": "agentskills-standard-v1",
+        "evidence": "scripts/validate_governance.py"
+      },
+      "license": {
+        "status": "resolved",
+        "spdx": "LicenseRef-Proprietary",
+        "policy_ref": "catalog/license-policy.yaml",
+        "reason": "Root LICENSE reserves all rights; internal-only distribution."
+      }
+    },
+    {
+      "name": "security-review",
+      "catalog_ref": "security-review",
+      "source": {
+        "kind": "repo-local",
+        "repository": "junweiwu0224/codex-workflow-kit",
+        "path": "skills/security-review/SKILL.md"
+      },
+      "resolution": {
+        "status": "resolved",
+        "kind": "repo-local-content"
+      },
+      "content": {
+        "status": "resolved",
+        "algorithm": "sha256",
+        "scope": "skill-tree",
+        "value": "b324528ed7d89a2f21b4f76c67c5ae054f624996a0c660095201717f8cf6d19c"
+      },
+      "compatibility": {
+        "status": "resolved",
+        "codex": "agentskills-standard-v1",
+        "evidence": "scripts/validate_governance.py"
+      },
+      "license": {
+        "status": "resolved",
+        "spdx": "LicenseRef-Proprietary",
+        "policy_ref": "catalog/license-policy.yaml",
+        "reason": "Root LICENSE reserves all rights; internal-only distribution."
+      }
+    },
+    {
+      "name": "skill-plugin-intake-review",
+      "catalog_ref": "skill-plugin-intake-review",
+      "source": {
+        "kind": "repo-local",
+        "repository": "junweiwu0224/codex-workflow-kit",
+        "path": "skills/skill-plugin-intake-review/SKILL.md"
+      },
+      "resolution": {
+        "status": "resolved",
+        "kind": "repo-local-content"
+      },
+      "content": {
+        "status": "resolved",
+        "algorithm": "sha256",
+        "scope": "skill-tree",
+        "value": "402557e33f15511229347047633233b5abdeae1ec1098cc99a05fcf7be6bef2c"
+      },
+      "compatibility": {
+        "status": "resolved",
+        "codex": "agentskills-standard-v1",
+        "evidence": "scripts/validate_governance.py"
+      },
+      "license": {
+        "status": "resolved",
+        "spdx": "LicenseRef-Proprietary",
+        "policy_ref": "catalog/license-policy.yaml",
+        "reason": "Root LICENSE reserves all rights; internal-only distribution."
+      }
+    },
+    {
+      "name": "spec-kit-xl",
+      "catalog_ref": "spec-kit-xl",
+      "source": {
+        "kind": "repo-local",
+        "repository": "junweiwu0224/codex-workflow-kit",
+        "path": "skills/spec-kit-xl/SKILL.md"
+      },
+      "resolution": {
+        "status": "resolved",
+        "kind": "repo-local-content"
+      },
+      "content": {
+        "status": "resolved",
+        "algorithm": "sha256",
+        "scope": "skill-tree",
+        "value": "cba41dba4b0427d4c03b4ab7b122c3f234188ce23f267b2ab0944212417668d8"
+      },
+      "compatibility": {
+        "status": "resolved",
+        "codex": "agentskills-standard-v1",
+        "evidence": "scripts/validate_governance.py"
+      },
+      "license": {
+        "status": "resolved",
+        "spdx": "LicenseRef-Proprietary",
+        "policy_ref": "catalog/license-policy.yaml",
+        "reason": "Root LICENSE reserves all rights; internal-only distribution."
+      }
+    }
+  ]
+}

@@ -1,0 +1,769 @@
+{
+  "schema_version": "4.2",
+  "suite_id": "v4.2-routing-baseline-v1",
+  "description": "Frozen routing-eligibility baseline for the 14 packaged Skills plus native no-Skill controls. This suite definition is not an execution report or promotion evidence.",
+  "promotion_eligible": false,
+  "repetitions": 3,
+  "cases": [
+    {
+      "case_id": "completion-review-train",
+      "family": "verification",
+      "split": "train",
+      "prompt": "The implementation and targeted tests are finished. Independently check the final diff, acceptance criteria, unresolved risks, and evidence before I report completion.",
+      "expected_route": "completion-review",
+      "assertions": [
+        {
+          "type": "route_suggested",
+          "skill": "completion-review"
+        },
+        {
+          "type": "success"
+        },
+        {
+          "type": "no_external_effects"
+        }
+      ]
+    },
+    {
+      "case_id": "completion-review-held",
+      "family": "verification",
+      "split": "held_out",
+      "prompt": "Before the final answer, audit whether every requested outcome is actually supported by the diff and test output, and call out anything still unverified.",
+      "expected_route": "completion-review",
+      "assertions": [
+        {
+          "type": "route_suggested",
+          "skill": "completion-review"
+        },
+        {
+          "type": "success"
+        },
+        {
+          "type": "no_external_effects"
+        }
+      ]
+    },
+    {
+      "case_id": "debug-loop-train",
+      "family": "debugging",
+      "split": "train",
+      "prompt": "A pytest case fails only when the full module runs. Reproduce it, narrow the cause, form one hypothesis at a time, and verify the fix with a regression test.",
+      "expected_route": "debug-loop",
+      "assertions": [
+        {
+          "type": "route_suggested",
+          "skill": "debug-loop"
+        },
+        {
+          "type": "success"
+        },
+        {
+          "type": "no_external_effects"
+        }
+      ]
+    },
+    {
+      "case_id": "debug-loop-held",
+      "family": "debugging",
+      "split": "held_out",
+      "prompt": "The CLI intermittently exits with code 1 after a recent refactor. Establish a deterministic reproducer, isolate the first bad assumption, and prove the repair rather than guessing.",
+      "expected_route": "debug-loop",
+      "assertions": [
+        {
+          "type": "route_suggested",
+          "skill": "debug-loop"
+        },
+        {
+          "type": "success"
+        },
+        {
+          "type": "no_external_effects"
+        }
+      ]
+    },
+    {
+      "case_id": "decision-record-train",
+      "family": "architecture",
+      "split": "train",
+      "prompt": "We must choose between an event log and mutable status rows for a long-lived workflow. Capture the context, options, tradeoffs, decision, and consequences as an ADR.",
+      "expected_route": "decision-record",
+      "assertions": [
+        {
+          "type": "route_suggested",
+          "skill": "decision-record"
+        },
+        {
+          "type": "success"
+        },
+        {
+          "type": "no_external_effects"
+        }
+      ]
+    },
+    {
+      "case_id": "decision-record-held",
+      "family": "architecture",
+      "split": "held_out",
+      "prompt": "Document why this service will retain REST instead of moving to GraphQL, including rejected alternatives, operational consequences, and when the decision should be revisited.",
+      "expected_route": "decision-record",
+      "assertions": [
+        {
+          "type": "route_suggested",
+          "skill": "decision-record"
+        },
+        {
+          "type": "success"
+        },
+        {
+          "type": "no_external_effects"
+        }
+      ]
+    },
+    {
+      "case_id": "dependency-upgrade-review-train",
+      "family": "dependencies",
+      "split": "train",
+      "prompt": "Upgrade the workspace from React 18 to 19. Review release notes, compatibility, lockfile changes, migration risks, transitive dependencies, and the rollback path before editing.",
+      "expected_route": "dependency-upgrade-review",
+      "assertions": [
+        {
+          "type": "route_suggested",
+          "skill": "dependency-upgrade-review"
+        },
+        {
+          "type": "success"
+        },
+        {
+          "type": "no_external_effects"
+        }
+      ]
+    },
+    {
+      "case_id": "dependency-upgrade-review-held",
+      "family": "dependencies",
+      "split": "held_out",
+      "prompt": "Assess whether we should pin a new Docker base-image digest after a security advisory, including provenance, platform compatibility, rebuild evidence, and rollback.",
+      "expected_route": "dependency-upgrade-review",
+      "assertions": [
+        {
+          "type": "route_suggested",
+          "skill": "dependency-upgrade-review"
+        },
+        {
+          "type": "success"
+        },
+        {
+          "type": "no_external_effects"
+        }
+      ]
+    },
+    {
+      "case_id": "frontend-qa-train",
+      "family": "frontend-verification",
+      "split": "train",
+      "prompt": "Verify this checkout form in a real browser across desktop and mobile, including keyboard flow, focus visibility, validation errors, loading states, and console failures.",
+      "expected_route": "frontend-qa",
+      "assertions": [
+        {
+          "type": "route_suggested",
+          "skill": "frontend-qa"
+        },
+        {
+          "type": "success"
+        },
+        {
+          "type": "no_external_effects"
+        }
+      ]
+    },
+    {
+      "case_id": "frontend-qa-held",
+      "family": "frontend-verification",
+      "split": "held_out",
+      "prompt": "Review the changed dashboard UI for overflow, inaccessible controls, broken responsive states, failed assets, and visual regressions, with browser evidence.",
+      "expected_route": "frontend-qa",
+      "assertions": [
+        {
+          "type": "route_suggested",
+          "skill": "frontend-qa"
+        },
+        {
+          "type": "success"
+        },
+        {
+          "type": "no_external_effects"
+        }
+      ]
+    },
+    {
+      "case_id": "browser-automation-train",
+      "family": "browser-automation",
+      "split": "train",
+      "prompt": "Create a repeatable local-browser walkthrough that signs into the test account, filters the orders table, opens a detail drawer, and captures deterministic evidence without submitting external data.",
+      "expected_route": "junwei-browser-automation",
+      "assertions": [
+        {
+          "type": "route_suggested",
+          "skill": "junwei-browser-automation"
+        },
+        {
+          "type": "success"
+        },
+        {
+          "type": "no_external_effects"
+        }
+      ]
+    },
+    {
+      "case_id": "browser-automation-held",
+      "family": "browser-automation",
+      "split": "held_out",
+      "prompt": "Inspect a multi-step localhost wizard using the most appropriate browser surface, preserve useful session state, and produce a reproducible interaction trace and screenshots.",
+      "expected_route": "junwei-browser-automation",
+      "assertions": [
+        {
+          "type": "route_suggested",
+          "skill": "junwei-browser-automation"
+        },
+        {
+          "type": "success"
+        },
+        {
+          "type": "no_external_effects"
+        }
+      ]
+    },
+    {
+      "case_id": "frontend-design-train",
+      "family": "frontend-design",
+      "split": "train",
+      "prompt": "Design and implement a dense operations dashboard for warehouse staff, with a coherent visual direction, efficient repeated actions, responsive layout, and non-generic interaction details.",
+      "expected_route": "junwei-frontend-design",
+      "assertions": [
+        {
+          "type": "route_suggested",
+          "skill": "junwei-frontend-design"
+        },
+        {
+          "type": "success"
+        },
+        {
+          "type": "no_external_effects"
+        }
+      ]
+    },
+    {
+      "case_id": "frontend-design-held",
+      "family": "frontend-design",
+      "split": "held_out",
+      "prompt": "Rework this generic admin screen into a polished finance reconciliation tool while preserving its workflows, accessibility, information density, and mobile usability.",
+      "expected_route": "junwei-frontend-design",
+      "assertions": [
+        {
+          "type": "route_suggested",
+          "skill": "junwei-frontend-design"
+        },
+        {
+          "type": "success"
+        },
+        {
+          "type": "no_external_effects"
+        }
+      ]
+    },
+    {
+      "case_id": "product-demo-video-train",
+      "family": "media",
+      "split": "train",
+      "prompt": "Turn the approved product flow into a 60-second demo video plan with narrative beats, browser capture inputs, scene timing, render checks, and a local review loop.",
+      "expected_route": "junwei-product-demo-video",
+      "assertions": [
+        {
+          "type": "route_suggested",
+          "skill": "junwei-product-demo-video"
+        },
+        {
+          "type": "success"
+        },
+        {
+          "type": "no_external_effects"
+        }
+      ]
+    },
+    {
+      "case_id": "product-demo-video-held",
+      "family": "media",
+      "split": "held_out",
+      "prompt": "Produce a sprint-review walkthrough from existing UI recordings, including a shot list, captions, pacing, brand consistency, audio checks, and deterministic render QA without publishing it.",
+      "expected_route": "junwei-product-demo-video",
+      "assertions": [
+        {
+          "type": "route_suggested",
+          "skill": "junwei-product-demo-video"
+        },
+        {
+          "type": "success"
+        },
+        {
+          "type": "no_external_effects"
+        }
+      ]
+    },
+    {
+      "case_id": "release-readiness-train",
+      "family": "release",
+      "split": "train",
+      "prompt": "Evaluate this portable toolkit release candidate for version alignment, clean-tree provenance, manifest and checksum integrity, install rehearsal, rollback evidence, and unresolved blockers.",
+      "expected_route": "release-readiness",
+      "assertions": [
+        {
+          "type": "route_suggested",
+          "skill": "release-readiness"
+        },
+        {
+          "type": "success"
+        },
+        {
+          "type": "no_external_effects"
+        }
+      ]
+    },
+    {
+      "case_id": "release-readiness-held",
+      "family": "release",
+      "split": "held_out",
+      "prompt": "Before creating a release asset, check that source, lock, SBOM, notices, archive hash, installation evidence, and last-known-good rollback all agree; return a go or no-go verdict.",
+      "expected_route": "release-readiness",
+      "assertions": [
+        {
+          "type": "route_suggested",
+          "skill": "release-readiness"
+        },
+        {
+          "type": "success"
+        },
+        {
+          "type": "no_external_effects"
+        }
+      ]
+    },
+    {
+      "case_id": "repo-onboarding-train",
+      "family": "onboarding",
+      "split": "train",
+      "prompt": "I have just opened an unfamiliar monorepo. Establish its purpose, architecture, commands, test strategy, generated-code boundaries, and project-specific working rules before changing anything.",
+      "expected_route": "repo-onboarding",
+      "assertions": [
+        {
+          "type": "route_suggested",
+          "skill": "repo-onboarding"
+        },
+        {
+          "type": "success"
+        },
+        {
+          "type": "no_external_effects"
+        }
+      ]
+    },
+    {
+      "case_id": "repo-onboarding-held",
+      "family": "onboarding",
+      "split": "held_out",
+      "prompt": "Build a minimal evidence-backed context pack for this legacy service so another agent can safely navigate ownership, runtime dependencies, local commands, and quality gates.",
+      "expected_route": "repo-onboarding",
+      "assertions": [
+        {
+          "type": "route_suggested",
+          "skill": "repo-onboarding"
+        },
+        {
+          "type": "success"
+        },
+        {
+          "type": "no_external_effects"
+        }
+      ]
+    },
+    {
+      "case_id": "research-brief-train",
+      "family": "research",
+      "split": "train",
+      "prompt": "Compare current maintained options for local code-graph tooling using primary sources, explicit evaluation criteria, dated evidence, tradeoffs, and a promote, pilot, hold, or reject recommendation.",
+      "expected_route": "research-brief",
+      "assertions": [
+        {
+          "type": "route_suggested",
+          "skill": "research-brief"
+        },
+        {
+          "type": "success"
+        },
+        {
+          "type": "no_external_effects"
+        }
+      ]
+    },
+    {
+      "case_id": "research-brief-held",
+      "family": "research",
+      "split": "held_out",
+      "prompt": "Research whether a newly released agent evaluation framework fits this workflow, distinguish verified facts from inference, and recommend a bounded experiment with stop conditions.",
+      "expected_route": "research-brief",
+      "assertions": [
+        {
+          "type": "route_suggested",
+          "skill": "research-brief"
+        },
+        {
+          "type": "success"
+        },
+        {
+          "type": "no_external_effects"
+        }
+      ]
+    },
+    {
+      "case_id": "security-review-train",
+      "family": "security",
+      "split": "train",
+      "prompt": "Review this webhook handler change for authentication bypass, replay, signature verification, secret handling, unsafe logging, authorization boundaries, and concrete abuse cases.",
+      "expected_route": "security-review",
+      "assertions": [
+        {
+          "type": "route_suggested",
+          "skill": "security-review"
+        },
+        {
+          "type": "success"
+        },
+        {
+          "type": "no_external_effects"
+        }
+      ]
+    },
+    {
+      "case_id": "security-review-held",
+      "family": "security",
+      "split": "held_out",
+      "prompt": "Audit the proposed CI workflow that receives pull requests from forks, focusing on token scope, untrusted code execution, artifact poisoning, action pinning, and privilege escalation paths.",
+      "expected_route": "security-review",
+      "assertions": [
+        {
+          "type": "route_suggested",
+          "skill": "security-review"
+        },
+        {
+          "type": "success"
+        },
+        {
+          "type": "no_external_effects"
+        }
+      ]
+    },
+    {
+      "case_id": "skill-intake-train",
+      "family": "component-intake",
+      "split": "train",
+      "prompt": "Assess a third-party Codex Skill repository before adoption: inspect provenance, license, prompt scope, tool permissions, network behavior, overlap, install surface, and rollback; do not install it.",
+      "expected_route": "skill-plugin-intake-review",
+      "assertions": [
+        {
+          "type": "route_suggested",
+          "skill": "skill-plugin-intake-review"
+        },
+        {
+          "type": "success"
+        },
+        {
+          "type": "no_external_effects"
+        }
+      ]
+    },
+    {
+      "case_id": "skill-intake-held",
+      "family": "component-intake",
+      "split": "held_out",
+      "prompt": "A plugin claims it can automatically discover and install agent capabilities. Perform a read-only intake review and return promote, pilot, repo-local, hold, or reject with evidence and permissions.",
+      "expected_route": "skill-plugin-intake-review",
+      "assertions": [
+        {
+          "type": "route_suggested",
+          "skill": "skill-plugin-intake-review"
+        },
+        {
+          "type": "success"
+        },
+        {
+          "type": "no_external_effects"
+        }
+      ]
+    },
+    {
+      "case_id": "spec-kit-xl-train",
+      "family": "specification",
+      "split": "train",
+      "prompt": "Create a formal specification for a multi-service account migration with goals, non-goals, state transitions, compatibility, failure recovery, acceptance criteria, and explicit approval points before implementation.",
+      "expected_route": "spec-kit-xl",
+      "assertions": [
+        {
+          "type": "route_suggested",
+          "skill": "spec-kit-xl"
+        },
+        {
+          "type": "success"
+        },
+        {
+          "type": "no_external_effects"
+        }
+      ]
+    },
+    {
+      "case_id": "spec-kit-xl-held",
+      "family": "specification",
+      "split": "held_out",
+      "prompt": "Define an approved change specification for versioning a public API across three clients, including contract deltas, rollout stages, observability, rollback, and long-term acceptance tests.",
+      "expected_route": "spec-kit-xl",
+      "assertions": [
+        {
+          "type": "route_suggested",
+          "skill": "spec-kit-xl"
+        },
+        {
+          "type": "success"
+        },
+        {
+          "type": "no_external_effects"
+        }
+      ]
+    },
+    {
+      "case_id": "control-explain-immutable",
+      "family": "control-general",
+      "split": "train",
+      "prompt": "Explain in two paragraphs what an immutable data structure is and give one small example.",
+      "expected_route": "native",
+      "assertions": [
+        {
+          "type": "route_suggested",
+          "skill": "native"
+        },
+        {
+          "type": "success"
+        },
+        {
+          "type": "no_external_effects"
+        }
+      ]
+    },
+    {
+      "case_id": "control-arithmetic",
+      "family": "control-general",
+      "split": "train",
+      "prompt": "Calculate 17 multiplied by 23 and return only the result.",
+      "expected_route": "native",
+      "assertions": [
+        {
+          "type": "route_suggested",
+          "skill": "native"
+        },
+        {
+          "type": "success"
+        },
+        {
+          "type": "no_external_effects"
+        }
+      ]
+    },
+    {
+      "case_id": "control-translate",
+      "family": "control-writing",
+      "split": "train",
+      "prompt": "Translate the sentence 'The build completed without warnings' into Chinese.",
+      "expected_route": "native",
+      "assertions": [
+        {
+          "type": "route_suggested",
+          "skill": "native"
+        },
+        {
+          "type": "success"
+        },
+        {
+          "type": "no_external_effects"
+        }
+      ]
+    },
+    {
+      "case_id": "control-json-format",
+      "family": "control-formatting",
+      "split": "train",
+      "prompt": "Pretty-print this JSON without changing any values: {\"b\":2,\"a\":1}.",
+      "expected_route": "native",
+      "assertions": [
+        {
+          "type": "route_suggested",
+          "skill": "native"
+        },
+        {
+          "type": "success"
+        },
+        {
+          "type": "no_external_effects"
+        }
+      ]
+    },
+    {
+      "case_id": "control-explain-function",
+      "family": "control-code-reading",
+      "split": "train",
+      "prompt": "Read the five-line helper I pasted and explain what its return value means; do not propose a workflow or make edits.",
+      "expected_route": "native",
+      "assertions": [
+        {
+          "type": "route_suggested",
+          "skill": "native"
+        },
+        {
+          "type": "success"
+        },
+        {
+          "type": "no_external_effects"
+        }
+      ]
+    },
+    {
+      "case_id": "control-rename-variable",
+      "family": "control-small-edit",
+      "split": "train",
+      "prompt": "In the named local file, rename the private variable tmp_count to pending_count and run the existing single targeted unit test.",
+      "expected_route": "native",
+      "assertions": [
+        {
+          "type": "route_suggested",
+          "skill": "native"
+        },
+        {
+          "type": "success"
+        },
+        {
+          "type": "no_external_effects"
+        }
+      ]
+    },
+    {
+      "case_id": "control-fix-typo",
+      "family": "control-small-edit",
+      "split": "train",
+      "prompt": "Fix the single spelling error 'recieve' in docs/glossary.md and confirm the old spelling is gone.",
+      "expected_route": "native",
+      "assertions": [
+        {
+          "type": "route_suggested",
+          "skill": "native"
+        },
+        {
+          "type": "success"
+        },
+        {
+          "type": "no_external_effects"
+        }
+      ]
+    },
+    {
+      "case_id": "control-shell-exit-code",
+      "family": "control-general",
+      "split": "train",
+      "prompt": "What exit code conventionally indicates success for a Unix command? Answer in one sentence.",
+      "expected_route": "native",
+      "assertions": [
+        {
+          "type": "route_suggested",
+          "skill": "native"
+        },
+        {
+          "type": "success"
+        },
+        {
+          "type": "no_external_effects"
+        }
+      ]
+    },
+    {
+      "case_id": "control-summarize-text",
+      "family": "control-writing",
+      "split": "train",
+      "prompt": "Summarize the supplied three-sentence meeting note in one sentence without adding recommendations.",
+      "expected_route": "native",
+      "assertions": [
+        {
+          "type": "route_suggested",
+          "skill": "native"
+        },
+        {
+          "type": "success"
+        },
+        {
+          "type": "no_external_effects"
+        }
+      ]
+    },
+    {
+      "case_id": "control-sort-list",
+      "family": "control-formatting",
+      "split": "train",
+      "prompt": "Sort these identifiers alphabetically and preserve one item per line: gamma, alpha, beta.",
+      "expected_route": "native",
+      "assertions": [
+        {
+          "type": "route_suggested",
+          "skill": "native"
+        },
+        {
+          "type": "success"
+        },
+        {
+          "type": "no_external_effects"
+        }
+      ]
+    },
+    {
+      "case_id": "control-held-regex",
+      "family": "control-code-reading",
+      "split": "held_out",
+      "prompt": "Explain what the regular expression ^[a-z][a-z0-9_-]{2,15}$ accepts, using one valid and one invalid example.",
+      "expected_route": "native",
+      "assertions": [
+        {
+          "type": "route_suggested",
+          "skill": "native"
+        },
+        {
+          "type": "success"
+        },
+        {
+          "type": "no_external_effects"
+        }
+      ]
+    },
+    {
+      "case_id": "control-held-heading",
+      "family": "control-small-edit",
+      "split": "held_out",
+      "prompt": "Change the specified Markdown heading from 'Setup step' to 'Setup steps' and verify that exact heading exists once.",
+      "expected_route": "native",
+      "assertions": [
+        {
+          "type": "route_suggested",
+          "skill": "native"
+        },
+        {
+          "type": "success"
+        },
+        {
+          "type": "no_external_effects"
+        }
+      ]
+    }
+  ]
+}

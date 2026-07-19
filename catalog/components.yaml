@@ -1,0 +1,275 @@
+schema_version: "4.2"
+repository:
+  name: codex-workflow-kit
+  commit_policy: release-manifest
+license_policy: catalog/license-policy.yaml
+
+# This is the desired governance state. Resolved source material belongs in
+# upstreams.lock.json; no external component is promoted by this file alone.
+skills:
+  - name: completion-review
+    owner: junweiwu0224
+    role: verifier
+    stage: verification
+    status: stable
+    implicit: true
+    network: none
+    write_scope: none
+    license: resolved
+    eval_suite: completion-review
+    metadata:
+      risk: low
+      source_repo: personal-workflow-kit
+      source_type: curated-local
+      date_added: "2026-06-07"
+      setup: none
+      write_surface: none-by-skill
+      auth: none
+      network_policy: none
+  - name: debug-loop
+    owner: junweiwu0224
+    role: driver
+    stage: implementation
+    status: stable
+    implicit: true
+    network: conditional
+    write_scope: conditional
+    license: resolved
+    eval_suite: debug-loop
+    metadata:
+      risk: low
+      source_repo: personal-workflow-kit
+      source_type: curated-local
+      date_added: "2026-06-07"
+      setup: none
+      write_surface: task-dependent
+      auth: task-dependent
+      network_policy: task-dependent
+  - name: decision-record
+    owner: junweiwu0224
+    role: governance
+    stage: cross-cutting
+    status: stable
+    implicit: true
+    network: none
+    write_scope: docs
+    license: resolved
+    eval_suite: decision-record
+    metadata:
+      risk: low
+      source_repo: personal-workflow-kit
+      source_type: curated-local
+      date_added: "2026-06-07"
+      setup: none
+      write_surface: docs
+      auth: none
+      network_policy: none
+  - name: dependency-upgrade-review
+    owner: junweiwu0224
+    role: guardrail
+    stage: cross-cutting
+    status: stable
+    implicit: true
+    network: conditional
+    write_scope: conditional
+    license: resolved
+    eval_suite: dependency-review
+    metadata:
+      risk: medium
+      source_repo: personal-workflow-kit
+      source_type: curated-local
+      date_added: "2026-06-07"
+      setup: none
+      write_surface: task-dependent
+      auth: task-dependent
+      network_policy: task-dependent
+  - name: frontend-qa
+    owner: junweiwu0224
+    role: verifier
+    stage: verification
+    status: stable
+    implicit: false
+    network: local
+    write_scope: conditional
+    license: resolved
+    eval_suite: frontend-qa
+    metadata:
+      risk: low
+      source_repo: personal-workflow-kit
+      source_type: curated-local
+      date_added: "2026-06-07"
+      setup: none
+      write_surface: task-dependent
+      auth: task-dependent
+      network_policy: local-by-default
+  - name: junwei-browser-automation
+    owner: junweiwu0224
+    role: overlay
+    stage: verification
+    status: pilot
+    implicit: false
+    network: local
+    write_scope: project-artifacts
+    license: resolved
+    eval_suite: browser-smoke
+    metadata:
+      risk: medium
+      source_repo: personal-workflow-kit
+      source_type: curated-local
+      date_added: "2026-06-22"
+      setup: optional-mcp-or-cli
+      write_surface: task-dependent
+      auth: task-dependent
+      network_policy: local-by-default
+  - name: junwei-frontend-design
+    owner: junweiwu0224
+    role: overlay
+    stage: implementation
+    status: stable
+    implicit: false
+    network: none
+    write_scope: workspace
+    license: resolved
+    eval_suite: frontend-design
+    metadata:
+      risk: low
+      source_repo: personal-workflow-kit
+      source_type: curated-local
+      date_added: "2026-06-22"
+      setup: none
+      write_surface: task-dependent
+      auth: none
+      network_policy: none-by-default
+  - name: junwei-product-demo-video
+    owner: junweiwu0224
+    role: driver
+    stage: release
+    status: pilot
+    implicit: false
+    network: local
+    write_scope: project-artifacts
+    license: resolved
+    eval_suite: product-demo
+    metadata:
+      risk: medium
+      source_repo: personal-workflow-kit
+      source_type: curated-local
+      date_added: "2026-06-22"
+      setup: optional-local-tools
+      write_surface: project-artifacts
+      auth: task-dependent
+      network_policy: local-by-default
+  - name: release-readiness
+    owner: junweiwu0224
+    role: verifier
+    stage: release
+    status: pilot
+    implicit: false
+    network: none
+    write_scope: artifacts
+    license: resolved
+    eval_suite: release-readiness
+    metadata:
+      risk: medium
+      source_repo: personal-workflow-kit
+      source_type: curated-local
+      date_added: "2026-06-12"
+      setup: none
+      write_surface: artifacts-and-docs
+      auth: none
+      network_policy: none-by-default
+  - name: repo-onboarding
+    owner: junweiwu0224
+    role: driver
+    stage: onboarding
+    status: stable
+    implicit: true
+    network: none
+    write_scope: docs
+    license: resolved
+    eval_suite: repo-onboarding
+    metadata:
+      risk: low
+      source_repo: personal-workflow-kit
+      source_type: curated-local
+      date_added: "2026-06-07"
+      setup: none
+      write_surface: repo-docs
+      auth: none
+      network_policy: none
+  - name: research-brief
+    owner: junweiwu0224
+    role: governance
+    stage: research
+    status: stable
+    implicit: true
+    network: external
+    write_scope: none
+    license: resolved
+    eval_suite: research-brief
+    metadata:
+      risk: medium
+      source_repo: personal-workflow-kit
+      source_type: curated-local
+      date_added: "2026-06-07"
+      setup: none
+      write_surface: none-by-skill
+      auth: task-dependent
+      network_policy: task-dependent
+  - name: security-review
+    owner: junweiwu0224
+    role: guardrail
+    stage: cross-cutting
+    status: stable
+    implicit: true
+    network: conditional
+    write_scope: conditional
+    license: resolved
+    eval_suite: security-review
+    metadata:
+      risk: medium
+      source_repo: personal-workflow-kit
+      source_type: curated-local
+      date_added: "2026-06-07"
+      setup: none
+      write_surface: task-dependent
+      auth: task-dependent
+      network_policy: task-dependent
+  - name: skill-plugin-intake-review
+    owner: junweiwu0224
+    role: governance
+    stage: research
+    status: stable
+    implicit: false
+    network: conditional
+    write_scope: none
+    license: resolved
+    eval_suite: external-intake
+    metadata:
+      risk: medium
+      source_repo: personal-workflow-kit
+      source_type: curated-local
+      date_added: "2026-06-11"
+      setup: none
+      write_surface: none-by-skill
+      auth: none-by-skill
+      network_policy: none-by-default
+  - name: spec-kit-xl
+    owner: junweiwu0224
+    role: driver
+    stage: specification
+    status: pilot
+    implicit: false
+    network: none
+    write_scope: docs
+    license: resolved
+    eval_suite: spec-lifecycle
+    metadata:
+      risk: low
+      source_repo: personal-workflow-kit
+      source_type: curated-local
+      date_added: "2026-06-07"
+      setup: none
+      write_surface: docs
+      auth: none
+      network_policy: none

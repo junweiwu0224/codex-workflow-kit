@@ -1,15 +1,6 @@
 ---
 name: junwei-browser-automation
 description: Use when browser automation, web UI inspection, Playwright workflows, MCP-vs-CLI browser tool routing, accessibility snapshot reasoning, local app verification, scripted walkthroughs, product flow capture, or repeatable frontend/browser smoke checks are needed. Trigger for Playwright MCP evaluation, browser workflow automation, localhost UI inspection, DOM/accessibility-tree verification, self-healing browser steps, or recording product walkthrough inputs before demo/video work.
-risk: medium
-source_repo: personal-workflow-kit
-source_type: curated-local
-date_added: 2026-06-22
-setup: optional-mcp-or-cli
-write_surface: task-dependent
-auth: task-dependent
-network: local-by-default
-status: pilot
 ---
 
 # Junwei Browser Automation

@@ -1,0 +1,26 @@
+{
+  "contract_id": "example-standard-contract",
+  "lane": "standard",
+  "state": "planned",
+  "transition": "planned_to_implemented",
+  "transition_driver": "superpowers",
+  "write_scope": "workspace",
+  "read_roots": ["."],
+  "write_roots": ["."],
+  "external_effects": [],
+  "approvals": [],
+  "required_artifacts": [],
+  "acceptance_checks": ["targeted tests", "git diff --check"],
+  "verification_mode": "mixed",
+  "handoff": "verify",
+  "audit_record": false,
+  "reversibility": "reversible",
+  "network_policy": "none",
+  "credential_refs": [],
+  "external_targets": [],
+  "package_install": "none",
+  "production_access": false,
+  "policy_enforcement": [
+    {"field": "workspace_write", "status": "enforced"}
+  ]
+}

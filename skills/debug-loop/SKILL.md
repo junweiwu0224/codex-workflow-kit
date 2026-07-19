@@ -1,15 +1,6 @@
 ---
 name: debug-loop
 description: Use when tests, builds, typecheck, lint, E2E, startup commands, CI, runtime behavior, logs, screenshots, or user-reported bugs fail and Codex needs an evidence-driven debugging loop.
-risk: low
-source_repo: personal-workflow-kit
-source_type: curated-local
-date_added: 2026-06-07
-setup: none
-write_surface: task-dependent
-auth: task-dependent
-network: task-dependent
-status: active
 ---
 
 # debug-loop

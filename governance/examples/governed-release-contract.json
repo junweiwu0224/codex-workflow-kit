@@ -1,0 +1,30 @@
+{
+  "contract_id": "example-governed-release",
+  "lane": "governed",
+  "state": "verified",
+  "transition": "verified_to_released",
+  "transition_driver": "release-readiness",
+  "write_scope": "external",
+  "external_effects": ["publish-release"],
+  "approvals": [
+    {"actor": "repository-owner", "decision": "pending", "scope": ["release", "external_write"]}
+  ],
+  "required_artifacts": ["release-manifest.json", "sbom.cdx.json", "THIRD-PARTY-NOTICES.txt"],
+  "acceptance_checks": ["clean checkout", "archive checksum", "install and rollback drill"],
+  "verification_mode": "fresh_context",
+  "handoff": "release",
+  "audit_record": true,
+  "reversibility": "partially-reversible",
+  "network_policy": "allowlist",
+  "network_allowlist": ["github.com", "uploads.github.com"],
+  "credential_refs": ["github-release-token-ref"],
+  "external_targets": ["https://github.com/junweiwu0224/codex-workflow-kit/releases"],
+  "package_install": "none",
+  "production_access": false,
+  "policy_enforcement": [
+    {"field": "external_write", "status": "enforced"},
+    {"field": "credential_use", "status": "enforced"},
+    {"field": "network", "status": "enforced"}
+  ],
+  "rollback_plan": "Disable the release asset and restore the last-known-good manifest."
+}

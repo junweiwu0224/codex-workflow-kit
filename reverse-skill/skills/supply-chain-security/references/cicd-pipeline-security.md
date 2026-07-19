@@ -103,20 +103,21 @@ jobs:
   sca:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@<FULL_COMMIT_SHA>
       
       - name: SBOM Generate
         run: |
-          npm install -g @cyclonedx/cdxgen
+          npm install -g @cyclonedx/cdxgen@<LOCKED_VERSION>
           cdxgen -o sbom.json
       
       - name: OSV Scan
         run: |
-          go install github.com/google/osv-scanner/cmd/osv-scanner@latest
+          # Replace with the exact version approved in the repository lock.
+          go install github.com/google/osv-scanner/cmd/osv-scanner@<LOCKED_VERSION>
           osv-scanner scan --sbom sbom.json --format sarif > osv-results.sarif
       
       - name: Trivy Scan
-        uses: aquasecurity/trivy-action@master
+        uses: aquasecurity/trivy-action@<FULL_COMMIT_SHA>
         with:
           scan-type: fs
           severity: CRITICAL,HIGH
@@ -124,7 +125,7 @@ jobs:
       
       - name: Secret Scan
         run: |
-          docker run --rm -v $PWD:/src ghcr.io/gitleaks/gitleaks:latest \
+          docker run --rm -v $PWD:/src ghcr.io/gitleaks/gitleaks@sha256:<LOCKED_DIGEST> \
             detect --source /src --verbose
       
       - name: Dependency-Track Upload

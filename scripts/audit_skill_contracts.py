@@ -8,7 +8,17 @@ from dataclasses import dataclass
 from pathlib import Path
 
 
-REQUIRED_METADATA = ("name", "description", "risk", "setup", "write_surface", "auth", "network", "status")
+REQUIRED_METADATA = ("name", "description")
+REQUIRED_CATALOG_METADATA = (
+    "risk",
+    "source_repo",
+    "source_type",
+    "date_added",
+    "setup",
+    "write_surface",
+    "auth",
+    "network_policy",
+)
 BOUNDARY_TERMS = ("不要做", "Do not", "don't", "Do Not")
 VALIDATION_TERMS = ("Verification", "验证", "Completion Conditions", "完成条件", "Acceptance")
 SUPERPOWERS_TERMS = ("Superpowers", "implementation-plan", "orchestrator", "planner", "dispatcher", "queue")
@@ -20,6 +30,8 @@ class SkillContract:
     path: str
     metadata_keys: tuple[str, ...]
     missing_metadata: tuple[str, ...]
+    catalog_metadata_keys: tuple[str, ...]
+    missing_catalog_metadata: tuple[str, ...]
     has_trigger: bool
     has_output_shape: bool
     has_boundaries: bool
@@ -30,7 +42,13 @@ class SkillContract:
 
     @property
     def ok(self) -> bool:
-        return not self.missing_metadata and self.has_trigger and self.has_output_shape and self.has_boundaries
+        return (
+            not self.missing_metadata
+            and not self.missing_catalog_metadata
+            and self.has_trigger
+            and self.has_output_shape
+            and self.has_boundaries
+        )
 
     def to_dict(self) -> dict[str, object]:
         return {
@@ -38,6 +56,8 @@ class SkillContract:
             "path": self.path,
             "metadata_keys": list(self.metadata_keys),
             "missing_metadata": list(self.missing_metadata),
+            "catalog_metadata_keys": list(self.catalog_metadata_keys),
+            "missing_catalog_metadata": list(self.missing_catalog_metadata),
             "has_trigger": self.has_trigger,
             "has_output_shape": self.has_output_shape,
             "has_boundaries": self.has_boundaries,
@@ -83,10 +103,41 @@ def _skill_files(root: Path) -> list[Path]:
     return sorted(skills_root.glob("*/SKILL.md"))
 
 
-def audit_skill_file(root: Path, skill_file: Path) -> SkillContract:
+def _catalog_entries(root: Path) -> dict[str, dict[str, object]]:
+    """Read governance metadata from catalog without making it frontmatter."""
+    try:
+        try:
+            # Works when this file is executed directly from scripts/.
+            from validate_governance import load_catalog
+        except ImportError:
+            # Works when imported as scripts.audit_skill_contracts in tests.
+            from scripts.validate_governance import load_catalog
+
+        catalog = load_catalog(root / "catalog/components.yaml")
+    except (ImportError, OSError, ValueError):
+        return {}
+    rows = catalog.get("skills", [])
+    if not isinstance(rows, list):
+        return {}
+    return {
+        row.get("name"): row
+        for row in rows
+        if isinstance(row, dict) and isinstance(row.get("name"), str)
+    }
+
+
+def audit_skill_file(
+    root: Path,
+    skill_file: Path,
+    catalog_entry: dict[str, object] | None = None,
+) -> SkillContract:
     text = _read_text(skill_file)
     metadata = _frontmatter(text)
     missing = tuple(key for key in REQUIRED_METADATA if key not in metadata)
+    catalog_metadata = catalog_entry.get("metadata", {}) if catalog_entry else {}
+    if not isinstance(catalog_metadata, dict):
+        catalog_metadata = {}
+    missing_catalog = tuple(key for key in REQUIRED_CATALOG_METADATA if key not in catalog_metadata)
     relative = skill_file.relative_to(root).as_posix()
     skill_root = skill_file.parent
     has_references = (skill_root / "references").exists() or "references/" in text
@@ -96,19 +147,25 @@ def audit_skill_file(root: Path, skill_file: Path) -> SkillContract:
         path=relative,
         metadata_keys=tuple(sorted(metadata)),
         missing_metadata=missing,
+        catalog_metadata_keys=tuple(sorted(catalog_metadata)),
+        missing_catalog_metadata=missing_catalog,
         has_trigger=bool(metadata.get("description", "").strip()),
         has_output_shape="## Output Shape" in text,
         has_boundaries=_contains_any(text, BOUNDARY_TERMS),
         has_validation=_contains_any(text, VALIDATION_TERMS),
         has_progressive_disclosure=has_references or has_agents,
         has_superpowers_boundary=_contains_any(text, SUPERPOWERS_TERMS),
-        status=metadata.get("status", "unknown"),
+        status=str(catalog_entry.get("status", "unknown")) if catalog_entry else "unknown",
     )
 
 
 def build_report(root: str | Path = ".") -> dict[str, object]:
     root = Path(root).resolve()
-    contracts = [audit_skill_file(root, path) for path in _skill_files(root)]
+    catalog_entries = _catalog_entries(root)
+    contracts = [
+        audit_skill_file(root, path, catalog_entries.get(path.parent.name))
+        for path in _skill_files(root)
+    ]
     totals = {
         "skills": len(contracts),
         "ok": sum(1 for contract in contracts if contract.ok),
@@ -170,7 +227,9 @@ def _print_text(report: dict[str, object]) -> None:
     for skill in report["skills"]:
         if skill["ok"]:
             continue
-        missing = ",".join(skill["missing_metadata"]) or "contract"
+        missing = ",".join(
+            [*skill["missing_metadata"], *skill["missing_catalog_metadata"]]
+        ) or "contract"
         print(f"[warning] {skill['name']}: missing {missing}")
 
 

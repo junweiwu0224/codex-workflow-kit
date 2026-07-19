@@ -1,7 +1,7 @@
 from pathlib import Path
 import json
 
-from scripts.verify_live_install import LiveInstallIssue, check_live_install, main
+from scripts.verify_live_install import LiveInstallIssue, build_report, check_live_install, main
 
 
 def _write(path: Path, text: str) -> None:
@@ -21,6 +21,12 @@ def _make_kit(tmp_path: Path) -> Path:
         "---\nname: debug-loop\ndescription: Use when debugging failures.\n---\n\n# debug-loop\n",
     )
     _write(kit / "skills/debug-loop/assets/debug-template.md", "# Debug template\n")
+    _write(
+        kit / "skills/pilot-example/SKILL.md",
+        "---\nname: pilot-example\ndescription: Use when testing pilots.\n---\n\n# pilot-example\n",
+    )
+    _write(kit / "catalog/profiles/stable.txt", "debug-loop\nrepo-onboarding\n")
+    _write(kit / "catalog/profiles/pilot.txt", "pilot-example\n")
     _write(
         kit / "reverse-skill-router/reverse-engineering/SKILL.md",
         "---\nname: reverse-engineering\ndescription: Use when reverse engineering.\n---\n\n# reverse-engineering\n",
@@ -189,3 +195,94 @@ def test_main_prints_json_report(tmp_path, capsys):
     assert report["ok"] is True
     assert report["checked_count"] == 7
     assert report["issues"] == []
+
+
+def test_check_live_install_allows_default_install_without_reverse_profile(tmp_path, capsys):
+    kit = _make_kit(tmp_path)
+    codex_home = tmp_path / "codex-home"
+    agents_home = tmp_path / "agents-home"
+    _install_matching(kit, codex_home, agents_home)
+    import shutil
+
+    shutil.rmtree(codex_home / "skills/reverse-engineering")
+    shutil.rmtree(codex_home / "reverse-skill")
+
+    assert check_live_install(kit, codex_home, agents_home) == []
+    exit_code = main(
+        [
+            "--root",
+            str(kit),
+            "--codex-home",
+            str(codex_home),
+            "--agents-home",
+            str(agents_home),
+            "--json",
+        ]
+    )
+    report = json.loads(capsys.readouterr().out)
+    assert exit_code == 0
+    assert report["reverse_enabled"] is False
+
+
+def test_check_live_install_allows_default_install_without_pilot_skills(tmp_path):
+    kit = _make_kit(tmp_path)
+    codex_home = tmp_path / "codex-home"
+    agents_home = tmp_path / "agents-home"
+    _install_matching(kit, codex_home, agents_home)
+    import shutil
+
+    shutil.rmtree(agents_home / "skills/pilot-example")
+
+    assert check_live_install(kit, codex_home, agents_home) == []
+    report = build_report(kit, codex_home, agents_home)
+    assert report["pilots_enabled"] is False
+
+
+def test_default_verification_ignores_pilot_remnants_after_prune(tmp_path):
+    kit = _make_kit(tmp_path)
+    codex_home = tmp_path / "codex-home"
+    agents_home = tmp_path / "agents-home"
+    _install_matching(kit, codex_home, agents_home)
+    _write(agents_home / "skills/pilot-example/SKILL.md", "# stale pilot remnant\n")
+
+    assert check_live_install(kit, codex_home, agents_home) == []
+    report = build_report(kit, codex_home, agents_home)
+    assert report["pilots_enabled"] is False
+    assert report["checked_count"] == 7
+
+    pilot_issues = check_live_install(kit, codex_home, agents_home, include_pilots=True)
+    assert any(
+        issue.code == "drift" and issue.path == str(agents_home / "skills/pilot-example/SKILL.md")
+        for issue in pilot_issues
+    )
+
+
+def test_with_pilots_requires_pruned_pilot_files(tmp_path, capsys):
+    kit = _make_kit(tmp_path)
+    codex_home = tmp_path / "codex-home"
+    agents_home = tmp_path / "agents-home"
+    _install_matching(kit, codex_home, agents_home)
+    import shutil
+
+    shutil.rmtree(agents_home / "skills/pilot-example")
+
+    exit_code = main(
+        [
+            "--root",
+            str(kit),
+            "--codex-home",
+            str(codex_home),
+            "--agents-home",
+            str(agents_home),
+            "--with-pilots",
+            "--json",
+        ]
+    )
+    report = json.loads(capsys.readouterr().out)
+    assert exit_code == 1
+    assert report["pilots_enabled"] is True
+    assert any(
+        issue["code"] == "missing"
+        and issue["path"] == str(agents_home / "skills/pilot-example/SKILL.md")
+        for issue in report["issues"]
+    )

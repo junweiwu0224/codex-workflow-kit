@@ -1,15 +1,6 @@
 ---
 name: spec-kit-xl
 description: Use when an XL task, formal spec, durable PRD, long-lived acceptance criteria, large migration, or user-explicit spec/spec-kit request needs a versioned specification before Superpowers planning.
-risk: low
-source_repo: personal-workflow-kit
-source_type: curated-local
-date_added: 2026-06-07
-setup: none
-write_surface: docs
-auth: none
-network: none
-status: active
 ---
 
 # spec-kit-xl

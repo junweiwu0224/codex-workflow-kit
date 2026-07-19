@@ -1,0 +1,40 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://codex-workflow-kit.local/governance/eval-suite.schema.json",
+  "title": "Codex Workflow V4.2 Eval Suite",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "suite_id", "cases"],
+  "properties": {
+    "schema_version": {"const": "4.2"},
+    "suite_id": {"type": "string", "minLength": 1},
+    "description": {"type": "string"},
+    "promotion_eligible": {"type": "boolean"},
+    "repetitions": {"type": "integer", "minimum": 1},
+    "cases": {
+      "type": "array",
+      "minItems": 1,
+      "contains": {"type": "object", "properties": {"split": {"const": "held_out"}}},
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["case_id", "prompt", "family", "split"],
+        "properties": {
+          "case_id": {"type": "string", "minLength": 1},
+          "prompt": {"type": "string", "minLength": 1},
+          "family": {"type": "string", "minLength": 1},
+          "split": {"enum": ["train", "held_out"]},
+          "expected_skill": {"type": ["string", "null"]},
+          "expected_route": {"type": ["string", "null"]},
+          "expected_invocation": {"type": "boolean"},
+          "subjective": {"type": "boolean"},
+          "verification_id": {"type": "string", "minLength": 1},
+          "assertions": {
+            "type": "array",
+            "items": {"type": "object", "required": ["type"], "properties": {"type": {"type": "string"}}, "additionalProperties": true}
+          }
+        }
+      }
+    }
+  }
+}

@@ -290,7 +290,7 @@ bash "<项目根目录>/kali/scripts/refresh-tool-index.sh"
 - [ ] `kali/RULES-kali.md` 触发关键词已更新
 
 **通用（继续）**：
-- [ ] 入口脚本已接入 bootstrap（缺工具时自动补齐）
+- [ ] 入口脚本已接入锁定 bootstrap（缺工具时报告缺口，安装需当前任务批准）
 - [ ] 运行 refresh-tool-index 后新工具出现在索引中
 
 ---
@@ -370,10 +370,10 @@ skills/ghidra-headless/
 {
   "name": "<mcp-name>",
   "bootstrapKind": "npm-mcp",
-  "npmPackage": "@scope/package@latest",
+  "npmPackage": "@scope/package@<LOCKED_VERSION>",
   "mcpNames": ["<mcp-server-name-in-config>"],
   "mcpCommand": "npx",
-  "mcpArgs": ["-y", "@scope/package@latest"],
+  "mcpArgs": ["-y", "@scope/package@<LOCKED_VERSION>"],
   "mcpEnv": {
     "ENV_VAR": "value"
   },
@@ -553,7 +553,7 @@ MCP 配置示例：
 ```
 
 注意 `canAutoInstall: false` — 这表示 bootstrap 不会尝试自动安装，但会：
-- 自动注册 MCP URL 到配置
+- 仅在当前 Task Contract 批准后注册 MCP URL 到指定配置
 - 检测端口是否在线
 - 如果不在线，输出 `manualInstallHint` 引导用户
 
@@ -563,7 +563,7 @@ MCP 配置示例：
 
 | 能力 | 可自动安装 | 方式 | 说明 |
 |------|-----------|------|------|
-| sqlmap-mcp | ✗（需 Docker） | docker run | AI 会自动注册 MCP URL，但需要用户手动启动容器 |
+| sqlmap-mcp | ✗（需 Docker） | docker run | 配置注册和容器启动分别批准，禁止默认写入 |
 
 ### 手动启动
 \```powershell

@@ -1,0 +1,240 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Codex Workflow V4.2 Task Contract",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "lane",
+    "state",
+    "transition",
+    "transition_driver",
+    "write_scope",
+    "external_effects",
+    "approvals",
+    "required_artifacts",
+    "acceptance_checks",
+    "verification_mode",
+    "handoff"
+  ],
+  "properties": {
+    "lane": {
+      "type": "string",
+      "enum": ["fast", "standard", "governed"]
+    },
+    "state": {
+      "type": "string",
+      "enum": [
+        "discovered",
+        "scoped",
+        "approved_spec",
+        "planned",
+        "implemented",
+        "rework_required",
+        "verified",
+        "released",
+        "closed",
+        "blocked",
+        "cancelled"
+      ]
+    },
+    "transition": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9_-]*_to_[a-z][a-z0-9_-]*$"
+    },
+    "transition_driver": {
+      "type": "string",
+      "enum": [
+        "native",
+        "policy-router",
+        "openspec",
+        "spec-kit-xl",
+        "superpowers",
+        "deterministic-runner",
+        "verifier",
+        "release-readiness"
+      ]
+    },
+    "write_scope": {
+      "type": "string",
+      "enum": ["none", "workspace", "external"]
+    },
+    "read_roots": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 },
+      "uniqueItems": true
+    },
+    "write_roots": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 },
+      "uniqueItems": true
+    },
+    "external_effects": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "approvals": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["actor", "decision"],
+        "properties": {
+          "actor": { "type": "string", "minLength": 1 },
+          "decision": { "type": "string", "enum": ["pending", "granted", "denied"] },
+          "at": { "type": "string" },
+          "scope": {
+            "oneOf": [
+              { "type": "string", "minLength": 1 },
+              {
+                "type": "array",
+                "items": { "type": "string", "minLength": 1 },
+                "minItems": 1,
+                "uniqueItems": true
+              }
+            ]
+          },
+          "source": { "type": "string" }
+        }
+      }
+    },
+    "required_artifacts": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "acceptance_checks": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "verification_mode": {
+      "type": "string",
+      "enum": ["deterministic", "fresh_context", "mixed"]
+    },
+    "handoff": {
+      "type": "string",
+      "enum": ["none", "verify", "release", "openspec", "superpowers"]
+    },
+    "intent": { "type": "string" },
+    "audit_record": { "type": "boolean" },
+    "reversibility": {
+      "type": "string",
+      "enum": ["reversible", "partially-reversible", "irreversible"]
+    },
+    "network_policy": {
+      "type": "string",
+      "enum": ["none", "allowlist", "unrestricted"]
+    },
+    "network_allowlist": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 },
+      "uniqueItems": true
+    },
+    "network": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["mode", "allowlist"],
+      "properties": {
+        "mode": {
+          "type": "string",
+          "enum": ["none", "allowlist", "unrestricted"]
+        },
+        "allowlist": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 },
+          "uniqueItems": true
+        }
+      }
+    },
+    "credential_refs": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "external_targets": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "credentials": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 },
+      "uniqueItems": true
+    },
+    "package_install": {
+      "oneOf": [
+        { "type": "boolean" },
+        {
+          "type": "string",
+          "enum": ["none", "project-only", "user", "system"]
+        }
+      ]
+    },
+    "production_access": { "type": "boolean" },
+    "destructive_actions": { "type": "boolean" },
+    "browser_actions": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": ["inspect-local", "inspect-external", "submit-external"]
+      },
+      "uniqueItems": true
+    },
+    "contract_id": { "type": "string", "minLength": 1 },
+    "created_at": { "type": "string", "minLength": 1 },
+    "repo_revision": { "type": "string", "minLength": 1 },
+    "request_provenance": { "type": "string", "minLength": 1 },
+    "approval": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["required", "status", "scope"],
+      "properties": {
+        "required": { "type": "boolean" },
+        "status": {
+          "type": "string",
+          "enum": ["pending", "granted", "denied"]
+        },
+        "granted_by": { "type": ["string", "null"] },
+        "granted_at": { "type": ["string", "null"] },
+        "scope": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 },
+          "uniqueItems": true
+        },
+        "source": { "type": "string" }
+      }
+    },
+    "policy_enforcement": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["field", "status"],
+        "properties": {
+          "field": { "type": "string", "minLength": 1 },
+          "status": {
+            "type": "string",
+            "enum": ["enforced", "verified", "advisory", "unavailable"]
+          },
+          "reason": { "type": "string" }
+        }
+      }
+    },
+    "evidence_paths": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 }
+    },
+    "rollback_plan": { "type": "string" },
+    "retention": { "type": "string" },
+    "escalation_reasons": {
+      "type": "array",
+      "items": { "type": "string" }
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {"lane": {"const": "governed"}}
+      },
+      "then": {
+        "required": ["policy_enforcement"]
+      }
+    }
+  ]
+}

@@ -59,6 +59,31 @@ SUPERPOWERS_SKILLS = (
 PROMPT_VISIBLE_SKILLS = CUSTOM_SKILLS + SUPERPOWERS_SKILLS
 
 
+def _profile_custom_skills(root: Path, include_pilots: bool) -> tuple[str, ...]:
+    names: list[str] = []
+    for profile in ("stable", "pilot"):
+        if profile == "pilot" and not include_pilots:
+            continue
+        path = root / "catalog" / "profiles" / f"{profile}.txt"
+        if not path.is_file():
+            return CUSTOM_SKILLS
+        names.extend(
+            line.strip()
+            for line in path.read_text(encoding="utf-8").splitlines()
+            if line.strip() and not line.lstrip().startswith("#")
+        )
+    return tuple(sorted(set(names)))
+
+
+def expected_prompt_skills(
+    root: Path,
+    include_pilots: bool,
+    require_superpowers: bool,
+) -> tuple[str, ...]:
+    custom = _profile_custom_skills(root, include_pilots)
+    return custom + (SUPERPOWERS_SKILLS if require_superpowers else ())
+
+
 def _run(command: list[str], cwd: Path, timeout: int = 30) -> dict[str, object]:
     try:
         result = subprocess.run(command, cwd=cwd, text=True, capture_output=True, timeout=timeout, check=False)
@@ -79,9 +104,9 @@ def _run(command: list[str], cwd: Path, timeout: int = 30) -> dict[str, object]:
     }
 
 
-def _skill_visibility(prompt_input: str) -> dict[str, object]:
-    visible = [skill for skill in PROMPT_VISIBLE_SKILLS if skill in prompt_input]
-    missing = [skill for skill in PROMPT_VISIBLE_SKILLS if skill not in prompt_input]
+def _skill_visibility(prompt_input: str, expected_skills: tuple[str, ...]) -> dict[str, object]:
+    visible = [skill for skill in expected_skills if skill in prompt_input]
+    missing = [skill for skill in expected_skills if skill not in prompt_input]
     return {
         "checked": bool(prompt_input),
         "visible": visible,
@@ -96,9 +121,17 @@ def build_report(
     agents_home: str | Path | None = None,
     user_home: str | Path | None = None,
     check_prompt_input: bool = False,
+    require_superpowers: bool = False,
+    include_pilots: bool = False,
 ) -> dict[str, object]:
     root_path = Path(root).resolve()
-    live_install = build_live_install_report(root_path, codex_home, agents_home, user_home)
+    live_install = build_live_install_report(
+        root_path,
+        codex_home,
+        agents_home,
+        user_home,
+        include_pilots=include_pilots,
+    )
     local_doctor = build_doctor_report(root_path, codex_home, agents_home, user_home)
     codex_path = shutil.which("codex")
     codex_version = _run(["codex", "--version"], root_path) if codex_path else {
@@ -111,11 +144,18 @@ def build_report(
     prompt_input = {"ok": None, "skipped": True, "reason": "pass --check-prompt-input to run codex debug prompt-input"}
     if check_prompt_input and codex_path:
         prompt_command = _run(["codex", "debug", "prompt-input", "List available skills briefly"], root_path, timeout=60)
+        expected_skills = expected_prompt_skills(
+            root_path,
+            bool(live_install.get("pilots_enabled")),
+            require_superpowers,
+        )
+        visibility = _skill_visibility(str(prompt_command["stdout"]), expected_skills)
         prompt_input = {
-            "ok": prompt_command["ok"] and _skill_visibility(str(prompt_command["stdout"]))["ok"],
+            "ok": prompt_command["ok"] and visibility["ok"],
             "skipped": False,
             "command": prompt_command,
-            "skills": _skill_visibility(str(prompt_command["stdout"])),
+            "skills": visibility,
+            "require_superpowers": require_superpowers,
         }
 
     manual_agent_smoke = {
@@ -205,11 +245,29 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--agents-home", default=None, help="Agents home. Default: ~/.agents")
     parser.add_argument("--user-home", default=None, help="User home for plugin/native-host path checks. Default: ~")
     parser.add_argument("--check-prompt-input", action="store_true", help="Run codex debug prompt-input to verify skill visibility.")
+    parser.add_argument(
+        "--with-pilots",
+        action="store_true",
+        help="Include the explicit Pilot profile when checking prompt-visible skills.",
+    )
+    parser.add_argument(
+        "--require-superpowers",
+        action="store_true",
+        help="With --check-prompt-input, also require the external Superpowers skill set.",
+    )
     parser.add_argument("--json", action="store_true", help="Print a machine-readable JSON report.")
     parser.add_argument("--markdown", action="store_true", help="Print a Markdown summary.")
     args = parser.parse_args(argv)
 
-    report = build_report(args.root, args.codex_home, args.agents_home, args.user_home, args.check_prompt_input)
+    report = build_report(
+        args.root,
+        args.codex_home,
+        args.agents_home,
+        args.user_home,
+        args.check_prompt_input,
+        args.require_superpowers,
+        args.with_pilots,
+    )
     if args.json:
         print(json.dumps(report, ensure_ascii=False, indent=2, sort_keys=True))
     elif args.markdown:

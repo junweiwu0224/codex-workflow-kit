@@ -90,7 +90,8 @@ git clone https://github.com/craigz28/firmwalker
 ./firmwalker.sh extracted/squashfs-root
 
 # 3. 模拟启动（如果支持）
-docker run -it --rm -v $(pwd):/firmware firmae:latest \
+# Use a reviewed image digest; never use a moving :latest tag.
+docker run -it --rm -v $(pwd):/firmware firmae@sha256:<LOCKED_DIGEST> \
   /work/run.sh -d 1 /firmware/firmware.bin
 
 # 4. 已模拟起 Web → 用 nuclei / nikto / curl 直接扫

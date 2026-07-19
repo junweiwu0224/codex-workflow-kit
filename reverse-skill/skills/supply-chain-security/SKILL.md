@@ -106,11 +106,11 @@ SCA 告警 ≠ 实际风险！大多数 SCA 工具只有 ~15% 的告警是实际
 hadolint Dockerfile
 
 # 镜像扫描（多层：OS + 应用依赖 + 配置）
-trivy image --severity HIGH,CRITICAL nginx:latest
+trivy image --severity HIGH,CRITICAL nginx:<LOCKED_TAG_OR_DIGEST>
 
 # 最小基础镜像
 # 优先: distroless → alpine → slim → 避免 latest
-docker scout quickview nginx:latest
+docker scout quickview nginx:<LOCKED_TAG_OR_DIGEST>
 
 # 镜像签名
 cosign sign --key cosign.key myimage:tag
@@ -139,7 +139,7 @@ cosign verify --key cosign.pub myimage:tag
 | OWASP Dependency-Track | 企业级持续 SCA | `docker pull dependencytrack/apiserver` |
 | OSV-Scanner | 免费 SCA（OSV.dev 生态） | `go install github.com/google/osv-scanner` |
 | Trivy | 镜像 + 依赖 + IaC 扫描 | `apt install trivy` |
-| Syft | SBOM 生成 | `curl -sSfL https://raw.githubusercontent.com/anchore/syft/main/install.sh` |
+| Syft | SBOM 生成 | 使用锁定版本与 SHA-256；禁止执行移动分支上的远程安装脚本 |
 | cdxgen | CycloneDX SBOM 生成 | `npm install -g @cyclonedx/cdxgen` |
 | Cosign | 容器签名 | `go install github.com/sigstore/cosign/v2/cmd/cosign` |
 | Gitleaks | 密钥/凭证扫描 | `go install github.com/gitleaks/gitleaks/v8` |

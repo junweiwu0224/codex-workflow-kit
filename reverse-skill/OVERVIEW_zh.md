@@ -53,7 +53,7 @@ Skill Router
 | Skill Router | 根据目标类型、用户意图、工具链需求，把任务分发到对应 Skill。 |
 | Tool Orchestration | 整合 jadx、apktool、Frida、radare2、IDA、BurpSuite、浏览器工具等执行面。 |
 | MCP Integration | 通过 MCP 或本地桥接，把 BurpSuite、IDA、浏览器分析等能力暴露给 Agent。 |
-| Bootstrap Scripts | 检测本机工具状态，必要时给出自动安装或人工补齐路径。 |
+| Bootstrap Scripts | 检测本机工具状态；经 Task Contract 批准后使用锁定安装，或给出人工补齐路径。 |
 | Field Journal | 把完成过的任务、踩坑、命令和模式沉淀成可复用经验。 |
 | Report Generation | 任务完成后生成分析报告、攻击路径图、流程图或 CTF writeup。 |
 

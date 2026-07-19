@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# bootstrap-reverse.sh — generic Linux/macOS bootstrapper
+# bootstrap-reverse.sh — generic Linux/macOS approved bootstrapper
 #
 # Parity target: skills/scripts/bootstrap-reverse.ps1
 # Supports the same capability names and the same high-level modes:
@@ -18,6 +18,8 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 SKILL_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 REPO_ROOT="$(cd "$SKILL_ROOT/.." && pwd)"
+WORKFLOW_ROOT="$(cd "$REPO_ROOT/.." && pwd)"
+LOCK_FILE="${REVERSE_DEPENDENCY_LOCK:-$WORKFLOW_ROOT/catalog/reverse-dependencies.lock.yaml}"
 TOOLS_ROOT="${REVERSE_SKILL_TOOLS_DIR:-$HOME/tools}"
 if [[ "$TOOLS_ROOT" != /* ]]; then
   TOOLS_ROOT="$PWD/$TOOLS_ROOT"
@@ -29,6 +31,143 @@ fi
 CLAUDE_MCP_CONFIG_PATH="${CLAUDE_MCP_CONFIG:-$HOME/.claude/mcp.json}"
 CODEX_CONFIG_PATH="${CODEX_CONFIG_PATH:-$HOME/.codex/config.toml}"
 MCP_HOST_TARGET="${MCP_HOST_TARGET:-Both}"
+
+lock_value() {
+  local dependency_id="$1"
+  local field="$2"
+  [[ -f "$LOCK_FILE" ]] || return 1
+  awk -v wanted="$dependency_id" -v wanted_field="$field" '
+    $1 == "-" && $2 == "id:" {
+      current=$3
+      gsub(/^"|"$/, "", current)
+      next
+    }
+    current == wanted && $1 == wanted_field ":" {
+      sub(/^[^:]+:[[:space:]]*/, "")
+      gsub(/^"|"$/, "")
+      print
+      exit
+    }
+  ' "$LOCK_FILE"
+}
+
+require_locked_dependency() {
+  local dependency_id="$1"
+  local status
+  status="$(lock_value "$dependency_id" status || true)"
+  if [[ "$status" != "resolved" ]]; then
+    log_warn "MANUAL_INSTALL_REQUIRED: $dependency_id is not resolved in $LOCK_FILE"
+    return 1
+  fi
+}
+
+verify_sha256() {
+  local expected="$1"
+  local file="$2"
+  if command -v shasum >/dev/null 2>&1; then
+    printf '%s  %s\n' "$expected" "$file" | shasum -a 256 -c - >/dev/null
+  else
+    printf '%s  %s\n' "$expected" "$file" | sha256sum -c - >/dev/null
+  fi
+}
+
+fetch_locked_repo() {
+  local dependency_id="$1"
+  local destination="$2"
+  require_locked_dependency "$dependency_id" || return 1
+  local repository commit origin_url checkout_status actual_commit
+  repository="$(lock_value "$dependency_id" repository)"
+  commit="$(lock_value "$dependency_id" commit)"
+  [[ "$repository" =~ ^https://.+\.git$ ]] && [[ "$commit" =~ ^[0-9a-f]{40}$ ]] || {
+    log_warn "MANUAL_INSTALL_REQUIRED: $dependency_id requires an HTTPS repository and full commit in $LOCK_FILE"
+    return 1
+  }
+  if [[ -d "$destination/.git" ]]; then
+    origin_url="$(git -C "$destination" remote get-url origin 2>/dev/null || true)"
+    if [[ "$origin_url" != "$repository" ]]; then
+      log_err "Refusing $dependency_id checkout with unexpected origin: ${origin_url:-missing}"
+      return 1
+    fi
+    if ! checkout_status="$(git -C "$destination" status --porcelain --untracked-files=all)"; then
+      log_err "Refusing $dependency_id checkout whose worktree state cannot be verified: $destination"
+      return 1
+    fi
+    if [[ -n "$checkout_status" ]]; then
+      log_err "Refusing dirty $dependency_id checkout: $destination"
+      return 1
+    fi
+    git -C "$destination" fetch --depth=1 origin "$commit"
+  elif [[ -e "$destination" ]]; then
+    log_err "Refusing non-Git checkout path for $dependency_id: $destination"
+    return 1
+  else
+    mkdir -p "$destination"
+    git -C "$destination" init -q
+    git -C "$destination" remote add origin "$repository"
+    git -C "$destination" fetch --depth=1 origin "$commit"
+  fi
+  git -C "$destination" cat-file -e "${commit}^{commit}"
+  git -C "$destination" checkout --detach -q "$commit"
+  actual_commit="$(git -C "$destination" rev-parse HEAD)"
+  if [[ "$actual_commit" != "$commit" ]]; then
+    log_err "Refusing $dependency_id checkout: expected $commit, got $actual_commit"
+    return 1
+  fi
+}
+
+verify_go_tag_commit() {
+  local dependency_id="$1"
+  require_locked_dependency "$dependency_id" || return 1
+  if ! command -v git >/dev/null 2>&1; then
+    log_warn "MANUAL_INSTALL_REQUIRED: Git is required to verify the locked Go tag commit."
+    return 1
+  fi
+  local repository version commit actual_commit
+  repository="$(lock_value "$dependency_id" repository || true)"
+  version="$(lock_value "$dependency_id" version || true)"
+  commit="$(lock_value "$dependency_id" commit || true)"
+  [[ "$repository" =~ ^https://.+\.git$ ]] && [[ -n "$version" ]] && [[ "$commit" =~ ^[0-9a-f]{40}$ ]] || {
+    log_warn "MANUAL_INSTALL_REQUIRED: $dependency_id requires repository, version, and full commit in $LOCK_FILE"
+    return 1
+  }
+  actual_commit="$(git ls-remote "$repository" "refs/tags/${version}^{}" "refs/tags/${version}" | awk -v direct="refs/tags/${version}" -v peeled="refs/tags/${version}^{}" '
+    $2 == peeled { print $1; found=1; exit }
+    $2 == direct { candidate=$1 }
+    END { if (!found && candidate != "") print candidate }
+  ')"
+  if [[ "$actual_commit" != "$commit" ]]; then
+    log_err "Refusing $dependency_id: tag $version resolved to ${actual_commit:-missing}, not $commit"
+    return 1
+  fi
+}
+
+install_locked_go_package() {
+  local dependency_id="$1"
+  local module version
+  require_locked_dependency "$dependency_id" || return 1
+  module="$(lock_value "$dependency_id" module || true)"
+  version="$(lock_value "$dependency_id" version || true)"
+  [[ -n "$module" && -n "$version" ]] || {
+    log_warn "MANUAL_INSTALL_REQUIRED: $dependency_id has no module/version in $LOCK_FILE"
+    return 1
+  }
+  verify_go_tag_commit "$dependency_id" || return 1
+  go install "${module}@${version}"
+}
+
+install_pnpm_dependencies_frozen() {
+  local project_dir="$1"
+  if [[ ! -f "$project_dir/pnpm-lock.yaml" ]]; then
+    log_err "Refusing to start without pnpm-lock.yaml: $project_dir"
+    return 1
+  fi
+  (cd "$project_dir" && pnpm install --frozen-lockfile)
+}
+
+# Test-only library mode exposes the lock helpers without invoking bootstrap.
+if [[ "${BOOTSTRAP_REVERSE_LIB_ONLY:-0}" == "1" ]]; then
+  return 0 2>/dev/null || exit 0
+fi
 
 UNAME_S="$(uname -s 2>/dev/null || echo unknown)"
 case "$UNAME_S" in
@@ -57,6 +196,14 @@ log_info() { printf '\033[36m[INFO]\033[0m %s\n' "$*"; }
 log_ok() { printf '\033[32m[OK]\033[0m %s\n' "$*"; }
 log_warn() { printf '\033[33m[WARN]\033[0m %s\n' "$*"; }
 log_err() { printf '\033[31m[ERR]\033[0m %s\n' "$*"; }
+
+require_unpinned_platform_opt_in() {
+  if [[ "${REVERSE_ALLOW_UNPINNED_PLATFORM_PACKAGES:-0}" != "1" ]]; then
+    log_warn "MANUAL_INSTALL_REQUIRED: unpinned apt/Homebrew installs are disabled by default"
+    log_warn "Install manually, or explicitly set REVERSE_ALLOW_UNPINNED_PLATFORM_PACKAGES=1"
+    return 1
+  fi
+}
 
 has_cmd() { command -v "$1" >/dev/null 2>&1; }
 cmd_path() { command -v "$1" 2>/dev/null || true; }
@@ -163,6 +310,7 @@ fi
 
 install_apt() {
   local package="$1"
+  require_unpinned_platform_opt_in || return 1
   log_info "apt install $package"
   sudo_cmd apt-get update -qq
   sudo_cmd apt-get install -y "$package"
@@ -170,6 +318,7 @@ install_apt() {
 
 install_brew() {
   local package="$1"
+  require_unpinned_platform_opt_in || return 1
   if ! has_cmd brew; then
     log_err "Homebrew is required. Install it first: https://brew.sh/"
     return 1
@@ -180,6 +329,7 @@ install_brew() {
 
 install_brew_cask() {
   local package="$1"
+  require_unpinned_platform_opt_in || return 1
   if ! has_cmd brew; then
     log_err "Homebrew is required. Install it first: https://brew.sh/"
     return 1
@@ -198,12 +348,8 @@ ensure_python_runtime() {
   fi
   if ! has_cmd pipx; then
     case "$PLATFORM" in
-      macos)
-        python3 -m pip install --user pipx || install_brew pipx
-        ;;
-      linux)
-        install_apt pipx || python3 -m pip install --user pipx
-        ;;
+      macos) install_brew pipx || { manual_required pipx "Install pipx from the platform package manager."; return 1; } ;;
+      linux) install_apt pipx || { manual_required pipx "Install pipx from the platform package manager."; return 1; } ;;
     esac
   fi
   python3 -m pipx ensurepath >/dev/null 2>&1 || true
@@ -232,67 +378,24 @@ ensure_pnpm() {
   ensure_node_runtime
   if has_cmd pnpm; then return 0; fi
   if has_cmd corepack; then corepack enable || true; fi
-  if ! has_cmd pnpm; then npm install -g pnpm; fi
-}
-
-latest_github_asset_url() {
-  local repo="$1"
-  local regex="$2"
-  python3 - "$repo" "$regex" <<'PY'
-import json, re, sys, urllib.request
-repo, pattern = sys.argv[1:]
-req = urllib.request.Request(f'https://api.github.com/repos/{repo}/releases/latest', headers={'User-Agent':'reverse-skill-bootstrap'})
-with urllib.request.urlopen(req, timeout=30) as r:
-    data = json.load(r)
-for asset in data.get('assets', []):
-    if re.search(pattern, asset.get('name','')):
-        print(asset.get('browser_download_url'))
-        raise SystemExit(0)
-raise SystemExit(f'no asset matched {pattern} for {repo}')
-PY
-}
-
-github_latest_release_api_url() {
-  local repo="$1"
-  printf 'https://api.github.com/repos/%s/releases/latest\n' "$repo"
-}
-
-latest_github_asset_url_curl() {
-  local repo="$1"
-  local regex="$2"
-  local api_url
-  api_url="$(github_latest_release_api_url "$repo")"
-  curl -fsSL -H 'User-Agent: reverse-skill-bootstrap' "$api_url" | python3 - "$regex" <<'PY'
-import json, re, sys
-pattern = sys.argv[1]
-data = json.load(sys.stdin)
-for asset in data.get('assets', []):
-    if re.search(pattern, asset.get('name', '')):
-        print(asset.get('browser_download_url'))
-        raise SystemExit(0)
-raise SystemExit(f'no asset matched {pattern}')
-PY
+  if ! has_cmd pnpm; then
+    local version
+    version="$(lock_value pnpm-npm version || true)"
+    [[ "$version" ]] || { manual_required pnpm "Add an exact pnpm version to $LOCK_FILE"; return 1; }
+    npm install -g "pnpm@$version"
+  fi
 }
 
 resolve_github_asset_url() {
-  local repo="$1"
-  local regex="$2"
-  local url=""
-  if url="$(latest_github_asset_url "$repo" "$regex" 2>/dev/null)"; then
-    if [[ -n "$url" ]]; then
-      printf '%s\n' "$url"
-      return 0
-    fi
-  fi
-  if has_cmd curl; then
-    if url="$(latest_github_asset_url_curl "$repo" "$regex" 2>/dev/null)"; then
-      if [[ -n "$url" ]]; then
-        printf '%s\n' "$url"
-        return 0
-      fi
-    fi
-  fi
-  return 1
+  local dependency_id="$1"
+  require_locked_dependency "$dependency_id" || return 1
+  local url
+  url="$(lock_value "$dependency_id" url || true)"
+  [[ "$url" == https://github.com/*/releases/download/* ]] || {
+    log_warn "MANUAL_INSTALL_REQUIRED: $dependency_id has no fixed release URL"
+    return 1
+  }
+  printf '%s\n' "$url"
 }
 
 extract_archive() {
@@ -325,19 +428,29 @@ extract_archive() {
 }
 
 install_github_release() {
-  local repo="$1"
-  local regex="$2"
-  local dest="$3"
+  local dependency_id="$1"
+  local dest="$2"
   local url file
   ensure_dir "$TOOLS_ROOT"
-  url=$(resolve_github_asset_url "$repo" "$regex")
+  url=$(resolve_github_asset_url "$dependency_id") || return 1
+  local expected_sha
+  expected_sha="$(lock_value "$dependency_id" sha256 || true)"
+  [[ "$expected_sha" =~ ^[0-9a-f]{64}$ ]] || {
+    log_warn "MANUAL_INSTALL_REQUIRED: $dependency_id has no verified SHA-256"
+    return 1
+  }
   file="$(make_temp_file "$(basename "$url")")"
   log_info "download $url"
   curl -fL -o "$file" "$url"
+  if ! verify_sha256 "$expected_sha" "$file"; then
+    rm -rf "$(dirname "$file")"
+    log_err "checksum mismatch for $dependency_id"
+    return 1
+  fi
   extract_archive "$file" "$dest"
   rm -rf "$(dirname "$file")"
   export PATH="$dest/bin:$dest:$PATH"
-  log_ok "installed $repo to $dest"
+  log_ok "installed locked $dependency_id to $dest"
 }
 
 download_file_checked() {
@@ -515,8 +628,8 @@ ensure_jadx() {
   if has_cmd jadx; then log_ok "jadx ready: $(cmd_path jadx)"; return 0; fi
   ensure_java_runtime
   case "$PLATFORM" in
-    macos) install_brew jadx || install_github_release skylot/jadx '^jadx-[0-9].*\.zip$' "$TOOLS_ROOT/jadx" ;;
-    linux) install_github_release skylot/jadx '^jadx-[0-9].*\.zip$' "$TOOLS_ROOT/jadx" ;;
+    macos) install_brew jadx || install_github_release jadx-release "$TOOLS_ROOT/jadx" ;;
+    linux) install_github_release jadx-release "$TOOLS_ROOT/jadx" ;;
   esac
 }
 
@@ -535,12 +648,17 @@ ensure_apktool() {
   ensure_java_runtime
   ensure_dir "$TOOLS_ROOT/apktool"
   local url jar wrapper
-  url=$(resolve_github_asset_url iBotPeaches/Apktool '^apktool_.*\.jar$') || {
+  url=$(resolve_github_asset_url apktool-release) || {
     log_err "could not resolve apktool release asset"
     return 1
   }
   jar="$TOOLS_ROOT/apktool/apktool.jar"
   download_file_checked "$url" "$jar" "apktool jar" || return 1
+  if ! verify_sha256 "$(lock_value apktool-release sha256)" "$jar"; then
+    rm -f "$jar"
+    log_err "checksum mismatch for apktool-release"
+    return 1
+  fi
   wrapper="$TOOLS_ROOT/apktool/apktool"
   cat > "$wrapper" <<'EOF'
 #!/usr/bin/env bash
@@ -560,37 +678,49 @@ EOF
 ensure_frida_tools() {
   ensure_python_runtime
   if has_cmd frida && has_cmd frida-ps; then log_ok "frida-tools ready"; return 0; fi
-  pipx install frida-tools || pipx upgrade frida-tools
+  local version
+  version="$(lock_value frida-tools-pypi version || true)"
+  [[ "$version" ]] || { manual_required frida-tools "Add an exact PyPI version to $LOCK_FILE"; return 1; }
+  pipx install "frida-tools==$version" || pipx upgrade "frida-tools==$version"
   export PATH="$HOME/.local/bin:$PATH"
 }
 
 ensure_idalib_mcp() {
   ensure_python_runtime
   if has_cmd ida-pro-mcp; then log_ok "ida-pro-mcp ready: $(cmd_path ida-pro-mcp)"; return 0; fi
-  pipx install 'git+https://github.com/mrexodia/ida-pro-mcp.git' || pipx upgrade ida-pro-mcp
+  require_locked_dependency ida-pro-mcp-git || return 1
+  local repository commit
+  repository="$(lock_value ida-pro-mcp-git repository)"
+  commit="$(lock_value ida-pro-mcp-git commit)"
+  pipx install "git+${repository}@${commit}" || pipx upgrade "git+${repository}@${commit}"
   export PATH="$HOME/.local/bin:$PATH"
   log_warn "Post-install: run 'ida-pro-mcp --install', choose Streamable HTTP + Global, then restart IDA Pro."
 }
 
 ensure_jshookmcp() {
   ensure_node_runtime
-  write_mcp_server "jshook" '{"type":"stdio","command":"npx","args":["-y","@jshookmcp/jshook@latest"],"env":{"JSHOOK_BASE_PROFILE":"search"},"startup_timeout_sec":120}'
+  require_locked_dependency jshookmcp-npm || return 1
+  local version
+  version="$(lock_value jshookmcp-npm version)"
+  write_mcp_server "jshook" "{\"type\":\"stdio\",\"command\":\"npx\",\"args\":[\"-y\",\"@jshookmcp/jshook@${version}\"],\"env\":{\"JSHOOK_BASE_PROFILE\":\"search\"},\"startup_timeout_sec\":120}"
 }
 
 ensure_anything_analyzer() {
   ensure_node_runtime
   ensure_pnpm
   local dir="$TOOLS_ROOT/anything-analyzer"
-  if [[ ! -d "$dir/.git" ]]; then
-    if ! has_cmd git; then
-      case "$PLATFORM" in macos) install_brew git ;; linux) install_apt git ;; esac
-    fi
-    rm -rf "$dir"
-    git clone https://github.com/Mouseww/anything-analyzer "$dir"
+  if ! has_cmd git; then
+    case "$PLATFORM" in macos) install_brew git ;; linux) install_apt git ;; esac
   fi
+  fetch_locked_repo anything-analyzer-git "$dir" || return 1
   write_mcp_server "anything-analyzer" '{"url":"http://localhost:23816/mcp","startup_timeout_sec":120}'
   if $START_SERVICES; then
-    (cd "$dir" && pnpm install && nohup pnpm dev >/tmp/anything-analyzer.log 2>&1 &)
+    if test_tcp_port 23816; then
+      log_err "Refusing to reuse an already-running anything-analyzer service whose checkout cannot be verified"
+      return 1
+    fi
+    install_pnpm_dependencies_frozen "$dir" || return 1
+    (cd "$dir" && nohup pnpm dev >/tmp/anything-analyzer.log 2>&1 &)
     wait_for_port 23816 120 || log_warn "anything-analyzer did not open port 23816; see /tmp/anything-analyzer.log"
   fi
 }
@@ -633,8 +763,13 @@ ensure_adb() {
 ensure_agent_browser() {
   ensure_node_runtime
   if has_cmd agent-browser; then log_ok "agent-browser ready"; return 0; fi
-  npm install -g agent-browser
-  if has_cmd npx; then npx playwright install chromium || true; fi
+  require_locked_dependency agent-browser-npm || return 1
+  require_locked_dependency playwright-npm || return 1
+  local agent_version playwright_version
+  agent_version="$(lock_value agent-browser-npm version)"
+  playwright_version="$(lock_value playwright-npm version)"
+  npm install -g "agent-browser@$agent_version"
+  if has_cmd npx; then npx --yes "playwright@$playwright_version" install chromium || true; fi
   local setup="$SKILL_ROOT/browser-automation/scripts/setup.sh"
   if [[ -x "$setup" ]]; then "$setup" --skip-browser-install || true; fi
 }
@@ -644,12 +779,12 @@ ensure_ghidra_mcp() {
   case "$PLATFORM" in
     macos)
       if ! has_cmd ghidraRun && [[ ! -d /Applications/Ghidra.app ]]; then
-        install_brew ghidra || brew install --cask ghidra || true
+        install_brew ghidra || install_brew_cask ghidra || true
       fi
       ;;
     linux)
       if ! has_cmd ghidraRun; then
-        install_github_release NationalSecurityAgency/ghidra '^ghidra_.*_PUBLIC_.*\.zip$' "$TOOLS_ROOT/ghidra" || \
+        install_github_release ghidra-release "$TOOLS_ROOT/ghidra" || \
           manual_required ghidra-mcp "Install Ghidra from GitHub release or Flatpak, then configure ghidra-mcp if used."
       fi
       ;;
@@ -684,8 +819,25 @@ ensure_ghidra_mcp() {
   if [[ ! -x "$ghidra_venv/bin/python" ]]; then
     python3 -m venv "$ghidra_venv"
   fi
-  "$ghidra_venv/bin/python" -m pip install --upgrade pip >/dev/null
-  "$ghidra_venv/bin/python" -m pip install --upgrade pyghidra >/dev/null
+  require_locked_dependency ghidra-release || return 1
+  local pyghidra_version pyghidra_wheel_relative pyghidra_wheel pyghidra_wheel_dir
+  pyghidra_version="$(lock_value ghidra-release pyghidra_version || true)"
+  pyghidra_wheel_relative="$(lock_value ghidra-release pyghidra_wheel || true)"
+  if [[ ! "$pyghidra_version" =~ ^[0-9]+(\.[0-9]+){1,3}([A-Za-z0-9.+-]*)$ ]] || \
+     [[ -z "$pyghidra_wheel_relative" || "$pyghidra_wheel_relative" == /* || "$pyghidra_wheel_relative" == *".."* ]]; then
+    manual_required ghidra-mcp "The lock must record an exact PyGhidra version and safe wheel path from the verified Ghidra release."
+    return 1
+  fi
+  pyghidra_wheel="$ghidra_install_dir/$pyghidra_wheel_relative"
+  if [[ ! -f "$pyghidra_wheel" ]]; then
+    manual_required ghidra-mcp "Verified Ghidra package does not contain locked wheel: $pyghidra_wheel_relative"
+    return 1
+  fi
+  pyghidra_wheel_dir="$(dirname "$pyghidra_wheel")"
+  "$ghidra_venv/bin/python" -m pip install --no-index --find-links "$pyghidra_wheel_dir" "pyghidra==$pyghidra_version" >/dev/null || {
+    manual_required ghidra-mcp "Offline PyGhidra wheel set is incomplete; network fallback is disabled."
+    return 1
+  }
 
   local ghidra_projects_dir="$HOME/CodexGhidraProjects"
   mkdir -p "$ghidra_projects_dir"
@@ -713,13 +865,17 @@ ensure_seclists() {
   local dir="$TOOLS_ROOT/SecLists"
   if [[ -d "$dir/.git" || -d /usr/share/seclists ]]; then log_ok "SecLists ready"; return 0; fi
   if ! has_cmd git; then case "$PLATFORM" in macos) install_brew git ;; linux) install_apt git ;; esac; fi
-  git clone https://github.com/danielmiessler/SecLists "$dir"
+  fetch_locked_repo seclists-git "$dir"
 }
 
 ensure_proxycat() {
   ensure_python_runtime
   if has_cmd proxycat; then log_ok "proxycat ready"; return 0; fi
-  pipx install git+https://github.com/honmashironeko/ProxyCat.git || manual_required proxycat "Clone/install ProxyCat manually; verify command 'proxycat'."
+  require_locked_dependency proxycat-git || return 1
+  local repository commit
+  repository="$(lock_value proxycat-git repository)"
+  commit="$(lock_value proxycat-git commit)"
+  pipx install "git+${repository}@${commit}" || manual_required proxycat "Install the locked ProxyCat commit manually; verify command 'proxycat'."
 }
 
 ensure_burpsuite_mcp() {
@@ -741,7 +897,10 @@ ensure_nmap() {
 ensure_sqlmap() {
   ensure_python_runtime
   if has_cmd sqlmap; then log_ok "sqlmap ready: $(cmd_path sqlmap)"; return 0; fi
-  pipx install sqlmap || pipx upgrade sqlmap
+  local version
+  version="$(lock_value sqlmap-pypi version || true)"
+  [[ "$version" ]] || { manual_required sqlmap "Add an exact PyPI version to $LOCK_FILE"; return 1; }
+  pipx install "sqlmap==$version" || pipx upgrade "sqlmap==$version"
   export PATH="$HOME/.local/bin:$PATH"
 }
 
@@ -759,10 +918,10 @@ ensure_nuclei() {
     macos) install_brew nuclei ;;
     linux)
       if has_cmd go; then
-        go install github.com/projectdiscovery/nuclei/v3/cmd/nuclei@latest
+        install_locked_go_package nuclei-go
         export PATH="$HOME/go/bin:$PATH"
       else
-        manual_required nuclei "Install Go then run: go install github.com/projectdiscovery/nuclei/v3/cmd/nuclei@latest"
+        manual_required nuclei "Install Go then use the exact version recorded in $LOCK_FILE"
       fi
       ;;
   esac
@@ -772,11 +931,11 @@ ensure_binwalk() {
   if has_cmd binwalk; then log_ok "binwalk ready: $(cmd_path binwalk)"; return 0; fi
   case "$PLATFORM" in
     macos)
-      install_brew binwalk || python3 -m pip install --user binwalk
+      install_brew binwalk || { manual_required binwalk "Install binwalk from the platform package manager."; return 1; }
       export PATH="$HOME/.local/bin:$PATH"
       ;;
     linux)
-      install_apt binwalk || python3 -m pip install --user binwalk
+      install_apt binwalk || { manual_required binwalk "Install binwalk from the platform package manager."; return 1; }
       export PATH="$HOME/.local/bin:$PATH"
       ;;
   esac
@@ -805,13 +964,10 @@ ensure_pentestswarm() {
   if ! has_cmd go; then
     case "$PLATFORM" in macos) install_brew go ;; linux) install_apt golang-go ;; esac
   fi
-  if ! go install github.com/Armur-Ai/Pentest-Swarm-AI/cmd/pentestswarm@latest; then
-    if has_cmd docker; then
-      write_mcp_server "pentestswarm" '{"type":"stdio","command":"docker","args":["run","--rm","-i","ghcr.io/armur-ai/pentestswarm:latest","mcp","serve"],"startup_timeout_sec":180}'
-      log_warn "pentestswarm Go install failed; registered Docker fallback ghcr.io/armur-ai/pentestswarm:latest"
-    else
-      manual_required pentestswarm "Install Go 1.24+ or Docker, then install Pentest-Swarm-AI and ensure pentestswarm is on PATH."
-    fi
+  require_locked_dependency pentestswarm-go || return 1
+  if ! install_locked_go_package pentestswarm-go; then
+    manual_required pentestswarm "Go installation failed; Docker fallback is disabled until its digest is verified."
+    return 1
   fi
 }
 

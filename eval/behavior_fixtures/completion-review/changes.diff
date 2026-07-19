@@ -1,0 +1,15 @@
+diff --git a/callback.py b/callback.py
+index 1111111..2222222 100644
+--- a/callback.py
++++ b/callback.py
+@@ -1,5 +1,12 @@
++ALLOWED_CALLBACK_HOSTS = {"payments.example.test"}
++
+ def receive_callback(request):
+     event = request.json
++    callback_url = event["callback_url"]
++    if host(callback_url) not in ALLOWED_CALLBACK_HOSTS:
++        return {"status": "rejected"}, 400
++
+     record_payment(event)
+     return {"status": "accepted"}, 202

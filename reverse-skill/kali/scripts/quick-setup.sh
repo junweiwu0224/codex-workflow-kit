@@ -9,7 +9,8 @@
 #   6. 输出配置报告
 #
 # 用法:
-#   sudo bash kali/scripts/quick-setup.sh [--skip-update] [--minimal]
+#   sudo REVERSE_ALLOW_UNPINNED_PLATFORM_PACKAGES=1 \
+#     bash kali/scripts/quick-setup.sh [--skip-update] [--minimal]
 
 set -euo pipefail
 
@@ -26,6 +27,12 @@ for arg in "$@"; do
         --minimal) MINIMAL=true ;;
     esac
 done
+
+if [[ "${REVERSE_ALLOW_UNPINNED_PLATFORM_PACKAGES:-0}" != "1" ]]; then
+    echo "已阻止 legacy quick setup：它会执行无法跨平台精确锁定的 apt 系统更新和安装。"
+    echo "请改用 kali/scripts/bootstrap-reverse.sh 选择锁定 capability；如确需继续，请显式设置 REVERSE_ALLOW_UNPINNED_PLATFORM_PACKAGES=1。"
+    exit 2
+fi
 
 # ─── 颜色 ──────────────────────────────────────────────────────────────────────────
 
@@ -156,7 +163,7 @@ fi
 # frida-tools
 if ! command -v frida &>/dev/null; then
     info "安装 frida-tools ..."
-    pip3 install --break-system-packages frida-tools 2>/dev/null && ok "frida-tools 安装成功" || warn "frida-tools 安装失败"
+    pip3 install --break-system-packages 'frida-tools==14.10.4' 2>/dev/null && ok "frida-tools 安装成功" || warn "frida-tools 安装失败"
 else
     ok "frida 已可用"
 fi
@@ -188,13 +195,15 @@ if command -v jq &>/dev/null; then
     # 注册 hexstrike
     jq '.mcpServers["hexstrike"] = {"command": "hexstrike-ai", "args": []}' "$MCP_CONFIG" > /tmp/mcp-tmp.json && mv /tmp/mcp-tmp.json "$MCP_CONFIG"
 
-    # 注册 jshook
-    jq '.mcpServers["jshook"] = {"command": "npx", "args": ["-y", "@jshookmcp/jshook@latest"], "env": {"JSHOOK_BASE_PROFILE": "search"}}' "$MCP_CONFIG" > /tmp/mcp-tmp.json && mv /tmp/mcp-tmp.json "$MCP_CONFIG"
+    # 注册 jshook；把命令和版本作为显式值传入 jq，避免把配置文本误判成执行命令。
+    JSHOOK_COMMAND='npx'
+    JSHOOK_PACKAGE='@jshookmcp/jshook@0.3.3'
+    jq --arg command "$JSHOOK_COMMAND" --arg package "$JSHOOK_PACKAGE" '.mcpServers["jshook"] = {"command": $command, "args": ["-y", $package], "env": {"JSHOOK_BASE_PROFILE": "search"}}' "$MCP_CONFIG" > /tmp/mcp-tmp.json && mv /tmp/mcp-tmp.json "$MCP_CONFIG"
 
     chown "$REAL_USER:$REAL_USER" "$MCP_CONFIG" "$MCP_CONFIG_DIR"
     ok "MCP 配置已写入: $MCP_CONFIG"
 else
-    warn "未安装 jq，无法自动配置 MCP。请手动复制 kali/mcp-kali-example.json"
+    warn "未安装 jq，无法生成 MCP 配置示例。请在批准后手动复制 kali/mcp-kali-example.json"
     info "安装 jq: apt install jq"
 fi
 
@@ -231,7 +240,7 @@ for tool in "${NEW_TOOLS_2026_1[@]}"; do
 done
 echo ""
 echo "  下一步:"
-echo "    1. 告诉你的 AI 客户端读取 kali/RULES-kali.md"
-echo "    2. 或者直接问 AI：'读一下 kali/RULES-kali.md 并执行配置'"
+echo "    1. 读取 kali/RULES-kali.md（只加载路由规则，不写全局配置）"
+echo "    2. 按当前 Task Contract 逐项批准后再执行后续配置"
 echo "    3. 之后遇到安全/逆向任务会自动路由"
 echo ""

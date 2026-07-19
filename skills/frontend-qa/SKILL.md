@@ -1,15 +1,6 @@
 ---
 name: frontend-qa
 description: Use when frontend, UI, CSS, layout, interaction, route, form, canvas, chart, 3D, media, or user-visible changes need real browser, screenshot, responsive, state, or visual verification.
-risk: low
-source_repo: personal-workflow-kit
-source_type: curated-local
-date_added: 2026-06-07
-setup: none
-write_surface: task-dependent
-auth: task-dependent
-network: local-by-default
-status: active
 ---
 
 # frontend-qa

@@ -93,7 +93,11 @@ ensure_tool() {
             return 0
         fi
     fi
-    echo "INFO: $name 未找到，尝试自动安装..."
+    if [[ "${REVERSE_ALLOW_TOOL_BOOTSTRAP:-0}" != "1" ]]; then
+        echo "ERR: $name 未找到；默认不安装。批准锁定 bootstrap 后设置 REVERSE_ALLOW_TOOL_BOOTSTRAP=1。"
+        exit 1
+    fi
+    echo "INFO: $name 未找到，运行已批准的锁定 bootstrap..."
     if [[ -x "$KALI_BOOTSTRAP" ]]; then
         bash "$KALI_BOOTSTRAP" "$name" --skip-refresh 2>/dev/null || true
     fi
@@ -178,6 +182,10 @@ echo "  keystore=$KEYSTORE"
 # ─── 安装 ─────────────────────────────────────────────────────────────────────────
 
 if [[ "$DO_INSTALL" == "true" ]]; then
+    if [[ "${REVERSE_ALLOW_DEVICE_INSTALL:-0}" != "1" ]]; then
+        echo "ERR: device installation is disabled by default; approve the target and set REVERSE_ALLOW_DEVICE_INSTALL=1"
+        exit 1
+    fi
     echo "=== adb 安装 ==="
     ADB_ARGS=()
     [[ -n "$DEVICE_SERIAL" ]] && ADB_ARGS+=("-s" "$DEVICE_SERIAL")

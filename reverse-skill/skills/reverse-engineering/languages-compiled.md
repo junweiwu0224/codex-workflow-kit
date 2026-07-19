@@ -73,7 +73,7 @@ for fn in data.get('UserFunctions', []):
 **Ghidra with golang-loader:**
 ```bash
 # Install: Ghidra → Window → Script Manager → search "golang"
-# Or use: https://github.com/getCUJO/ThreatFox/tree/main/ghidra-golang
+# Or use the ghidra-golang directory from a reviewed ThreatFox commit.
 # Recovers function names, string references, interface tables
 ```
 

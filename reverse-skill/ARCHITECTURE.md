@@ -15,7 +15,9 @@ flowchart TD
     CheckJournal --> CheckTools[读取 tool-index.md<br/>确认工具状态]
     CheckTools --> ToolOK{工具可用?}
     
-    ToolOK -->|缺失| Bootstrap[调用 bootstrap-reverse.ps1<br/>自动安装]
+    ToolOK -->|缺失| Approval{Task Contract 已批准锁定 bootstrap?}
+    Approval -->|否| Manual[报告缺口<br/>保持只读]
+    Approval -->|是| Bootstrap[调用锁定 bootstrap]
     ToolOK -->|可用| Execute[进入 skill 工作流]
     
     Bootstrap --> BootOK{安装成功?}
@@ -237,12 +239,14 @@ sequenceDiagram
     AI->>FJ: 查同类经验
     AI->>TI: 确认工具状态
     alt 工具缺失
-        AI->>BS: 自动安装（.ps1 或 .sh）
+        AI->>BS: 经批准后调用锁定 bootstrap（.ps1 或 .sh）
         BS-->>AI: 结果
     end
     AI->>SUB: 进入工作流
     AI-->>U: 任务结果
     AI->>DOC: 生成报告
-    AI->>FJ: 回写经验
+    opt write scope 包含 journal
+        AI->>FJ: 回写经批准的经验
+    end
     AI-->>U: 完成
 ```

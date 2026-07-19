@@ -9,10 +9,16 @@ DRY_RUN=0
 BACKUP=0
 FORCE=0
 REPO_ONLY=0
+INSTALL_PILOTS=0
+INSTALL_REVERSE=0
 INSTALL_REVERSE_CORE=0
 START_REVERSE_SERVICES=0
 VERIFY_REVERSE_READY=0
 REVERSE_BOOTSTRAP_CAPABILITIES=""
+PRUNE_PREVIEW=0
+PRUNE=0
+UNINSTALL=0
+ROLLBACK=0
 REVERSE_BOOTSTRAP_SCRIPT_REL="reverse-skill/skills/scripts/bootstrap-reverse.sh"
 
 usage() {
@@ -27,18 +33,26 @@ Options:
   --agents-home PATH     Agents home for personal skills. Default: ~/.agents
   --repo PATH            Optional target repository for repo-template files.
   --repo-only            Install only repo-template files; skip global AGENTS.md and skills.
-  --with-reverse-core    After file install, bootstrap reverse core tools for new-machine readiness.
+  --with-pilots          Add pilot skills to the default stable skill profile.
+  --with-reverse         Install the optional reverse router and reverse capability pack.
+  --with-reverse-core    Install the reverse profile and bootstrap reverse core tools (compatibility option).
   --start-reverse-services
                          With --with-reverse-core, also start supported local MCP services.
-  --verify-reverse-ready Run reverse readiness verification after install/bootstrap.
+  --verify-reverse-ready Run reverse readiness verification; does not install the reverse profile.
   --reverse-capabilities CSV
                          Override reverse bootstrap capability list.
+  --prune-preview        Show files from an older profile that can be pruned; do not write.
+  --prune                Remove unchanged files from an older profile; modified files are kept.
+  --uninstall            Remove files recorded by the last install; modified files are kept.
+  --rollback             Restore the exact pre-install state recorded by the transaction.
   --backup               Back up conflicting existing files before replacing.
   --force                Replace conflicting existing files without backups.
   -h, --help             Show this help.
 
-Default behavior is non-destructive: existing different files are treated as
-conflicts unless --backup or --force is provided.
+Default behavior installs the global guidance and stable personal skills only.
+Pilot skills and the reverse profile are opt-in via --with-pilots,
+--with-reverse, or --with-reverse-core. Existing different files are treated
+as conflicts unless --backup or --force is provided.
 EOF
 }
 
@@ -134,6 +148,57 @@ run_reverse_ready_verifier() {
   python3 "${verify_script}" --user-home "${HOME}" --codex-config "${CODEX_HOME}/config.toml"
 }
 
+manage_install_state() {
+  local mode="$1"
+  shift
+  local state_script="${KIT_ROOT}/scripts/manage_install.py"
+  if [[ ! -f "${state_script}" ]]; then
+    log "install state manager missing: ${state_script}"
+    return 1
+  fi
+  local args=("${state_script}" "${mode}" --kit-root "${KIT_ROOT}" --codex-home "${CODEX_HOME}" --agents-home "${AGENTS_HOME}")
+  if [[ "${REPO_ONLY}" == "1" ]]; then
+    args+=(--repo-only)
+  fi
+  if [[ -n "${TARGET_REPO}" ]]; then
+    args+=(--repo "${TARGET_REPO}")
+  fi
+  if [[ "${INSTALL_PILOTS}" == "1" ]]; then
+    args+=(--with-pilots)
+  fi
+  if [[ "${INSTALL_REVERSE}" == "1" ]]; then
+    args+=(--with-reverse)
+  fi
+  if [[ "${FORCE}" == "1" ]]; then
+    args+=(--force)
+  fi
+  if [[ "${BACKUP}" == "1" ]]; then
+    args+=(--backup)
+  fi
+  if [[ "$#" -gt 0 ]]; then
+    args+=("$@")
+  fi
+  python3 "${args[@]}"
+}
+
+INSTALL_TRANSACTION_ACTIVE=0
+
+abort_install_transaction_on_exit() {
+  local status=$?
+  local abort_status=0
+  trap - EXIT
+  if [[ "${INSTALL_TRANSACTION_ACTIVE}" == "1" ]]; then
+    set +e
+    manage_install_state abort
+    abort_status=$?
+    set -e
+    if [[ "${status}" == "0" && "${abort_status}" != "0" ]]; then
+      status="${abort_status}"
+    fi
+  fi
+  exit "${status}"
+}
+
 copy_file() {
   local source="$1"
   local target="$2"
@@ -149,10 +214,7 @@ copy_file() {
     if [[ "${FORCE}" == "1" ]]; then
       log "replace: ${target}"
     elif [[ "${BACKUP}" == "1" ]]; then
-      local backup_path
-      backup_path="${target}.bak-$(date +%Y%m%d%H%M%S)"
-      log "backup: ${target} -> ${backup_path}"
-      run cp -p "${target}" "${backup_path}"
+      log "backup and replace: ${target}"
     else
       log "conflict: ${target}"
       log "  use --backup to preserve the current file, or --force to replace it"
@@ -162,8 +224,12 @@ copy_file() {
     log "create: ${target}"
   fi
 
-  run mkdir -p "${target_dir}"
-  run cp -p "${source}" "${target}"
+  if [[ "${DRY_RUN}" == "1" ]]; then
+    run mkdir -p "${target_dir}"
+    run cp -p "${source}" "${target}"
+  else
+    manage_install_state copy-target --target "${target}"
+  fi
 }
 
 check_file() {
@@ -255,26 +321,65 @@ install_reverse_pack() {
   copy_tree_files "${KIT_ROOT}/reverse-skill" "${CODEX_HOME}/reverse-skill"
 }
 
+install_reverse_lock() {
+  copy_file \
+    "${KIT_ROOT}/catalog/reverse-dependencies.lock.yaml" \
+    "${CODEX_HOME}/catalog/reverse-dependencies.lock.yaml"
+}
+
 check_reverse_pack() {
   check_tree_files "${KIT_ROOT}/reverse-skill" "${CODEX_HOME}/reverse-skill"
 }
 
+check_reverse_lock() {
+  check_file \
+    "${KIT_ROOT}/catalog/reverse-dependencies.lock.yaml" \
+    "${CODEX_HOME}/catalog/reverse-dependencies.lock.yaml"
+}
+
+selected_skill_names() {
+  local stable_profile="${KIT_ROOT}/catalog/profiles/stable.txt"
+  local pilot_profile="${KIT_ROOT}/catalog/profiles/pilot.txt"
+  if [[ ! -f "${stable_profile}" ]]; then
+    log "skill profile missing: ${stable_profile}"
+    return 1
+  fi
+  if [[ "${INSTALL_PILOTS}" == "1" && ! -f "${pilot_profile}" ]]; then
+    log "skill profile missing: ${pilot_profile}"
+    return 1
+  fi
+  {
+    sed '/^[[:space:]]*#/d; /^[[:space:]]*$/d' "${stable_profile}"
+    if [[ "${INSTALL_PILOTS}" == "1" ]]; then
+      sed '/^[[:space:]]*#/d; /^[[:space:]]*$/d' "${pilot_profile}"
+    fi
+  } | sort -u
+}
+
 install_skills() {
   local skills_target="${AGENTS_HOME}/skills"
-  while IFS= read -r -d '' source_dir; do
-    local skill_name
-    skill_name="$(basename "${source_dir}")"
+  while IFS= read -r skill_name; do
+    [[ -n "${skill_name}" ]] || continue
+    local source_dir="${KIT_ROOT}/skills/${skill_name}"
+    if [[ ! -d "${source_dir}" ]]; then
+      log "profile skill missing: ${source_dir}"
+      return 1
+    fi
     copy_tree_files "${source_dir}" "${skills_target}/${skill_name}"
-  done < <(find "${KIT_ROOT}/skills" -mindepth 1 -maxdepth 1 -type d -print0 | sort -z)
+  done < <(selected_skill_names)
 }
 
 check_skills() {
   local skills_target="${AGENTS_HOME}/skills"
-  while IFS= read -r -d '' source_dir; do
-    local skill_name
-    skill_name="$(basename "${source_dir}")"
+  while IFS= read -r skill_name; do
+    [[ -n "${skill_name}" ]] || continue
+    local source_dir="${KIT_ROOT}/skills/${skill_name}"
+    if [[ ! -d "${source_dir}" ]]; then
+      log "profile skill missing: ${source_dir}"
+      return 1
+    fi
     check_tree_files "${source_dir}" "${skills_target}/${skill_name}"
-  done < <(find "${KIT_ROOT}/skills" -mindepth 1 -maxdepth 1 -type d -print0 | sort -z)
+  done < <(selected_skill_names)
 }
 
 install_repo_template() {
@@ -323,7 +428,16 @@ while [[ "$#" -gt 0 ]]; do
       REPO_ONLY=1
       shift
       ;;
+    --with-pilots)
+      INSTALL_PILOTS=1
+      shift
+      ;;
+    --with-reverse)
+      INSTALL_REVERSE=1
+      shift
+      ;;
     --with-reverse-core)
+      INSTALL_REVERSE=1
       INSTALL_REVERSE_CORE=1
       shift
       ;;
@@ -338,6 +452,22 @@ while [[ "$#" -gt 0 ]]; do
     --reverse-capabilities)
       REVERSE_BOOTSTRAP_CAPABILITIES="$2"
       shift 2
+      ;;
+    --prune-preview)
+      PRUNE_PREVIEW=1
+      shift
+      ;;
+    --prune)
+      PRUNE=1
+      shift
+      ;;
+    --uninstall)
+      UNINSTALL=1
+      shift
+      ;;
+    --rollback)
+      ROLLBACK=1
+      shift
       ;;
     --backup)
       BACKUP=1
@@ -364,6 +494,12 @@ if [[ "${BACKUP}" == "1" && "${FORCE}" == "1" ]]; then
   exit 2
 fi
 
+management_modes=$((PRUNE_PREVIEW + PRUNE + UNINSTALL + ROLLBACK))
+if [[ "${management_modes}" -gt 1 ]]; then
+  log "--prune-preview, --prune, --uninstall, and --rollback are mutually exclusive"
+  exit 2
+fi
+
 if [[ "${REPO_ONLY}" == "1" && -z "${TARGET_REPO}" ]]; then
   log "--repo-only requires --repo PATH"
   exit 2
@@ -374,18 +510,48 @@ if [[ "${START_REVERSE_SERVICES}" == "1" && "${INSTALL_REVERSE_CORE}" != "1" ]];
   exit 2
 fi
 
+if [[ "${management_modes}" -eq 1 ]]; then
+  if [[ "${REPO_ONLY}" == "1" && -z "${TARGET_REPO}" ]]; then
+    log "management mode with --repo-only requires --repo PATH"
+    exit 2
+  fi
+  if [[ "${PRUNE_PREVIEW}" == "1" ]]; then
+    manage_install_state prune-preview
+  elif [[ "${PRUNE}" == "1" ]]; then
+    manage_install_state prune
+  elif [[ "${UNINSTALL}" == "1" ]]; then
+    manage_install_state uninstall
+  else
+    manage_install_state rollback
+  fi
+  exit $?
+fi
+
 if [[ "${REPO_ONLY}" != "1" ]]; then
+  selected_skill_names >/dev/null
   check_global_agents
-  check_reverse_router_skill
-  check_reverse_pack
+  if [[ "${INSTALL_REVERSE}" == "1" ]]; then
+    check_reverse_router_skill
+    check_reverse_pack
+    check_reverse_lock
+  fi
   check_skills
 fi
 check_repo_template
 
+if [[ "${DRY_RUN}" != "1" ]]; then
+  trap abort_install_transaction_on_exit EXIT
+  manage_install_state begin
+  INSTALL_TRANSACTION_ACTIVE=1
+fi
+
 if [[ "${REPO_ONLY}" != "1" ]]; then
   install_global_agents
-  install_reverse_router_skill
-  install_reverse_pack
+  if [[ "${INSTALL_REVERSE}" == "1" ]]; then
+    install_reverse_router_skill
+    install_reverse_pack
+    install_reverse_lock
+  fi
   install_skills
 fi
 install_repo_template
@@ -396,6 +562,12 @@ fi
 
 if [[ "${REPO_ONLY}" != "1" && ( "${VERIFY_REVERSE_READY}" == "1" || "${INSTALL_REVERSE_CORE}" == "1" ) ]]; then
   run_reverse_ready_verifier
+fi
+
+if [[ "${DRY_RUN}" != "1" ]]; then
+  manage_install_state commit
+  INSTALL_TRANSACTION_ACTIVE=0
+  trap - EXIT
 fi
 
 log "Install plan complete."

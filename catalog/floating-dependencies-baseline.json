@@ -1,0 +1,14 @@
+{
+  "description": "Machine-generated zero-finding baseline. Reverse lock field-consumption states are reported by catalog/reverse-dependencies.lock.yaml; any new floating reference fails closed.",
+  "findings": [],
+  "generator": "scripts/audit_floating_dependencies.py --refresh-baseline",
+  "kind": "zero-floating-reference-baseline",
+  "schema_version": 1,
+  "targets": [
+    "reverse-skill/skills/scripts/bootstrap-reverse.sh",
+    "reverse-skill/kali/scripts/bootstrap-reverse.sh",
+    "reverse-skill/kali/scripts/quick-setup.sh",
+    "install.sh",
+    "install.ps1"
+  ]
+}

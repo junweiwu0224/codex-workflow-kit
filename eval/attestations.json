@@ -1,0 +1,5 @@
+{
+  "schema_version": "4.2",
+  "description": "Schema template only. Real signed attestations remain outside the repository to avoid source-commit self-reference.",
+  "attestations": []
+}

@@ -1,0 +1,45 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://codex-workflow-kit.local/governance/skill-lifecycle.schema.json",
+  "title": "Codex Workflow V4.2 Skill Lifecycle State",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "components"],
+  "properties": {
+    "schema_version": {"const": "4.2"},
+    "generated_at": {"type": "string"},
+    "components": {
+      "type": "object",
+      "additionalProperties": {
+        "$ref": "#/$defs/component"
+      }
+    }
+  },
+  "$defs": {
+    "component": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["component_id", "state", "kill_switch", "kill_switch_active", "canary", "history"],
+      "properties": {
+        "component_id": {"type": "string", "minLength": 1},
+        "state": {"enum": ["discovered", "audited", "shadow", "repo_pilot", "stable", "deprecated", "retired", "rejected", "suspended", "rolled_back"]},
+        "version": {"type": ["string", "null"]},
+        "last_known_good": {"type": ["string", "null"]},
+        "kill_switch": {"type": "boolean"},
+        "kill_switch_active": {"type": "boolean"},
+        "canary": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["enabled", "projects", "task_families"],
+          "properties": {
+            "enabled": {"type": "boolean"},
+            "projects": {"type": "array", "items": {"type": "string"}},
+            "task_families": {"type": "array", "items": {"type": "string"}}
+          }
+        },
+        "metadata": {"type": "object"},
+        "history": {"type": "array", "items": {"type": "object"}}
+      }
+    }
+  }
+}
